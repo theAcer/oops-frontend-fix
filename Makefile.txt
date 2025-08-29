@@ -1,0 +1,50 @@
+.PHONY: help dev build up down logs clean
+
+help: ## Show this help message
+	@echo 'Usage: make [target]'
+	@echo ''
+	@echo 'Targets:'
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+dev: ## Start development environment
+	docker-compose up --build
+
+build: ## Build all services
+	docker-compose build
+
+up: ## Start all services in background
+	docker-compose up -d
+
+down: ## Stop all services
+	docker-compose down
+
+logs: ## Show logs for all services
+	docker-compose logs -f
+
+logs-api: ## Show API logs
+	docker-compose logs -f api
+
+logs-frontend: ## Show frontend logs
+	docker-compose logs -f frontend
+
+clean: ## Clean up containers, networks, and volumes
+	docker-compose down -v --remove-orphans
+	docker system prune -f
+
+prod: ## Start production environment with nginx
+	docker-compose --profile production up --build
+
+restart: ## Restart all services
+	docker-compose restart
+
+shell-api: ## Open shell in API container
+	docker-compose exec api bash
+
+shell-frontend: ## Open shell in frontend container
+	docker-compose exec frontend sh
+
+db-shell: ## Open PostgreSQL shell
+	docker-compose exec db psql -U postgres -d zidisha_db
+
+redis-shell: ## Open Redis CLI
+	docker-compose exec redis redis-cli

@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List, Optional
 from app.models.merchant import Merchant
+from app.models.user import User # Import User model
 from app.schemas.merchant import MerchantCreate, MerchantUpdate
 
 class MerchantService:
@@ -60,3 +61,18 @@ class MerchantService:
             select(Merchant).where(Merchant.mpesa_till_number == till_number)
         )
         return result.scalar_one_or_none()
+
+    async def link_merchant_to_user(self, merchant_id: int, user_id: int) -> bool:
+        """Link an existing merchant to a user."""
+        user_result = await self.db.execute(
+            select(User).where(User.id == user_id)
+        )
+        user = user_result.scalar_one_or_none()
+
+        if not user:
+            return False
+        
+        user.merchant_id = merchant_id
+        await self.db.commit()
+        await self.db.refresh(user)
+        return True

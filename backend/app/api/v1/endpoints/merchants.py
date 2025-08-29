@@ -4,6 +4,9 @@ from typing import List
 from app.core.database import get_db
 from app.schemas.merchant import MerchantCreate, MerchantResponse, MerchantUpdate
 from app.services.merchant_service import MerchantService
+from app.services.auth_service import AuthService
+from app.api.v1.endpoints.auth import oauth2_scheme # Import oauth2_scheme
+from app.models.user import User # Import User model
 
 router = APIRouter()
 
@@ -15,6 +18,33 @@ async def create_merchant(
     """Register a new merchant"""
     service = MerchantService(db)
     return await service.create_merchant(merchant_data)
+
+@router.post("/link-user-merchant", response_model=MerchantResponse, status_code=status.HTTP_201_CREATED)
+async def link_user_to_merchant(
+    merchant_data: MerchantCreate,
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db)
+):
+    """Create a new merchant and link it to the current authenticated user."""
+    auth_service = AuthService(db)
+    current_user = await auth_service.get_current_user(token)
+
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    
+    if current_user.merchant_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already linked to a merchant")
+
+    merchant_service = MerchantService(db)
+    new_merchant = await merchant_service.create_merchant(merchant_data)
+
+    # Link the newly created merchant to the current user
+    await merchant_service.link_merchant_to_user(new_merchant.id, current_user.id)
+    
+    # Refresh the user object to reflect the new merchant_id
+    await db.refresh(current_user)
+
+    return new_merchant
 
 @router.get("/", response_model=List[MerchantResponse])
 async def get_merchants(

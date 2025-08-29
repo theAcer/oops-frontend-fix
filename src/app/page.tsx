@@ -13,12 +13,20 @@ export default function HomePage() {
             AI-powered customer loyalty and engagement platform for merchants. Boost customer retention, increase
             revenue, and grow your business with intelligent insights.
           </p>
-          <Button size="lg" asChild className="text-lg px-8 py-4">
-            <Link href="/dashboard">
-              Get Started
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
+          <div className="flex justify-center space-x-4">
+            <Button size="lg" asChild className="text-lg px-8 py-4">
+              <Link href="/dashboard">
+                Get Started
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild className="text-lg px-8 py-4">
+              <Link href="/register-merchant">
+                Register as Merchant
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">

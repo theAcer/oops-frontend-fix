@@ -98,6 +98,11 @@ export const apiService = {
     return response.data
   },
 
+  async linkUserToMerchant(merchantData: Omit<Merchant, "id" | "created_at" | "updated_at" | "is_active" | "subscription_tier" | "daraaa_merchant_id" | "last_sync_at">): Promise<Merchant> {
+    const response = await api.post("/merchants/link-user-merchant", merchantData)
+    return response.data
+  },
+
   async getMerchant(merchantId: string): Promise<Merchant> {
     const response = await api.get(`/merchants/${merchantId}`)
     return response.data

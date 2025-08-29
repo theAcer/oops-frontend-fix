@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { BarChart3, Users, CreditCard, Gift, Megaphone, Brain, Bell, Settings, Home } from "lucide-react"
+import { BarChart3, Users, CreditCard, Gift, Megaphone, Brain, Bell, Settings, Home, Store } from "lucide-react" // Import Store icon
+import { useAuth } from "@/contexts/auth-context" // Import useAuth
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -19,6 +20,7 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { user } = useAuth() // Get user from auth context
 
   return (
     <div className="flex h-full w-64 flex-col bg-white border-r border-gray-200">
@@ -48,6 +50,25 @@ export function Sidebar() {
             </Link>
           )
         })}
+
+        {/* Conditional link for becoming a merchant */}
+        {!user?.merchant_id && (
+          <Link
+            href="/dashboard/become-merchant"
+            className={cn(
+              "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+              pathname === "/dashboard/become-merchant" ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+            )}
+          >
+            <Store
+              className={cn(
+                "mr-3 h-5 w-5 flex-shrink-0",
+                pathname === "/dashboard/become-merchant" ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500",
+              )}
+            />
+            Become a Merchant
+          </Link>
+        )}
       </nav>
     </div>
   )

@@ -10,7 +10,7 @@ export function useDashboardAnalytics() {
 
   return useSWR(
     merchantId ? `/analytics/dashboard/${merchantId}` : null,
-    () => merchantId && apiService.getDashboardAnalytics(merchantId),
+    () => apiService.getDashboardAnalytics(merchantId!),
     {
       refreshInterval: 30000, // Refresh every 30 seconds
     },
@@ -23,12 +23,15 @@ export function useCustomers(page = 1, limit = 10) {
 
   return useSWR(
     merchantId ? `/customers?merchant_id=${merchantId}&page=${page}&limit=${limit}` : null,
-    () => merchantId && apiService.getCustomers(merchantId, page, limit),
+    () => apiService.getCustomers(merchantId!, page, limit),
   )
 }
 
 export function useCustomer(customerId: string | null) {
-  return useSWR(customerId ? `/customers/${customerId}` : null, () => customerId && apiService.getCustomer(customerId))
+  return useSWR(
+    customerId ? `/customers/${customerId}` : null,
+    () => apiService.getCustomer(customerId!)
+  )
 }
 
 export function useTransactions(filters?: {
@@ -53,14 +56,17 @@ export function useTransactions(filters?: {
       ).toString()}`
     : null
 
-  return useSWR(key, () => merchantId && apiService.getTransactions(merchantId, filters))
+  return useSWR(key, () => apiService.getTransactions(merchantId!, filters))
 }
 
 export function useMerchant() {
   const { user } = useAuth()
   const merchantId = user?.merchant_id
 
-  return useSWR(merchantId ? `/merchants/${merchantId}` : null, () => merchantId && apiService.getMerchant(merchantId))
+  return useSWR(
+    merchantId ? `/merchants/${merchantId}` : null,
+    () => apiService.getMerchant(merchantId!)
+  )
 }
 
 export function useRevenueAnalytics() {
@@ -69,7 +75,7 @@ export function useRevenueAnalytics() {
 
   return useSWR(
     merchantId ? `/analytics/revenue/${merchantId}` : null,
-    () => merchantId && apiService.getRevenueAnalytics(merchantId),
+    () => apiService.getRevenueAnalytics(merchantId!)
   )
 }
 
@@ -79,7 +85,7 @@ export function useCustomerAnalytics() {
 
   return useSWR(
     merchantId ? `/analytics/customers/${merchantId}` : null,
-    () => merchantId && apiService.getCustomerAnalytics(merchantId),
+    () => apiService.getCustomerAnalytics(merchantId!)
   )
 }
 
@@ -89,7 +95,7 @@ export function useLoyaltyAnalytics() {
 
   return useSWR(
     merchantId ? `/analytics/loyalty/${merchantId}` : null,
-    () => merchantId && apiService.getLoyaltyAnalytics(merchantId),
+    () => apiService.getLoyaltyAnalytics(merchantId!)
   )
 }
 
@@ -99,7 +105,7 @@ export function useCustomerInsights() {
 
   return useSWR(
     merchantId ? `/analytics/customer-insights/${merchantId}` : null,
-    () => merchantId && apiService.getCustomerInsights(merchantId),
+    () => apiService.getCustomerInsights(merchantId!)
   )
 }
 
@@ -109,7 +115,7 @@ export function useChurnRisk() {
 
   return useSWR(
     merchantId ? `/analytics/churn-risk/${merchantId}` : null,
-    () => merchantId && apiService.getChurnRisk(merchantId),
+    () => apiService.getChurnRisk(merchantId!)
   )
 }
 
@@ -119,7 +125,7 @@ export function useMerchantInsights() {
 
   return useSWR(
     merchantId ? `/ai/merchant/${merchantId}/insights` : null,
-    () => merchantId && apiService.getMerchantInsights(merchantId),
+    () => apiService.getMerchantInsights(merchantId!)
   )
 }
 
@@ -129,9 +135,29 @@ export function useRealTimeMetrics() {
 
   return useSWR(
     merchantId ? `/analytics/real-time/${merchantId}` : null,
-    () => merchantId && apiService.getRealTimeMetrics(merchantId),
+    () => apiService.getRealTimeMetrics(merchantId!),
     {
       refreshInterval: 10000, // Refresh every 10 seconds
     },
+  )
+}
+
+export function useCampaigns() {
+  const { user } = useAuth()
+  const merchantId = user?.merchant_id
+
+  return useSWR(
+    merchantId ? `/campaigns?merchant_id=${merchantId}` : null,
+    () => apiService.getCampaigns ? apiService.getCampaigns(merchantId!) : Promise.resolve({ campaigns: [], total: 0 })
+  )
+}
+
+export function useLoyaltyPrograms() {
+  const { user } = useAuth()
+  const merchantId = user?.merchant_id
+
+  return useSWR(
+    merchantId ? `/loyalty-programs?merchant_id=${merchantId}` : null,
+    () => apiService.getLoyaltyPrograms ? apiService.getLoyaltyPrograms(merchantId!) : Promise.resolve({ programs: [], total: 0 })
   )
 }

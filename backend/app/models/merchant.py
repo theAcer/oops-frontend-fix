@@ -47,3 +47,4 @@ class Merchant(Base):
     transactions = relationship("Transaction", back_populates="merchant")
     loyalty_programs = relationship("LoyaltyProgram", back_populates="merchant")
     campaigns = relationship("Campaign", back_populates="merchant")
+    users = relationship("User", back_populates="merchant") # Added this line

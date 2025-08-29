@@ -16,12 +16,8 @@ interface AuthContextType {
   user: User | null
   login: (email: string, password: string) => Promise<void>
   register: (
-    businessName: string,
-    ownerName: string,
+    name: string, // Simplified to just user's name
     email: string,
-    phone: string,
-    businessType: string,
-    mpesaTillNumber: string,
     password: string,
   ) => Promise<void>
   logout: () => void
@@ -68,31 +64,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const register = async (
-    businessName: string,
-    ownerName: string,
+    name: string,
     email: string,
-    phone: string,
-    businessType: string,
-    mpesaTillNumber: string,
     password: string,
   ) => {
     try {
-      // First register the merchant
-      const merchantResponse = await apiService.createMerchant({
-        business_name: businessName,
-        owner_name: ownerName,
-        email,
-        phone,
-        business_type: businessType,
-        mpesa_till_number: mpesaTillNumber,
-      })
-
-      // Then create user account
-      const authResponse = await apiService.registerUser(
+      // Only create user account
+      await apiService.registerUser(
         email,
         password,
-        ownerName, // Using ownerName for the user's name
-        merchantResponse.id,
+        name,
+        undefined, // merchant_id is optional at this stage
       )
 
       const { access_token } = await apiService.login(email, password); // Log in the user after registration

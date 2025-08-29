@@ -22,7 +22,7 @@ export const apiService = {
     email: string,
     password: string,
     name: string,
-    merchantId: string,
+    merchantId?: string, // Made optional
   ): Promise<AuthUser> {
     const response = await api.post("/auth/register", {
       email,

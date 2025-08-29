@@ -13,8 +13,8 @@ services:
       - api
     volumes:
       - .:/app
-      - /app/node_modules
-      - /app/.next  
+
+    working_dir: /app
     command: npm run dev
     profiles: ["dev"]
 

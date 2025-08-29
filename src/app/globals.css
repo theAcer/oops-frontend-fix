@@ -30,7 +30,7 @@
   --color-warning: hsl(38 92% 50%);
   --color-warning-foreground: hsl(48 96% 89%);
   --color-brand-primary: hsl(221 83% 53%);
-  --color-brand-secondary: hsl(262 83% 58%);
+  --color-brand-secondary: hsl(262 83% 58% );
   --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(262 83% 58%));
   --gradient-subtle: linear-gradient(180deg, hsl(210 40% 98%), hsl(214 32% 91%));
   --shadow-elegant: 0 10px 30px -10px hsl(221 83% 53% / 0.2);
@@ -38,8 +38,10 @@
   --radius: 0.75rem;
   --font-sans: Inter, system-ui, sans-serif;
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  @media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
+  :root {
     --color-background: hsl(222 84% 5%);
     --color-foreground: hsl(210 40% 98%);
     --color-card: hsl(222 84% 5%);

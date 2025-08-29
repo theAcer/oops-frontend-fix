@@ -7,9 +7,37 @@ import type {
   Campaign,
   LoyaltyProgram,
   NotificationHistory,
+  AuthUser,
+  TokenResponse,
 } from "@/types/api"
 
 export const apiService = {
+  // Auth
+  async login(email: string, password: string): Promise<TokenResponse> {
+    const response = await api.post("/auth/login", { email, password })
+    return response.data
+  },
+
+  async registerUser(
+    email: string,
+    password: string,
+    name: string,
+    merchantId: string,
+  ): Promise<AuthUser> {
+    const response = await api.post("/auth/register", {
+      email,
+      password,
+      name,
+      merchant_id: merchantId,
+    })
+    return response.data
+  },
+
+  async getMe(): Promise<AuthUser> {
+    const response = await api.get("/auth/me")
+    return response.data
+  },
+
   // Dashboard Analytics
   async getDashboardAnalytics(merchantId: string): Promise<DashboardAnalytics> {
     const response = await api.get(`/analytics/dashboard/${merchantId}`)
@@ -18,7 +46,7 @@ export const apiService = {
 
   // Customer Management
   async getCustomers(merchantId: string, page = 1, limit = 10): Promise<{ customers: Customer[]; total: number }> {
-    const response = await api.get(`/customers?merchant_id=${merchantId}&page=${page}&limit=${limit}`)
+    const response = await api.get(`/customers?merchant_id=${merchantId}&skip=${(page - 1) * limit}&limit=${limit}`)
     return response.data
   },
 
@@ -47,7 +75,7 @@ export const apiService = {
     if (filters?.customer_id) params.append("customer_id", filters.customer_id)
     if (filters?.start_date) params.append("start_date", filters.start_date)
     if (filters?.end_date) params.append("end_date", filters.end_date)
-    if (filters?.page) params.append("page", filters.page.toString())
+    if (filters?.page) params.append("skip", ((filters.page - 1) * (filters.limit || 20)).toString())
     if (filters?.limit) params.append("limit", filters.limit.toString())
 
     const response = await api.get(`/transactions?${params.toString()}`)
@@ -65,6 +93,11 @@ export const apiService = {
   },
 
   // Merchant Management
+  async createMerchant(merchantData: Omit<Merchant, "id" | "created_at" | "updated_at" | "is_active" | "subscription_tier" | "daraaa_merchant_id" | "last_sync_at">): Promise<Merchant> {
+    const response = await api.post("/merchants", merchantData)
+    return response.data
+  },
+
   async getMerchant(merchantId: string): Promise<Merchant> {
     const response = await api.get(`/merchants/${merchantId}`)
     return response.data
@@ -246,10 +279,9 @@ export const apiService = {
   },
 
   async sendSMSCampaign(data: {
-    merchant_id: string
     campaign_id: string
-    target_audience: string
-    message: string
+    target_customers: number[]
+    message_template: string
   }): Promise<any> {
     const response = await api.post("/notifications/sms/campaign", data)
     return response.data

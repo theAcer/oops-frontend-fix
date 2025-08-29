@@ -24,7 +24,7 @@ async def init_db():
     """Initialize database tables"""
     async with engine.begin() as conn:
         # Import all models here to ensure they are registered
-        from app.models import merchant, customer, transaction, loyalty, campaign
+        from app.models import merchant, customer, transaction, loyalty, campaign, user, notification
         await conn.run_sync(Base.metadata.create_all)
 
 async def get_db():

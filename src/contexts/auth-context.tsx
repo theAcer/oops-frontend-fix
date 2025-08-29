@@ -3,7 +3,7 @@
 import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import api from "@/lib/api"
+import { apiService } from "@/services/api-service" // Import apiService
 
 interface User {
   id: string
@@ -38,11 +38,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem("auth_token")
     if (token) {
-      // Verify token and get user info
-      api
-        .get("/auth/me")
+      apiService
+        .getMe() // Use apiService.getMe()
         .then((response) => {
-          setUser(response.data)
+          setUser(response)
         })
         .catch(() => {
           localStorage.removeItem("auth_token")
@@ -57,10 +56,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await api.post("/auth/login", { email, password })
-      const { access_token, user: userData } = response.data
+      const response = await apiService.login(email, password) // Use apiService.login()
+      localStorage.setItem("auth_token", response.access_token)
 
-      localStorage.setItem("auth_token", access_token)
+      const userData = await apiService.getMe() // Fetch user details after login
       setUser(userData)
       router.push("/dashboard")
     } catch (error) {
@@ -79,30 +78,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ) => {
     try {
       // First register the merchant
-      const merchantResponse = await api.post("/merchants", {
+      const merchantResponse = await apiService.createMerchant({
         business_name: businessName,
         owner_name: ownerName,
         email,
         phone,
         business_type: businessType,
         mpesa_till_number: mpesaTillNumber,
-        // address and city can be optional or added later
       })
 
-      // Then create user account (assuming there's an auth endpoint)
-      const authResponse = await api.post("/auth/register", {
+      // Then create user account
+      const authResponse = await apiService.registerUser(
         email,
         password,
-        name: ownerName, // Using ownerName for the user's name
-        merchant_id: merchantResponse.data.id,
-      })
+        ownerName, // Using ownerName for the user's name
+        merchantResponse.id,
+      )
 
-      const { access_token, user: userData } = authResponse.data
-      localStorage.setItem("auth_token", access_token)
-      setUser(userData)
-      router.push("/dashboard")
+      const { access_token } = await apiService.login(email, password); // Log in the user after registration
+      localStorage.setItem("auth_token", access_token);
+
+      const userData = await apiService.getMe(); // Fetch user details after login
+      setUser(userData);
+      router.push("/dashboard");
     } catch (error) {
-      throw new Error("Registration failed")
+      console.error("Registration error:", error);
+      throw new Error("Registration failed");
     }
   }
 

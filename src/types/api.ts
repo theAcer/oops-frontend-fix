@@ -1,13 +1,37 @@
 // Merchant types
 export interface Merchant {
   id: string
-  name: string
+  business_name: string
+  owner_name: string
   email: string
   phone: string
   business_type: string
-  location: string
+  mpesa_till_number: string
+  mpesa_store_number?: string
+  address?: string
+  city?: string
+  country: string
+  is_active: boolean
+  subscription_tier: string
+  daraaa_merchant_id?: string
+  last_sync_at?: string
   created_at: string
-  updated_at: string
+  updated_at?: string
+}
+
+// User types for authentication
+export interface AuthUser {
+  id: string
+  email: string
+  name?: string
+  merchant_id?: string
+  is_active: boolean
+  created_at: string
+}
+
+export interface TokenResponse {
+  access_token: string
+  token_type: string
 }
 
 // Customer types
@@ -19,7 +43,7 @@ export interface Customer {
   phone: string
   total_spent: number
   loyalty_points: number
-  last_visit: string
+  last_visit: string // This might need to be last_purchase_date based on backend model
   created_at: string
 }
 
@@ -29,7 +53,7 @@ export interface Transaction {
   merchant_id: string
   customer_id: string
   amount: number
-  currency: string
+  currency: string // Assuming currency is KES, but added for completeness
   status: string
   transaction_date: string
   description?: string
@@ -41,6 +65,7 @@ export interface LoyaltyProgram {
   merchant_id: string
   name: string
   description: string
+  program_type: string // e.g., "points", "visits"
   points_per_currency: number
   minimum_spend: number
   is_active: boolean
@@ -58,7 +83,7 @@ export interface Campaign {
   status: string
   start_date: string
   end_date: string
-  budget: number
+  budget: number // This field is not in backend Campaign model, but in frontend form
   created_at: string
 }
 

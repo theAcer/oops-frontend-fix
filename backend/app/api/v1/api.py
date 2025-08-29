@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import merchants, customers, transactions, loyalty, campaigns, analytics, webhooks, ai_recommendations, notifications
+from app.api.v1.endpoints import merchants, customers, transactions, loyalty, campaigns, analytics, webhooks, ai_recommendations, notifications, auth
 
 api_router = APIRouter()
 
@@ -12,3 +12,4 @@ api_router.include_router(analytics.router, prefix="/analytics", tags=["analytic
 api_router.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
 api_router.include_router(ai_recommendations.router, prefix="/ai", tags=["ai-recommendations"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+api_router.include_router(auth.router, prefix="/auth", tags=["auth"])

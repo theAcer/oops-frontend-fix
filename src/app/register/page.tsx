@@ -11,11 +11,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: "",
+    businessName: "", // Renamed from 'name' for clarity
+    ownerName: "", // New field
     email: "",
+    phone: "", // New field
+    businessType: "",
+    mpesaTillNumber: "", // New field
     password: "",
     confirmPassword: "",
-    businessType: "",
   })
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
@@ -38,7 +41,15 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      await register(formData.name, formData.email, formData.password, formData.businessType)
+      await register(
+        formData.businessName,
+        formData.ownerName,
+        formData.email,
+        formData.phone,
+        formData.businessType,
+        formData.mpesaTillNumber,
+        formData.password,
+      )
     } catch (err) {
       setError("Registration failed. Please try again.")
     } finally {
@@ -67,17 +78,32 @@ export default function RegisterPage() {
             )}
 
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">
+              <label htmlFor="businessName" className="text-sm font-medium">
                 Business Name
               </label>
               <Input
-                id="name"
-                name="name"
+                id="businessName"
+                name="businessName"
                 type="text"
-                value={formData.name}
+                value={formData.businessName}
                 onChange={handleChange}
                 required
                 placeholder="Enter your business name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="ownerName" className="text-sm font-medium">
+                Owner Name
+              </label>
+              <Input
+                id="ownerName"
+                name="ownerName"
+                type="text"
+                value={formData.ownerName}
+                onChange={handleChange}
+                required
+                placeholder="Enter your name"
               />
             </div>
 
@@ -93,6 +119,21 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 placeholder="Enter your email"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="phone" className="text-sm font-medium">
+                Phone Number
+              </label>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+                placeholder="e.g., 254712345678"
               />
             </div>
 
@@ -115,6 +156,21 @@ export default function RegisterPage() {
                 <option value="ecommerce">E-commerce</option>
                 <option value="other">Other</option>
               </select>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="mpesaTillNumber" className="text-sm font-medium">
+                M-Pesa Till Number
+              </label>
+              <Input
+                id="mpesaTillNumber"
+                name="mpesaTillNumber"
+                type="text"
+                value={formData.mpesaTillNumber}
+                onChange={handleChange}
+                required
+                placeholder="Enter your M-Pesa Till Number"
+              />
             </div>
 
             <div className="space-y-2">

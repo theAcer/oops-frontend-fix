@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { Plus, Play, BarChart3, Eye } from "lucide-react"
 import Link from "next/link"
-import useSWR from "swr"
+import { useCampaigns } from "@/hooks/use-api"
 import { apiService } from "@/services/api-service"
 import { useAuth } from "@/contexts/auth-context"
 
@@ -15,10 +15,7 @@ export default function CampaignsPage() {
   const { user } = useAuth()
   const merchantId = user?.merchant_id
 
-  const { data, error, isLoading, mutate } = useSWR(
-    merchantId ? `/campaigns?merchant_id=${merchantId}` : null,
-    () => merchantId && apiService.getCampaigns(merchantId),
-  )
+  const { data, error, isLoading, mutate } = useCampaigns()
 
   const campaigns = data?.campaigns || []
 

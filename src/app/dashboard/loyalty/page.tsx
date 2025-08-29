@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatDate } from "@/lib/utils"
 import { Plus, Play, Settings, Users } from "lucide-react"
 import Link from "next/link"
-import useSWR from "swr"
+import { useLoyaltyPrograms } from "@/hooks/use-api"
 import { apiService } from "@/services/api-service"
 import { useAuth } from "@/contexts/auth-context"
 
@@ -15,10 +15,7 @@ export default function LoyaltyPage() {
   const { user } = useAuth()
   const merchantId = user?.merchant_id
 
-  const { data, error, isLoading, mutate } = useSWR(
-    merchantId ? `/loyalty/programs?merchant_id=${merchantId}` : null,
-    () => merchantId && apiService.getLoyaltyPrograms(merchantId),
-  )
+  const { data, error, isLoading, mutate } = useLoyaltyPrograms()
 
   const programs = data?.programs || []
 

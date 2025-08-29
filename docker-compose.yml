@@ -1,33 +1,36 @@
 services:
   frontend:
     build:
-      context: ./frontend
-      target: dev
-
+      context: .
+      target: base
     ports:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_SUPABASE_URL=https://avcehoxfcyqjllctwjzd.supabase.co
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2Y2Vob3hmY3lxamxsY3R3anpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NDk5OTksImV4cCI6MjA3MjAyNTk5OX0.quDmqW9YoYM0F0EV6A6a6VNkr7m1ij7t4CI2Bgoe6FM
     depends_on:
       - api
     volumes:
-      - ./frontend:/app         # your source code
-      - /app/node_modules       # prevent overwriting container's node_modules
+      - .:/app
+      - /app/node_modules
       - /app/.next  
     command: npm run dev
     profiles: ["dev"]
 
   frontend-prod:
     build:
-      context: ./frontend
+      context: .
+      target: runner
     ports:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://api:8000
+      - NEXT_PUBLIC_SUPABASE_URL=https://avcehoxfcyqjllctwjzd.supabase.co
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2Y2Vob3hmY3lxamxsY3R3anpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NDk5OTksImV4cCI6MjA3MjAyNTk5OX0.quDmqW9YoYM0F0EV6A6a6VNkr7m1ij7t4CI2Bgoe6FM
       - NODE_ENV=production
     depends_on:
       - api
-    command: ["node", ".next/standalone/server.js"]
     profiles: ["production"]
 
   api:

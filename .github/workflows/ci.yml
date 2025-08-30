@@ -1,0 +1,109 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Wait for database and Redis to be ready
+        run: |
+          echo "Waiting for PostgreSQL to be ready..."
+          for i in $(seq 1 10); do
+            if pg_isready -h localhost -p 5432 -U postgres; then
+              echo "PostgreSQL is ready."
+              break
+            fi
+            echo "Waiting for PostgreSQL... ($i/10)"
+            sleep 5
+          done
+          echo "Waiting for Redis to be ready..."
+          for i in $(seq 1 10); do
+            if redis-cli -h localhost -p 6379 ping; then
+              echo "Redis is ready."
+              break
+            fi
+            echo "Waiting for Redis... ($i/10)"
+            sleep 5
+          done
+
+      - name: Run backend tests
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+          SECRET_KEY: ${{ secrets.SECRET_KEY }} # Use GitHub Secret for production key
+          ALGORITHM: HS256
+          ACCESS_TOKEN_EXPIRE_MINUTES: 30
+          CORS_ORIGINS: http://localhost:3000
+          DEBUG: True
+        run: pytest tests/
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install frontend dependencies
+        working-directory: ./
+        run: npm install
+
+      - name: Build frontend
+        working-directory: ./
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000 # Placeholder, actual API not running in this job
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}

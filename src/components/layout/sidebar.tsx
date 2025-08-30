@@ -3,8 +3,8 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { BarChart3, Users, CreditCard, Gift, Megaphone, Brain, Bell, Settings, Home, Store } from "lucide-react" // Import Store icon
-import { useAuth } from "@/contexts/auth-context" // Import useAuth
+import { BarChart3, Users, CreditCard, Gift, Megaphone, Brain, Bell, Settings, Home, Store } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -20,12 +20,12 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { user } = useAuth() // Get user from auth context
+  const { user } = useAuth()
 
   return (
-    <div className="flex h-full w-64 flex-col bg-white border-r border-gray-200">
-      <div className="flex h-16 items-center px-6 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-gray-900">Zidisha</h1>
+    <div className="flex h-full w-64 flex-col bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+      <div className="flex h-16 items-center px-6 border-b border-gray-200 dark:border-gray-700">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Zidisha</h1>
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">
@@ -37,13 +37,13 @@ export function Sidebar() {
               href={item.href}
               className={cn(
                 "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                isActive ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+                isActive ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100",
               )}
             >
               <item.icon
                 className={cn(
                   "mr-3 h-5 w-5 flex-shrink-0",
-                  isActive ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500",
+                  isActive ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400",
                 )}
               />
               {item.name}
@@ -57,13 +57,13 @@ export function Sidebar() {
             href="/dashboard/become-merchant"
             className={cn(
               "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-              pathname === "/dashboard/become-merchant" ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+              pathname === "/dashboard/become-merchant" ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100",
             )}
           >
             <Store
               className={cn(
                 "mr-3 h-5 w-5 flex-shrink-0",
-                pathname === "/dashboard/become-merchant" ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500",
+                pathname === "/dashboard/become-merchant" ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400",
               )}
             />
             Become a Merchant

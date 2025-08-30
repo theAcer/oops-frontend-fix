@@ -3,6 +3,7 @@ import { ArrowRight, BarChart3, Users, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
+import { CardContent } from "@/components/ui/card" // Import CardContent
 
 export default function HomePage() {
   return (

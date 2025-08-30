@@ -13,6 +13,7 @@ import { apiService } from "@/services/api-service"
 import { useAuth } from "@/contexts/auth-context"
 import { ArrowLeft, Save, Play } from "lucide-react"
 import Link from "next/link"
+import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
 
 export default function CreateLoyaltyProgramPage() {
   const router = useRouter()
@@ -163,10 +164,10 @@ export default function CreateLoyaltyProgramPage() {
                       <Save className="h-4 w-4 mr-2" />
                       Save as Draft
                     </Button>
-                    <Button type="button" onClick={(e) => handleSubmit(e, true)} disabled={loading}>
+                    <AnimatedButton type="button" onClick={(e) => handleSubmit(e, true)} disabled={loading}>
                       <Play className="h-4 w-4 mr-2" />
                       {loading ? "Creating..." : "Create & Activate"}
-                    </Button>
+                    </AnimatedButton>
                   </div>
                 </form>
               </CardContent>

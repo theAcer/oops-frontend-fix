@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { apiService } from "@/services/api-service"
 import { ArrowLeft, Save } from "lucide-react"
 import Link from "next/link"
+import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
 
 export default function BecomeMerchantPage() {
   const router = useRouter()
@@ -199,9 +200,9 @@ export default function BecomeMerchantPage() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <AnimatedButton type="submit" className="w-full" disabled={loading}>
                 {loading ? "Registering Business..." : "Register My Business"}
-              </Button>
+              </AnimatedButton>
             </form>
           </CardContent>
         </Card>

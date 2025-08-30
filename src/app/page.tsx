@@ -2,10 +2,11 @@ import Link from "next/link"
 import { ArrowRight, BarChart3, Users, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[--gradient-subtle]">
+    <div className="min-h-screen"> {/* Removed bg-[--gradient-subtle] as ThemeWrapper handles it */}
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-foreground mb-6">Zidisha Loyalty Platform</h1>
@@ -14,18 +15,18 @@ export default function HomePage() {
             revenue, and grow your business with intelligent insights.
           </p>
           <div className="flex justify-center space-x-4">
-            <Button size="lg" asChild className="text-lg px-8 py-4">
+            <AnimatedButton size="lg" asChild className="text-lg px-8 py-4">
               <Link href="/dashboard">
                 Get Started
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild className="text-lg px-8 py-4">
+            </AnimatedButton>
+            <AnimatedButton size="lg" variant="outline" asChild className="text-lg px-8 py-4">
               <Link href="/register-merchant">
                 Register as Merchant
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
-            </Button>
+            </AnimatedButton>
           </div>
         </div>
 

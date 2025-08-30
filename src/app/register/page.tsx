@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -57,7 +58,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center"> {/* Removed bg-gray-50 */}
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
@@ -129,9 +130,9 @@ export default function RegisterPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <AnimatedButton type="submit" className="w-full" disabled={loading}>
               {loading ? "Creating account..." : "Create Account"}
-            </Button>
+            </AnimatedButton>
           </form>
 
           <div className="mt-6 text-center text-sm">

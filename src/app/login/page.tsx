@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -31,7 +32,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center"> {/* Removed bg-gray-50 */}
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
@@ -71,9 +72,9 @@ export default function LoginPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <AnimatedButton type="submit" className="w-full" disabled={loading}>
               {loading ? "Signing in..." : "Sign In"}
-            </Button>
+            </AnimatedButton>
           </form>
 
           <div className="mt-6 text-center text-sm">

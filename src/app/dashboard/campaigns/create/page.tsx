@@ -13,6 +13,7 @@ import { apiService } from "@/services/api-service"
 import { useAuth } from "@/contexts/auth-context"
 import { ArrowLeft, Save, Send } from "lucide-react"
 import Link from "next/link"
+import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
 
 export default function CreateCampaignPage() {
   const router = useRouter()
@@ -232,10 +233,10 @@ export default function CreateCampaignPage() {
                       <Save className="h-4 w-4 mr-2" />
                       Save as Draft
                     </Button>
-                    <Button type="button" onClick={(e) => handleSubmit(e, true)} disabled={loading}>
+                    <AnimatedButton type="button" onClick={(e) => handleSubmit(e, true)} disabled={loading}>
                       <Send className="h-4 w-4 mr-2" />
                       {loading ? "Creating..." : "Create & Launch"}
-                    </Button>
+                    </AnimatedButton>
                   </div>
                 </form>
               </CardContent>

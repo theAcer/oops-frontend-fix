@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -12,6 +12,7 @@ import { formatCurrency, formatDateTime } from "@/lib/utils"
 import { Search, Download, RefreshCw } from "lucide-react"
 import { apiService } from "@/services/api-service"
 import { useAuth } from "@/contexts/auth-context"
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 
 export default function TransactionsPage() {
   const [page, setPage] = useState(1)
@@ -68,7 +69,7 @@ export default function TransactionsPage() {
           </div>
         </div>
 
-        <Card>
+        <BlurredCard>
           <CardHeader>
             <CardTitle>Transaction History</CardTitle>
             <CardDescription>All transactions processed through your business</CardDescription>
@@ -162,7 +163,7 @@ export default function TransactionsPage() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </BlurredCard>
       </div>
     </DashboardLayout>
   )

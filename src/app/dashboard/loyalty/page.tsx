@@ -1,6 +1,6 @@
 "use client"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -10,6 +10,7 @@ import Link from "next/link"
 import { useLoyaltyPrograms } from "@/hooks/use-api"
 import { apiService } from "@/services/api-service"
 import { useAuth } from "@/contexts/auth-context"
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 
 export default function LoyaltyPage() {
   const { user } = useAuth()
@@ -56,45 +57,45 @@ export default function LoyaltyPage() {
 
         {/* Program Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
+          <BlurredCard>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Total Programs</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{programs.length}</div>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Active Programs</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">{programs.filter((p) => p.is_active).length}</div>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Enrolled Customers</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">1,234</div>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Points Redeemed</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-purple-600">45,678</div>
             </CardContent>
-          </Card>
+          </BlurredCard>
         </div>
 
         {/* Programs Table */}
-        <Card>
+        <BlurredCard>
           <CardHeader>
             <CardTitle>Loyalty Programs</CardTitle>
             <CardDescription>Manage your customer loyalty and reward programs</CardDescription>
@@ -169,7 +170,7 @@ export default function LoyaltyPage() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </BlurredCard>
       </div>
     </DashboardLayout>
   )

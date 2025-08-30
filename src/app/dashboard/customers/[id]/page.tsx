@@ -2,13 +2,14 @@
 
 import { useParams } from "next/navigation"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCustomer, useTransactions } from "@/hooks/use-api"
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils"
 import { ArrowLeft, Mail, Phone, Calendar, CreditCard, Gift } from "lucide-react"
 import Link from "next/link"
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 
 export default function CustomerDetailPage() {
   const params = useParams()
@@ -67,7 +68,7 @@ export default function CustomerDetailPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <Card>
+            <BlurredCard>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -99,9 +100,9 @@ export default function CustomerDetailPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </BlurredCard>
 
-            <Card>
+            <BlurredCard>
               <CardHeader>
                 <CardTitle>Recent Transactions</CardTitle>
                 <CardDescription>Latest 5 transactions from this customer</CardDescription>
@@ -132,11 +133,11 @@ export default function CustomerDetailPage() {
                   <p className="text-gray-500 text-center py-8">No transactions found</p>
                 )}
               </CardContent>
-            </Card>
+            </BlurredCard>
           </div>
 
           <div className="space-y-6">
-            <Card>
+            <BlurredCard>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Gift className="h-5 w-5" />
@@ -173,9 +174,9 @@ export default function CustomerDetailPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </BlurredCard>
 
-            <Card>
+            <BlurredCard>
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
@@ -192,7 +193,7 @@ export default function CustomerDetailPage() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </BlurredCard>
           </div>
         </div>
       </div>

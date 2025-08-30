@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -12,6 +12,7 @@ import { formatCurrency } from "@/lib/utils"
 import { Brain, AlertTriangle, TrendingUp, Users, Target, Zap, Search } from "lucide-react"
 import { apiService } from "@/services/api-service"
 import { useAuth } from "@/contexts/auth-context"
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 
 export default function AIInsightsPage() {
   const [selectedCustomerId, setSelectedCustomerId] = useState("")
@@ -52,7 +53,7 @@ export default function AIInsightsPage() {
 
         {/* AI Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
+          <BlurredCard>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Churn Risk Score</CardTitle>
               <AlertTriangle className="h-4 w-4 text-orange-500" />
@@ -63,9 +64,9 @@ export default function AIInsightsPage() {
               </div>
               <p className="text-xs text-muted-foreground">Average across all customers</p>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Predicted CLV</CardTitle>
               <TrendingUp className="h-4 w-4 text-green-500" />
@@ -76,9 +77,9 @@ export default function AIInsightsPage() {
               </div>
               <p className="text-xs text-muted-foreground">Average customer lifetime value</p>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">High-Value Customers</CardTitle>
               <Users className="h-4 w-4 text-purple-500" />
@@ -89,9 +90,9 @@ export default function AIInsightsPage() {
               </div>
               <p className="text-xs text-muted-foreground">Customers with high predicted value</p>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Campaign Readiness</CardTitle>
               <Target className="h-4 w-4 text-blue-500" />
@@ -102,11 +103,11 @@ export default function AIInsightsPage() {
               </div>
               <p className="text-xs text-muted-foreground">Optimal timing for campaigns</p>
             </CardContent>
-          </Card>
+          </BlurredCard>
         </div>
 
         {/* Churn Risk Analysis */}
-        <Card>
+        <BlurredCard>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <AlertTriangle className="h-5 w-5 text-orange-500" />
@@ -164,11 +165,11 @@ export default function AIInsightsPage() {
               <p className="text-center text-gray-500 py-8">No high-risk customers identified</p>
             )}
           </CardContent>
-        </Card>
+        </BlurredCard>
 
         {/* Customer Insights */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
+          <BlurredCard>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Brain className="h-5 w-5 text-blue-500" />
@@ -213,9 +214,9 @@ export default function AIInsightsPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Zap className="h-5 w-5 text-yellow-500" />
@@ -266,11 +267,11 @@ export default function AIInsightsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </BlurredCard>
         </div>
 
         {/* Individual Customer Analysis */}
-        <Card>
+        <BlurredCard>
           <CardHeader>
             <CardTitle>Individual Customer Analysis</CardTitle>
             <CardDescription>Get AI insights for specific customers</CardDescription>
@@ -298,7 +299,7 @@ export default function AIInsightsPage() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </BlurredCard>
       </div>
     </DashboardLayout>
   )

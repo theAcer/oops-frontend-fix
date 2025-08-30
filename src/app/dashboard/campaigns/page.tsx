@@ -1,6 +1,6 @@
 "use client"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -10,6 +10,7 @@ import Link from "next/link"
 import { useCampaigns } from "@/hooks/use-api"
 import { apiService } from "@/services/api-service"
 import { useAuth } from "@/contexts/auth-context"
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 
 export default function CampaignsPage() {
   const { user } = useAuth()
@@ -56,16 +57,16 @@ export default function CampaignsPage() {
 
         {/* Campaign Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
+          <BlurredCard>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{campaigns.length}</div>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
             </CardHeader>
@@ -74,9 +75,9 @@ export default function CampaignsPage() {
                 {campaigns.filter((c) => c.status === "active").length}
               </div>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Draft Campaigns</CardTitle>
             </CardHeader>
@@ -85,9 +86,9 @@ export default function CampaignsPage() {
                 {campaigns.filter((c) => c.status === "draft").length}
               </div>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
             </CardHeader>
@@ -96,11 +97,11 @@ export default function CampaignsPage() {
                 {formatCurrency(campaigns.reduce((sum, c) => sum + c.budget, 0))}
               </div>
             </CardContent>
-          </Card>
+          </BlurredCard>
         </div>
 
         {/* Campaigns Table */}
-        <Card>
+        <BlurredCard>
           <CardHeader>
             <CardTitle>All Campaigns</CardTitle>
             <CardDescription>Manage your marketing campaigns and track performance</CardDescription>
@@ -189,7 +190,7 @@ export default function CampaignsPage() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </BlurredCard>
       </div>
     </DashboardLayout>
   )

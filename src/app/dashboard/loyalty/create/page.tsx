@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { ArrowLeft, Save, Play } from "lucide-react"
 import Link from "next/link"
 import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 
 export default function CreateLoyaltyProgramPage() {
   const router = useRouter()
@@ -79,7 +80,7 @@ export default function CreateLoyaltyProgramPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <Card>
+            <BlurredCard>
               <CardHeader>
                 <CardTitle>Program Configuration</CardTitle>
                 <CardDescription>Set up your loyalty program rules and rewards</CardDescription>
@@ -171,11 +172,11 @@ export default function CreateLoyaltyProgramPage() {
                   </div>
                 </form>
               </CardContent>
-            </Card>
+            </BlurredCard>
           </div>
 
           <div className="space-y-6">
-            <Card>
+            <BlurredCard>
               <CardHeader>
                 <CardTitle>Program Preview</CardTitle>
                 <CardDescription>How your program will work</CardDescription>
@@ -211,9 +212,9 @@ export default function CreateLoyaltyProgramPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </BlurredCard>
 
-            <Card>
+            <BlurredCard>
               <CardHeader>
                 <CardTitle>Program Benefits</CardTitle>
               </CardHeader>
@@ -237,7 +238,7 @@ export default function CreateLoyaltyProgramPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </BlurredCard>
           </div>
         </div>
       </div>

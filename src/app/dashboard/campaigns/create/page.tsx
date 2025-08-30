@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { ArrowLeft, Save, Send } from "lucide-react"
 import Link from "next/link"
 import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 
 export default function CreateCampaignPage() {
   const router = useRouter()
@@ -83,7 +84,7 @@ export default function CreateCampaignPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <Card>
+            <BlurredCard>
               <CardHeader>
                 <CardTitle>Campaign Details</CardTitle>
                 <CardDescription>Configure your campaign settings and content</CardDescription>
@@ -240,11 +241,11 @@ export default function CreateCampaignPage() {
                   </div>
                 </form>
               </CardContent>
-            </Card>
+            </BlurredCard>
           </div>
 
           <div className="space-y-6">
-            <Card>
+            <BlurredCard>
               <CardHeader>
                 <CardTitle>Campaign Preview</CardTitle>
                 <CardDescription>How your campaign will appear</CardDescription>
@@ -276,9 +277,9 @@ export default function CreateCampaignPage() {
                   )}
                 </div>
               </CardContent>
-            </Card>
+            </BlurredCard>
 
-            <Card>
+            <BlurredCard>
               <CardHeader>
                 <CardTitle>Campaign Tips</CardTitle>
               </CardHeader>
@@ -298,7 +299,7 @@ export default function CreateCampaignPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </BlurredCard>
           </div>
         </div>
       </div>

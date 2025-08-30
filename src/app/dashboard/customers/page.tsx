@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -11,6 +11,7 @@ import { useCustomers } from "@/hooks/use-api"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { Search, Plus, Eye } from "lucide-react"
 import Link from "next/link"
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 
 export default function CustomersPage() {
   const [page, setPage] = useState(1)
@@ -44,7 +45,7 @@ export default function CustomersPage() {
           </Button>
         </div>
 
-        <Card>
+        <BlurredCard>
           <CardHeader>
             <CardTitle>Customer List</CardTitle>
             <CardDescription>All your customers and their loyalty status</CardDescription>
@@ -134,7 +135,7 @@ export default function CustomersPage() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </BlurredCard>
       </div>
     </DashboardLayout>
   )

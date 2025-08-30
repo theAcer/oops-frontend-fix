@@ -1,12 +1,13 @@
 "use client"
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
 import { Button } from "@/components/ui/button"
 import { useDashboardAnalytics, useTransactions } from "@/hooks/use-api"
 import { formatCurrency } from "@/lib/utils"
 import { BarChart3, Users, CreditCard, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react"
 import Link from "next/link"
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 
 export default function DashboardPage() {
   const { data: analytics, error: analyticsError, isLoading: analyticsLoading } = useDashboardAnalytics()
@@ -25,7 +26,7 @@ export default function DashboardPage() {
         {analyticsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
-              <Card key={i}>
+              <BlurredCard key={i}>
                 <CardContent className="p-6">
                   <div className="animate-pulse">
                     <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
@@ -33,18 +34,18 @@ export default function DashboardPage() {
                     <div className="h-3 bg-gray-200 rounded w-1/3"></div>
                   </div>
                 </CardContent>
-              </Card>
+              </BlurredCard>
             ))}
           </div>
         ) : analyticsError ? (
-          <Card>
+          <BlurredCard>
             <CardContent className="p-6">
               <p className="text-red-600">Error loading analytics. Please try again.</p>
             </CardContent>
-          </Card>
+          </BlurredCard>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card>
+            <BlurredCard>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
@@ -62,9 +63,9 @@ export default function DashboardPage() {
                   {analytics ? `${analytics.revenue_growth.toFixed(1)}%` : "0%"} from last month
                 </p>
               </CardContent>
-            </Card>
+            </BlurredCard>
 
-            <Card>
+            <BlurredCard>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -80,9 +81,9 @@ export default function DashboardPage() {
                   {analytics ? `${analytics.customer_growth.toFixed(1)}%` : "0%"} from last month
                 </p>
               </CardContent>
-            </Card>
+            </BlurredCard>
 
-            <Card>
+            <BlurredCard>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
@@ -91,9 +92,9 @@ export default function DashboardPage() {
                 <div className="text-2xl font-bold">{analytics?.total_transactions || 0}</div>
                 <p className="text-xs text-muted-foreground">Processed this month</p>
               </CardContent>
-            </Card>
+            </BlurredCard>
 
-            <Card>
+            <BlurredCard>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Avg Order Value</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -104,12 +105,12 @@ export default function DashboardPage() {
                 </div>
                 <p className="text-xs text-muted-foreground">Per transaction</p>
               </CardContent>
-            </Card>
+            </BlurredCard>
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
+          <BlurredCard>
             <CardHeader>
               <CardTitle>Recent Transactions</CardTitle>
               <CardDescription>Latest customer transactions</CardDescription>
@@ -156,9 +157,9 @@ export default function DashboardPage() {
                 </Link>
               </div>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
               <CardDescription>Common tasks and shortcuts</CardDescription>
@@ -191,7 +192,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
             </CardContent>
-          </Card>
+          </BlurredCard>
         </div>
       </div>
     </DashboardLayout>

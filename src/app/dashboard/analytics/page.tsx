@@ -1,7 +1,7 @@
 "use client"
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { RevenueChart } from "@/components/charts/revenue-chart"
@@ -16,6 +16,7 @@ import {
 } from "@/hooks/use-api"
 import { formatCurrency } from "@/lib/utils"
 import { TrendingUp, Users, CreditCard, Target, Clock } from "lucide-react"
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 
 export default function AnalyticsPage() {
   const { data: dashboardData, isLoading: dashboardLoading } = useDashboardAnalytics()
@@ -65,7 +66,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Real-time Metrics */}
-        <Card>
+        <BlurredCard>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Clock className="h-5 w-5" />
@@ -106,11 +107,11 @@ export default function AnalyticsPage() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </BlurredCard>
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
+          <BlurredCard>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Revenue Growth</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -121,9 +122,9 @@ export default function AnalyticsPage() {
               </div>
               <p className="text-xs text-muted-foreground">vs last month</p>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Customer Retention</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -134,9 +135,9 @@ export default function AnalyticsPage() {
               </div>
               <p className="text-xs text-muted-foreground">retention rate</p>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Avg Order Value</CardTitle>
               <CreditCard className="h-4 w-4 text-muted-foreground" />
@@ -147,9 +148,9 @@ export default function AnalyticsPage() {
               </div>
               <p className="text-xs text-muted-foreground">per transaction</p>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Loyalty Engagement</CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
@@ -160,12 +161,12 @@ export default function AnalyticsPage() {
               </div>
               <p className="text-xs text-muted-foreground">program engagement</p>
             </CardContent>
-          </Card>
+          </BlurredCard>
         </div>
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
+          <BlurredCard>
             <CardHeader>
               <CardTitle>Revenue Trends</CardTitle>
               <CardDescription>Monthly revenue and transaction volume</CardDescription>
@@ -179,9 +180,9 @@ export default function AnalyticsPage() {
                 <RevenueChart data={revenueChartData} />
               )}
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader>
               <CardTitle>Customer Growth</CardTitle>
               <CardDescription>New vs returning customers by month</CardDescription>
@@ -195,11 +196,11 @@ export default function AnalyticsPage() {
                 <CustomerChart data={customerChartData} />
               )}
             </CardContent>
-          </Card>
+          </BlurredCard>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
+          <BlurredCard>
             <CardHeader>
               <CardTitle>Loyalty Program Distribution</CardTitle>
               <CardDescription>Customer distribution across loyalty tiers</CardDescription>
@@ -213,9 +214,9 @@ export default function AnalyticsPage() {
                 <LoyaltyChart data={loyaltyChartData} />
               )}
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card>
+          <BlurredCard>
             <CardHeader>
               <CardTitle>Performance Insights</CardTitle>
               <CardDescription>Key business insights and recommendations</CardDescription>
@@ -253,7 +254,7 @@ export default function AnalyticsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </BlurredCard>
         </div>
       </div>
     </DashboardLayout>

@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/auth-context"
@@ -13,6 +13,7 @@ import { apiService } from "@/services/api-service"
 import { ArrowLeft, Save } from "lucide-react"
 import Link from "next/link"
 import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 
 export default function BecomeMerchantPage() {
   const router = useRouter()
@@ -91,7 +92,7 @@ export default function BecomeMerchantPage() {
           <p className="text-gray-600">Register your business to access loyalty features</p>
         </div>
 
-        <Card>
+        <BlurredCard>
           <CardHeader>
             <CardTitle>Business Details</CardTitle>
             <CardDescription>Provide your business information to get started</CardDescription>
@@ -205,7 +206,7 @@ export default function BecomeMerchantPage() {
               </AnimatedButton>
             </form>
           </CardContent>
-        </Card>
+        </BlurredCard>
       </div>
     </DashboardLayout>
   )

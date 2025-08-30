@@ -1,12 +1,12 @@
 import Link from "next/link"
 import { ArrowRight, BarChart3, Users, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
 import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen"> {/* Removed bg-[--gradient-subtle] as ThemeWrapper handles it */}
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-foreground mb-6">Zidisha Loyalty Platform</h1>
@@ -31,7 +31,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <Card className="shadow-[--shadow-elegant] hover:shadow-[--shadow-glow] transition-all duration-300">
+          <BlurredCard className="shadow-[--shadow-elegant] hover:shadow-[--shadow-glow] transition-all duration-300">
             <CardContent className="p-8">
               <div className="w-12 h-12 bg-brand-primary/10 rounded-lg flex items-center justify-center mb-4">
                 <BarChart3 className="h-6 w-6 text-brand-primary" />
@@ -41,9 +41,9 @@ export default function HomePage() {
                 Real-time insights into customer behavior, revenue trends, and business performance.
               </p>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card className="shadow-[--shadow-elegant] hover:shadow-[--shadow-glow] transition-all duration-300">
+          <BlurredCard className="shadow-[--shadow-elegant] hover:shadow-[--shadow-glow] transition-all duration-300">
             <CardContent className="p-8">
               <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center mb-4">
                 <Users className="h-6 w-6 text-success" />
@@ -53,9 +53,9 @@ export default function HomePage() {
                 Comprehensive customer profiles with loyalty tracking and engagement history.
               </p>
             </CardContent>
-          </Card>
+          </BlurredCard>
 
-          <Card className="shadow-[--shadow-elegant] hover:shadow-[--shadow-glow] transition-all duration-300">
+          <BlurredCard className="shadow-[--shadow-elegant] hover:shadow-[--shadow-glow] transition-all duration-300">
             <CardContent className="p-8">
               <div className="w-12 h-12 bg-brand-secondary/10 rounded-lg flex items-center justify-center mb-4">
                 <Zap className="h-6 w-6 text-brand-secondary" />
@@ -65,7 +65,7 @@ export default function HomePage() {
                 Intelligent customer insights, churn prediction, and personalized marketing campaigns.
               </p>
             </CardContent>
-          </Card>
+          </BlurredCard>
         </div>
       </div>
     </div>

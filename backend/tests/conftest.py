@@ -6,6 +6,12 @@ from app.core.database import Base, get_db
 from app.main import app
 from httpx import AsyncClient
 
+import sys
+import os
+
+# Add the backend directory to sys.path for module imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 # Use a separate test database
 TEST_DATABASE_URL = "postgresql+asyncpg://postgres:password@db:5432/test_db"
 

@@ -13,8 +13,7 @@ on:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
-    env: # Set PYTHONPATH at the job level
-      PYTHONPATH: ${{ github.workspace }}/backend
+    # Removed PYTHONPATH from here, as it's now handled in conftest.py
     services:
       db:
         image: postgres:15
@@ -90,7 +89,7 @@ jobs:
           ACCESS_TOKEN_EXPIRE_MINUTES: 30
           CORS_ORIGINS: http://localhost:3000
           DEBUG: True
-          # PYTHONPATH is now set at the job level, no need to set it here
+          # Other API keys for services like AI, SMS, Daraaa would go here if needed for tests
         run: pytest tests/
 
   frontend-build:

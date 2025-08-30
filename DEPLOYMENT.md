@@ -28,10 +28,14 @@ Create `.env` files in both frontend and backend directories:
 \`\`\`
 DATABASE_URL=postgresql://postgres:password@db:5432/zidisha_db
 REDIS_URL=redis://redis:6379
-SECRET_KEY=your-secret-key
+SECRET_KEY=your-secret-key-for-jwt-signing # IMPORTANT: Generate a strong, random key
+ALGORITHM=HS256 # Algorithm for JWT signing (e.g., HS256, RS256)
 OPENAI_API_KEY=your-openai-key
 AFRICAS_TALKING_API_KEY=your-at-key
 AFRICAS_TALKING_USERNAME=your-at-username
+SMS_SENDER_ID=LOYALTY # Your SMS sender ID
+DARAAA_API_URL=http://localhost:8001 # Update with actual Daraaa API URL
+DARAAA_API_KEY=your-daraaa-api-key # Update with actual Daraaa API Key
 \`\`\`
 
 **Frontend (.env.local)**:
@@ -98,3 +102,4 @@ docker-compose build frontend
 # View service logs
 make logs-api
 make logs-frontend
+\`\`\`

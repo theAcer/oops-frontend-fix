@@ -13,7 +13,7 @@ on:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
-    # Removed PYTHONPATH from here, as it's now handled in conftest.py
+    # No job-level PYTHONPATH here, it will be set in the run step
     services:
       db:
         image: postgres:15
@@ -48,39 +48,20 @@ jobs:
           python-version: '3.11'
 
       - name: Install backend dependencies
-        working-directory: ./backend
+        working-directory: ./backend # Keep this here for installation
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Debug Python Path
-        working-directory: ./backend
+      - name: Debug Python Path (before tests)
+        # Run from repository root to see the initial environment
         run: |
-          python -c "import sys; import os; print('Current working directory:', os.getcwd()); print('sys.path:', sys.path); print('PYTHONPATH env var:', os.environ.get('PYTHONPATH'))"
-
-      - name: Wait for database and Redis to be ready
-        run: |
-          echo "Waiting for PostgreSQL to be ready..."
-          for i in $(seq 1 10); do
-            if pg_isready -h localhost -p 5432 -U postgres; then
-              echo "PostgreSQL is ready."
-              break
-            fi
-            echo "Waiting for PostgreSQL... ($i/10)"
-            sleep 5
-          done
-          echo "Waiting for Redis to be ready..."
-          for i in $(seq 1 10); do
-            if redis-cli -h localhost -p 6379 ping; then
-              echo "Redis is ready."
-              break
-            fi
-            echo "Waiting for Redis... ($i/10)"
-            sleep 5
-          done
+          echo "Current working directory: $(pwd)"
+          echo "PYTHONPATH env var: $PYTHONPATH"
+          python -c "import sys; print('sys.path:', sys.path)"
 
       - name: Run backend tests
-        working-directory: ./backend
+        # Run from repository root to ensure 'backend' is treated as a package root
         env:
           DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/test_db
           REDIS_URL: redis://localhost:6379
@@ -89,8 +70,19 @@ jobs:
           ACCESS_TOKEN_EXPIRE_MINUTES: 30
           CORS_ORIGINS: http://localhost:3000
           DEBUG: True
-          # Other API keys for services like AI, SMS, Daraaa would go here if needed for tests
-        run: pytest tests/
+          # Add other backend API keys from DEPLOYMENT.md here if tests require them
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          AFRICAS_TALKING_API_KEY: ${{ secrets.AFRICAS_TALKING_API_KEY }}
+          AFRICAS_TALKING_USERNAME: ${{ secrets.AFRICAS_TALKING_USERNAME }}
+          SMS_SENDER_ID: LOYALTY
+          DARAAA_API_URL: http://localhost:8001 # Or a mock URL for tests
+          DARAAA_API_KEY: ${{ secrets.DARAAA_API_KEY }}
+        run: |
+          # Explicitly add the backend directory to PYTHONPATH for this run
+          export PYTHONPATH=$PYTHONPATH:${{ github.workspace }}/backend
+          echo "PYTHONPATH for pytest: $PYTHONPATH"
+          python -c "import sys; print('sys.path for pytest:', sys.path)" # Debug sys.path right before pytest
+          pytest backend/tests/
 
   frontend-build:
     runs-on: ubuntu-latest

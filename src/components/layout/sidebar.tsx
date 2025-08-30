@@ -23,7 +23,7 @@ export function Sidebar() {
   const { user } = useAuth()
 
   return (
-    <div className="flex h-full w-64 flex-col bg-background/80 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700">
+    <div className="flex h-full w-64 flex-col bg-card/70 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700">
       <div className="flex h-16 items-center px-6 border-b border-gray-200 dark:border-gray-700">
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Zidisha</h1>
       </div>

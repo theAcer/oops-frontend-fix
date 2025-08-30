@@ -9,7 +9,7 @@ export function Header() {
   const { user, logout } = useAuth()
 
   return (
-    <header className="h-16 bg-background/80 backdrop-blur-lg border-b border-gray-200 flex items-center justify-between px-6 dark:border-gray-700">
+    <header className="h-16 bg-card/70 backdrop-blur-lg border-b border-gray-200 flex items-center justify-between px-6 dark:border-gray-700">
       <div className="flex items-center space-x-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Welcome back, {user?.name}</h2>
       </div>

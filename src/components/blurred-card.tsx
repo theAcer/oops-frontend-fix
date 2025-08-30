@@ -11,7 +11,7 @@ interface BlurredCardProps extends CardProps {
 
 export function BlurredCard({ children, className, ...props }: BlurredCardProps) {
   return (
-    <Card className={cn("bg-background/80 backdrop-blur-lg", className)} {...props}>
+    <Card className={cn("bg-card/70 backdrop-blur-lg", className)} {...props}>
       {children}
     </Card>
   );

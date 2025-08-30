@@ -83,6 +83,7 @@ jobs:
           ACCESS_TOKEN_EXPIRE_MINUTES: 30
           CORS_ORIGINS: http://localhost:3000
           DEBUG: True
+          PYTHONPATH: . # Add current directory to Python path
         run: pytest tests/
 
   frontend-build:

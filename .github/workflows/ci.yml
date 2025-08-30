@@ -80,6 +80,7 @@ jobs:
           done
 
       - name: Run backend tests
+        working-directory: ./backend # Set working directory for pytest
         env:
           DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/test_db
           REDIS_URL: redis://localhost:6379
@@ -95,10 +96,9 @@ jobs:
           DARAAA_API_URL: http://localhost:8001
           DARAAA_API_KEY: ${{ secrets.DARAAA_API_KEY }}
         run: |
-          export PYTHONPATH=$PYTHONPATH:${{ github.workspace }}/backend
-          echo "PYTHONPATH for pytest: $PYTHONPATH"
-          python -c "import sys; print('sys.path for pytest:', sys.path)"
-          pytest backend/tests/
+          echo "Current working directory for pytest: $(pwd)"
+          python -c "import sys; print('sys.path for pytest:', sys.path)" # Debug sys.path right before pytest
+          python -m pytest tests/ # Run pytest as a Python module
 
   frontend-build:
     runs-on: ubuntu-latest

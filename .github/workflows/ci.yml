@@ -96,12 +96,13 @@ jobs:
           SMS_SENDER_ID: LOYALTY
           DARAAA_API_URL: http://localhost:8001
           DARAAA_API_KEY: ${{ secrets.DARAAA_API_KEY }}
+          PYTHONPATH: ${{ github.workspace }}/backend # Explicitly set PYTHONPATH for this step
         run: |
           echo "Current working directory for pytest: $(pwd)"
           python -c "import sys; print('sys.path for pytest:', sys.path)" # Debug sys.path right before pytest
           python -m pip install pytest # Ensure pytest is installed right before running tests
           python -m pytest tests/ # Run pytest as a Python module
-
+          
   frontend-build:
     runs-on: ubuntu-latest
     steps:

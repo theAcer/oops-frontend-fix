@@ -13,6 +13,8 @@ on:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
+    env: # Set PYTHONPATH at the job level
+      PYTHONPATH: ${{ github.workspace }}/backend
     services:
       db:
         image: postgres:15
@@ -52,6 +54,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Debug Python Path
+        working-directory: ./backend
+        run: |
+          python -c "import sys; import os; print('Current working directory:', os.getcwd()); print('sys.path:', sys.path); print('PYTHONPATH env var:', os.environ.get('PYTHONPATH'))"
+
       - name: Wait for database and Redis to be ready
         run: |
           echo "Waiting for PostgreSQL to be ready..."
@@ -83,7 +90,7 @@ jobs:
           ACCESS_TOKEN_EXPIRE_MINUTES: 30
           CORS_ORIGINS: http://localhost:3000
           DEBUG: True
-          PYTHONPATH: . # Add current directory to Python path
+          # PYTHONPATH is now set at the job level, no need to set it here
         run: pytest tests/
 
   frontend-build:

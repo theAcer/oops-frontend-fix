@@ -51,6 +51,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip list # Verify installed packages
 
       - name: Debug Python Path (before tests)
         run: |
@@ -98,6 +99,7 @@ jobs:
         run: |
           echo "Current working directory for pytest: $(pwd)"
           python -c "import sys; print('sys.path for pytest:', sys.path)" # Debug sys.path right before pytest
+          python -m pip install pytest # Ensure pytest is installed right before running tests
           python -m pytest tests/ # Run pytest as a Python module
 
   frontend-build:

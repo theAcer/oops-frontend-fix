@@ -118,6 +118,10 @@ jobs:
         working-directory: ./
         run: npm install
 
+      - name: Run frontend tests
+        working-directory: ./
+        run: npm test
+
       - name: Build frontend
         working-directory: ./
         run: npm run build

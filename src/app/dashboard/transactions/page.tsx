@@ -60,7 +60,7 @@ export default function TransactionsPage() {
           <div className="flex space-x-2">
             <Button variant="outline" onClick={handleSyncTransactions} disabled={syncing}>
               <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? "animate-spin" : ""}`} />
-              {syncing ? "Syncing..." : "Sync from Daraaa"}
+              {syncing ? "Syncing..." : "Sync from Daraja"}
             </Button>
             <Button variant="outline">
               <Download className="h-4 w-4 mr-2" />

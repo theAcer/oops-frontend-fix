@@ -88,7 +88,8 @@ export const apiService = {
   },
 
   async syncTransactions(merchantId: string): Promise<{ synced: number; message: string }> {
-    const response = await api.post(`/transactions/sync`, { merchant_id: merchantId })
+    // Changed to call the new Daraja sync endpoint
+    const response = await api.post(`/transactions/sync-daraja`, { merchant_id: merchantId })
     return response.data
   },
 
@@ -298,7 +299,7 @@ export const apiService = {
   },
 
   async getNotificationAnalytics(merchantId: string): Promise<any> {
-    const response = await api.get(`/notifications/analytics/${merchantId}`)
+    const response = await api.get("/notifications/analytics/${merchantId}")
     return response.data
   },
 

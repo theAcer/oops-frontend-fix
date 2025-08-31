@@ -29,14 +29,14 @@ async def get_transactions(
         limit=limit
     )
 
-@router.post("/sync")
+@router.post("/sync-daraja") # Renamed endpoint
 async def sync_transactions(
     merchant_id: int,
     db: AsyncSession = Depends(get_db)
 ):
-    """Sync transactions from Daraaa API for a merchant"""
+    """Sync transactions from Daraja API for a merchant""" # Updated description
     service = TransactionService(db)
-    result = await service.sync_transactions_from_daraaa(merchant_id)
+    result = await service.sync_transactions_from_daraja(merchant_id) # Changed method call
     return {"message": f"Synced {result['new_transactions']} new transactions"}
 
 @router.get("/{transaction_id}", response_model=TransactionResponse)

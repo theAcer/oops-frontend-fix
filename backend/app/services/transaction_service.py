@@ -4,13 +4,14 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 from app.models.transaction import Transaction
 from app.models.merchant import Merchant
-from app.services.daraaa_service import DaraaaService
+from app.services.daraja_service import DarajaService # Changed import
 from app.services.customer_service import CustomerService
 
 class TransactionService:
     def __init__(self, db: AsyncSession):
         self.db = db
-        self.daraaa_service = DaraaaService(db)
+        # DarajaService now needs merchant_id, so it cannot be initialized here directly.
+        # It will be initialized within methods that have merchant_id.
         self.customer_service = CustomerService(db)
 
     async def get_transaction(self, transaction_id: int) -> Optional[Transaction]:
@@ -50,9 +51,10 @@ class TransactionService:
         result = await self.db.execute(query)
         return result.scalars().all()
 
-    async def sync_transactions_from_daraaa(self, merchant_id: int) -> Dict[str, Any]:
-        """Sync transactions from Daraaa API"""
-        result = await self.daraaa_service.sync_merchant_transactions(merchant_id)
+    async def sync_transactions_from_daraja(self, merchant_id: int) -> Dict[str, Any]: # Renamed method
+        """Sync transactions from Daraja API"""
+        daraja_service = DarajaService(self.db, merchant_id) # Initialize DarajaService here
+        result = await daraja_service.sync_merchant_transactions() # Call method without merchant_id as it's in init
         
         # Update customer metrics for all affected customers
         if result["new_transactions"] > 0:

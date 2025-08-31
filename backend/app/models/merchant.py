@@ -25,6 +25,12 @@ class Merchant(Base):
     mpesa_till_number = Column(String(20), unique=True, index=True, nullable=False)
     mpesa_store_number = Column(String(20), nullable=True)
     
+    # Daraja API Credentials (for merchant-specific integration)
+    daraja_consumer_key = Column(String(255), nullable=True)
+    daraja_consumer_secret = Column(String(255), nullable=True)
+    daraja_shortcode = Column(String(20), nullable=True)
+    daraja_passkey = Column(String(255), nullable=True)
+    
     # Business Details
     address = Column(Text, nullable=True)
     city = Column(String(100), nullable=True)

@@ -14,6 +14,12 @@ class MerchantBase(BaseModel):
     address: Optional[str] = None
     city: Optional[str] = None
     country: str = "Kenya"
+    
+    # Daraja API Credentials
+    daraja_consumer_key: Optional[str] = None
+    daraja_consumer_secret: Optional[str] = None
+    daraja_shortcode: Optional[str] = None
+    daraja_passkey: Optional[str] = None
 
 class MerchantCreate(MerchantBase):
     pass
@@ -28,6 +34,12 @@ class MerchantUpdate(BaseModel):
     city: Optional[str] = None
     is_active: Optional[bool] = None
     subscription_tier: Optional[str] = None
+    
+    # Daraja API Credentials
+    daraja_consumer_key: Optional[str] = None
+    daraja_consumer_secret: Optional[str] = None
+    daraja_shortcode: Optional[str] = None
+    daraja_passkey: Optional[str] = None
 
 class MerchantResponse(MerchantBase):
     id: int

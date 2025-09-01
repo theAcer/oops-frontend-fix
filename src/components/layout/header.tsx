@@ -6,17 +6,13 @@ import { LogOut, User } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
 
-interface HeaderProps {
-  isSidebarCollapsed: boolean;
-}
-
-export function Header({ isSidebarCollapsed }: HeaderProps) {
+// Removed HeaderProps interface as isSidebarCollapsed is no longer used
+export function Header() {
   const { user, logout } = useAuth()
 
   return (
     <header className={cn(
       "h-16 bg-card/70 backdrop-blur-lg border-b border-gray-200 flex items-center justify-between px-6 dark:border-gray-700 transition-all duration-300",
-      // Removed conditional padding, using consistent px-6
     )}>
       <div className="flex items-center space-x-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Welcome back, {user?.name}</h2>

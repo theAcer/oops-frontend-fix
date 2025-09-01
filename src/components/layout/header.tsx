@@ -2,12 +2,24 @@
 
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
-import { LogOut, User } from "lucide-react"
+import { LogOut, User, Menu, X } from "lucide-react" // Import Menu and X icons
 import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu" // Import DropdownMenu components
 
-// Removed HeaderProps interface as isSidebarCollapsed is no longer used
-export function Header() {
+interface HeaderProps {
+  toggleSidebar: () => void;
+  isSidebarCollapsed: boolean;
+}
+
+export function Header({ toggleSidebar, isSidebarCollapsed }: HeaderProps) {
   const { user, logout } = useAuth()
 
   return (
@@ -15,21 +27,37 @@ export function Header() {
       "h-16 bg-card/70 backdrop-blur-lg border-b border-gray-200 flex items-center justify-between px-6 dark:border-gray-700 transition-all duration-300",
     )}>
       <div className="flex items-center space-x-4">
+        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="text-gray-600 dark:text-gray-300">
+          {isSidebarCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
+        </Button>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Welcome back, {user?.name}</h2>
       </div>
 
       <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
-          <User className="h-4 w-4" />
-          <span>{user?.email}</span>
-        </div>
-
         <ThemeToggle />
 
-        <Button variant="outline" size="sm" onClick={logout} className="flex items-center space-x-2 bg-transparent dark:text-gray-300 dark:hover:bg-gray-700 dark:border-gray-600">
-          <LogOut className="h-4 w-4" />
-          <span>Logout</span>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <User className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user?.name || "User"}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user?.email}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={logout} className="cursor-pointer">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   )

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: hsl(210 40% 98%); /* Changed to match card color in light mode */
+  --color-background: hsl(210 36% 96%); /* Slightly darker background for contrast */
   --color-foreground: hsl(222 84% 5%);
   --color-card: hsl(210 40% 98%); /* Slightly off-white for cards */
   --color-card-foreground: hsl(222 84% 5%);
@@ -42,9 +42,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-background: hsl(217 33% 17%); /* Matches card color */
+    --color-background: hsl(217 33% 19%); /* Slightly lighter background for contrast */
     --color-foreground: hsl(210 40% 98%);
-    --color-card: hsl(217 33% 17%); /* Slightly lighter dark for cards */
+    --color-card: hsl(217 33% 17%); /* Slightly darker dark for cards */
     --color-card-foreground: hsl(210 40% 98%);
     --color-popover: hsl(222 84% 5%);
     --color-popover-foreground: hsl(210 40% 98%);

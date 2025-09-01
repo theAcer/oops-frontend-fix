@@ -18,16 +18,14 @@ const navigation = [
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
-// Removed SidebarProps interface as isCollapsed and toggleSidebar are no longer used
 export function Sidebar() {
   const pathname = usePathname()
   const { user } = useAuth()
 
   return (
-    <div className="flex h-full w-64 flex-col bg-card/70 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700 transition-all duration-300 relative">
-      <div className="flex h-16 items-center px-6 border-b border-gray-200 dark:border-700 relative">
+    <div className="flex h-full w-64 flex-col bg-card/70 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700">
+      <div className="flex h-16 items-center px-6 border-b border-gray-200 dark:border-gray-700">
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Zidisha</h1>
-        {/* Removed toggle button */}
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
@@ -44,11 +42,11 @@ export function Sidebar() {
             >
               <item.icon
                 className={cn(
-                  "h-5 w-5 flex-shrink-0 mr-3", // Always show margin
+                  "mr-3 h-5 w-5 flex-shrink-0",
                   isActive ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400",
                 )}
               />
-              {item.name} {/* Always show name */}
+              {item.name}
             </Link>
           )
         })}
@@ -64,11 +62,11 @@ export function Sidebar() {
           >
             <Store
               className={cn(
-                "h-5 w-5 flex-shrink-0 mr-3",
+                "mr-3 h-5 w-5 flex-shrink-0",
                 pathname === "/dashboard/become-merchant" ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400",
               )}
             />
-            {"Become a Merchant"}
+            Become a Merchant
           </Link>
         )}
 
@@ -83,11 +81,11 @@ export function Sidebar() {
           >
             <KeyRound
               className={cn(
-                "h-5 w-5 flex-shrink-0 mr-3",
+                "mr-3 h-5 w-5 flex-shrink-0",
                 pathname === "/dashboard/settings/daraja-integration" ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400",
               )}
             />
-            {"Daraja Integration"}
+            Daraja Integration
           </Link>
         )}
       </nav>

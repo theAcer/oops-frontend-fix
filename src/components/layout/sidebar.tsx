@@ -28,11 +28,12 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
 
   return (
     <div className={cn(
-      "flex h-full flex-col bg-card/70 backdrop-blur-lg border-r border-gray-200 dark:border-gray-700 transition-all duration-300",
-      isCollapsed ? "w-16" : "w-64"
+      "flex h-full flex-col bg-card/70 backdrop-blur-lg border-r transition-all duration-300",
+      isCollapsed ? "w-16" : "w-64",
+      "border-border" // Use the border color from theme
     )}>
-      <div className="flex h-16 items-center px-6 border-b border-gray-200 dark:border-gray-700">
-        {!isCollapsed && <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Zidisha</h1>}
+      <div className="flex h-16 items-center px-6 border-b border-border">
+        {!isCollapsed && <h1 className="text-xl font-bold text-foreground">Zidisha</h1>}
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
@@ -44,7 +45,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               href={item.href}
               className={cn(
                 "group flex items-center py-2 text-sm font-medium rounded-md transition-colors",
-                isActive ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100",
+                isActive ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 isCollapsed ? "justify-center px-0" : "px-3"
               )}
             >
@@ -52,7 +53,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
                 className={cn(
                   "h-5 w-5 flex-shrink-0",
                   isCollapsed ? "mr-0" : "mr-3",
-                  isActive ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400",
+                  isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground",
                 )}
               />
               {!isCollapsed && item.name}
@@ -66,7 +67,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
             href="/dashboard/become-merchant"
             className={cn(
               "group flex items-center py-2 text-sm font-medium rounded-md transition-colors",
-              pathname === "/dashboard/become-merchant" ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100",
+              pathname === "/dashboard/become-merchant" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
               isCollapsed ? "justify-center px-0" : "px-3"
             )}
           >
@@ -74,7 +75,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               className={cn(
                 "h-5 w-5 flex-shrink-0",
                 isCollapsed ? "mr-0" : "mr-3",
-                pathname === "/dashboard/become-merchant" ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400",
+                pathname === "/dashboard/become-merchant" ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground",
               )}
             />
             {!isCollapsed && "Become a Merchant"}
@@ -87,7 +88,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
             href="/dashboard/settings/daraja-integration"
             className={cn(
               "group flex items-center py-2 text-sm font-medium rounded-md transition-colors",
-              pathname === "/dashboard/settings/daraja-integration" ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100",
+              pathname === "/dashboard/settings/daraja-integration" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
               isCollapsed ? "justify-center px-0" : "px-3"
             )}
           >
@@ -95,7 +96,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               className={cn(
                 "h-5 w-5 flex-shrink-0",
                 isCollapsed ? "mr-0" : "mr-3",
-                pathname === "/dashboard/settings/daraja-integration" ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400",
+                pathname === "/dashboard/settings/daraja-integration" ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground",
               )}
             />
             {!isCollapsed && "Daraja Integration"}

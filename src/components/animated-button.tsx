@@ -46,7 +46,10 @@ export function AnimatedButton({ children, className, ...props }: AnimatedButton
   return (
     <Button
       ref={buttonRef}
-      className={cn("relative overflow-hidden", className)}
+      className={cn(
+        "relative overflow-hidden bg-gradient-primary text-primary-foreground shadow-elegant hover:shadow-glow transition-all duration-300",
+        className
+      )}
       {...props}
     >
       <div

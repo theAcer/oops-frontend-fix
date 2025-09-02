@@ -1,0 +1,53 @@
+services:
+  - type: pserv
+    name: zidisha-db
+    plan: free # You can choose a higher plan if needed
+    databaseName: zidisha_db
+    user: postgres
+    ipAllowList: [] # Allow all for now, can restrict later
+    autoDeploy: false # Database changes are often manual
+
+  - type: redis
+    name: zidisha-redis
+    plan: free # You can choose a higher plan if needed
+    ipAllowList: [] # Allow all for now
+
+  - type: web
+    name: zidisha-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile # Path to your backend Dockerfile
+    dockerContext: ./backend # Context for the Docker build
+    startCommand: "gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 main:app"
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: zidisha-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: zidisha-redis
+          property: connectionString
+      - key: SECRET_KEY
+        sync: false # IMPORTANT: Set this securely in Render dashboard
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
+      - key: CORS_ORIGINS
+        value: "https://your-vercel-frontend-url.vercel.app,http://localhost:3000" # IMPORTANT: Update with your Vercel frontend URL
+      - key: DEBUG
+        value: "False"
+      - key: OPENAI_API_KEY
+        sync: false # IMPORTANT: Set this securely in Render dashboard
+      - key: AFRICAS_TALKING_API_KEY
+        sync: false # IMPORTANT: Set this securely in Render dashboard
+      - key: AFRICAS_TALKING_USERNAME
+        sync: false # IMPORTANT: Set this securely in Render dashboard
+      - key: SMS_SENDER_ID
+        value: LOYALTY
+      - key: DARAAA_API_URL
+        value: "http://localhost:8001" # Update if Daraaa API is hosted externally
+      - key: DARAAA_API_KEY
+        sync: false # IMPORTANT: Set this securely in Render dashboard

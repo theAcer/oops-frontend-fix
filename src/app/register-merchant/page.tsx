@@ -7,8 +7,8 @@ import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { BlurredCard } from "@/components/blurred-card"
-import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
 import { AnimatedButton } from "@/components/animated-button"
 
 export default function RegisterMerchantPage() {
@@ -67,7 +67,7 @@ export default function RegisterMerchantPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center">
       <BlurredCard className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Register Your Business</CardTitle>

@@ -24,13 +24,13 @@ export function Header({ toggleSidebar, isSidebarCollapsed }: HeaderProps) {
 
   return (
     <header className={cn(
-      "h-16 bg-card/70 backdrop-blur-lg border-b border-border flex items-center justify-between px-6 transition-all duration-300",
+      "h-16 bg-card/70 backdrop-blur-lg border-b border-gray-200 flex items-center justify-between px-6 dark:border-gray-700 transition-all duration-300",
     )}>
       <div className="flex items-center space-x-4">
-        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="text-muted-foreground">
+        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="text-gray-600 dark:text-gray-300">
           {isSidebarCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
         </Button>
-        <h2 className="text-lg font-semibold text-foreground">Welcome back, {user?.name}</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Welcome back, {user?.name}</h2>
       </div>
 
       <div className="flex items-center space-x-4">
@@ -39,7 +39,7 @@ export function Header({ toggleSidebar, isSidebarCollapsed }: HeaderProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <User className="h-5 w-5 text-muted-foreground" />
+              <User className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>

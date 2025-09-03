@@ -17,13 +17,13 @@ export default function HomePage() {
           revenue, and grow your business with intelligent insights.
         </p>
         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-          <AnimatedButton size="lg" asChild className="text-lg px-8 py-4">
+          <AnimatedButton size="lg" className="text-lg px-8 py-4">
             <Link href="/dashboard">
               Get Started
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </AnimatedButton>
-          <AnimatedButton size="lg" variant="outline" asChild className="text-lg px-8 py-4">
+          <AnimatedButton size="lg" variant="outline" className="text-lg px-8 py-4">
             <Link href="/register-merchant">
               Register as Merchant
               <ArrowRight className="ml-2 h-5 w-5" />

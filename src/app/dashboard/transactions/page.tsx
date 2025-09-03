@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -12,7 +12,7 @@ import { formatCurrency, formatDateTime } from "@/lib/utils"
 import { Search, Download, RefreshCw } from "lucide-react"
 import { apiService } from "@/services/api-service"
 import { useAuth } from "@/contexts/auth-context"
-import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
+import { BlurredCard } from "@/components/blurred-card"
 
 export default function TransactionsPage() {
   const [page, setPage] = useState(1)
@@ -43,7 +43,7 @@ export default function TransactionsPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-600">Error loading transactions. Please try again.</p>
+          <p className="text-destructive">Error loading transactions. Please try again.</p>
         </div>
       </DashboardLayout>
     )
@@ -51,18 +51,18 @@ export default function TransactionsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Transactions</h1>
-            <p className="text-gray-600">Monitor all customer transactions and payments</p>
+            <h1 className="text-3xl font-bold text-foreground">Transactions</h1>
+            <p className="text-muted-foreground mt-1">Monitor all customer transactions and payments</p>
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline" onClick={handleSyncTransactions} disabled={syncing}>
+            <Button variant="outline" onClick={handleSyncTransactions} disabled={syncing} className="bg-background/50 border-border text-foreground hover:bg-accent">
               <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? "animate-spin" : ""}`} />
               {syncing ? "Syncing..." : "Sync from Daraja"}
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" className="bg-background/50 border-border text-foreground hover:bg-accent">
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
@@ -71,18 +71,18 @@ export default function TransactionsPage() {
 
         <BlurredCard>
           <CardHeader>
-            <CardTitle>Transaction History</CardTitle>
-            <CardDescription>All transactions processed through your business</CardDescription>
+            <CardTitle className="text-foreground">Transaction History</CardTitle>
+            <CardDescription className="text-muted-foreground">All transactions processed through your business</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center space-x-4 mb-6">
               <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search transactions..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-background/50 border-border focus:border-primary"
                 />
               </div>
             </div>
@@ -106,10 +106,10 @@ export default function TransactionsPage() {
                 <TableBody>
                   {transactions.map((transaction) => (
                     <TableRow key={transaction.id}>
-                      <TableCell className="font-mono text-sm">{transaction.id.slice(0, 8)}...</TableCell>
-                      <TableCell>{formatDateTime(transaction.transaction_date)}</TableCell>
-                      <TableCell>{transaction.customer_id}</TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-mono text-sm text-foreground">{transaction.id.slice(0, 8)}...</TableCell>
+                      <TableCell className="text-muted-foreground">{formatDateTime(transaction.transaction_date)}</TableCell>
+                      <TableCell className="text-foreground">{transaction.customer_id}</TableCell>
+                      <TableCell className="font-medium text-foreground">
                         {formatCurrency(transaction.amount)} {transaction.currency}
                       </TableCell>
                       <TableCell>
@@ -125,7 +125,7 @@ export default function TransactionsPage() {
                           {transaction.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="max-w-xs truncate">{transaction.description || "No description"}</TableCell>
+                      <TableCell className="max-w-xs truncate text-muted-foreground">{transaction.description || "No description"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -134,10 +134,10 @@ export default function TransactionsPage() {
 
             {transactions.length === 0 && !isLoading && (
               <div className="text-center py-8">
-                <p className="text-gray-500">No transactions found</p>
+                <p className="text-muted-foreground mb-4">No transactions found</p>
                 <Button
                   variant="outline"
-                  className="mt-4 bg-transparent"
+                  className="mt-4 bg-background/50 border-border text-foreground hover:bg-accent"
                   onClick={handleSyncTransactions}
                   disabled={syncing}
                 >
@@ -149,14 +149,14 @@ export default function TransactionsPage() {
 
             {total > 20 && (
               <div className="flex items-center justify-between mt-6">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of {total} transactions
                 </p>
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>
+                  <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)} className="bg-background/50 border-border text-foreground hover:bg-accent">
                     Previous
                   </Button>
-                  <Button variant="outline" size="sm" disabled={page * 20 >= total} onClick={() => setPage(page + 1)}>
+                  <Button variant="outline" size="sm" disabled={page * 20 >= total} onClick={() => setPage(page + 1)} className="bg-background/50 border-border text-foreground hover:bg-accent">
                     Next
                   </Button>
                 </div>

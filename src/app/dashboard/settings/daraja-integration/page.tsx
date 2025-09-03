@@ -12,7 +12,7 @@ import { ArrowLeft, Save, KeyRound } from "lucide-react"
 import Link from "next/link"
 import { AnimatedButton } from "@/components/animated-button"
 import { BlurredCard } from "@/components/blurred-card"
-import { useMerchant } from "@/hooks/use-api" // To fetch existing merchant data
+import { useMerchant } from "@/hooks/use-api"
 
 export default function DarajaIntegrationPage() {
   const router = useRouter()
@@ -59,7 +59,7 @@ export default function DarajaIntegrationPage() {
         daraja_passkey: formData.daraja_passkey,
       })
       setSuccessMessage("Daraja API credentials saved successfully!")
-      refreshMerchant() // Refresh merchant data in cache
+      refreshMerchant()
     } catch (err: any) {
       console.error("Failed to save Daraja credentials:", err)
       setError(err.response?.data?.detail || "Failed to save Daraja credentials. Please try again.")
@@ -90,7 +90,7 @@ export default function DarajaIntegrationPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-600">Error loading merchant data or no merchant linked.</p>
+          <p className="text-destructive">Error loading merchant data or no merchant linked.</p>
         </div>
       </DashboardLayout>
     )
@@ -98,10 +98,10 @@ export default function DarajaIntegrationPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center space-x-4">
           <Link href="/dashboard/settings">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:bg-accent hover:text-foreground">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Settings
             </Button>
@@ -109,26 +109,26 @@ export default function DarajaIntegrationPage() {
         </div>
 
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Daraja API Integration</h1>
-          <p className="text-gray-600">Configure your M-Pesa Daraja API credentials for real-time transactions.</p>
+          <h1 className="text-3xl font-bold text-foreground">Daraja API Integration</h1>
+          <p className="text-muted-foreground mt-1">Configure your M-Pesa Daraja API credentials for real-time transactions.</p>
         </div>
 
         <BlurredCard>
           <CardHeader>
-            <CardTitle>Daraja API Credentials</CardTitle>
-            <CardDescription>Enter your Safaricom Daraja API keys and shortcodes.</CardDescription>
+            <CardTitle className="text-foreground">Daraja API Credentials</CardTitle>
+            <CardDescription className="text-muted-foreground">Enter your Safaricom Daraja API keys and shortcodes.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">{error}</div>
+                <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md">{error}</div>
               )}
               {successMessage && (
-                <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">{successMessage}</div>
+                <div className="p-3 text-sm text-success bg-success/10 border border-success/30 rounded-md">{successMessage}</div>
               )}
 
               <div className="space-y-2">
-                <label htmlFor="daraja_consumer_key" className="text-sm font-medium">
+                <label htmlFor="daraja_consumer_key" className="text-sm font-medium text-foreground">
                   Consumer Key
                 </label>
                 <Input
@@ -139,11 +139,12 @@ export default function DarajaIntegrationPage() {
                   onChange={handleChange}
                   required
                   placeholder="Enter your Daraja Consumer Key"
+                  className="bg-background/50 border-border focus:border-primary"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="daraja_consumer_secret" className="text-sm font-medium">
+                <label htmlFor="daraja_consumer_secret" className="text-sm font-medium text-foreground">
                   Consumer Secret
                 </label>
                 <Input
@@ -154,11 +155,12 @@ export default function DarajaIntegrationPage() {
                   onChange={handleChange}
                   required
                   placeholder="Enter your Daraja Consumer Secret"
+                  className="bg-background/50 border-border focus:border-primary"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="daraja_shortcode" className="text-sm font-medium">
+                <label htmlFor="daraja_shortcode" className="text-sm font-medium text-foreground">
                   Shortcode (Paybill/Till Number)
                 </label>
                 <Input
@@ -169,11 +171,12 @@ export default function DarajaIntegrationPage() {
                   onChange={handleChange}
                   required
                   placeholder="Enter your Daraja Shortcode (e.g., 174379)"
+                  className="bg-background/50 border-border focus:border-primary"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="daraja_passkey" className="text-sm font-medium">
+                <label htmlFor="daraja_passkey" className="text-sm font-medium text-foreground">
                   Lipa Na M-Pesa Online Passkey
                 </label>
                 <Input
@@ -184,10 +187,11 @@ export default function DarajaIntegrationPage() {
                   onChange={handleChange}
                   required
                   placeholder="Enter your Lipa Na M-Pesa Online Passkey"
+                  className="bg-background/50 border-border focus:border-primary"
                 />
               </div>
 
-              <AnimatedButton type="submit" className="w-full" disabled={loading}>
+              <AnimatedButton type="submit" className="w-full py-2.5 text-lg" disabled={loading}>
                 <Save className="h-4 w-4 mr-2" />
                 {loading ? "Saving..." : "Save Credentials"}
               </AnimatedButton>
@@ -197,10 +201,10 @@ export default function DarajaIntegrationPage() {
 
         <BlurredCard>
           <CardHeader>
-            <CardTitle>Important Notes</CardTitle>
+            <CardTitle className="text-foreground">Important Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc list-inside space-y-2 text-sm text-gray-600">
+            <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
               <li>Ensure your Daraja API credentials are correct to enable transaction syncing.</li>
               <li>Your M-Pesa Till Number (configured during merchant registration) will be used for transactions.</li>
               <li>For security, Daraja API keys are sensitive. Do not share them publicly.</li>

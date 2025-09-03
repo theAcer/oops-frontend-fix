@@ -7,13 +7,13 @@ import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
-import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
+import { BlurredCard } from "@/components/blurred-card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AnimatedButton } from "@/components/animated-button"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: "", // User's name
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -59,20 +59,20 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <BlurredCard className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <BlurredCard className="w-full max-w-md p-6">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-          <CardDescription>Join Zidisha and start building customer loyalty</CardDescription>
+          <CardTitle className="text-3xl font-bold text-foreground">Create Account</CardTitle>
+          <CardDescription className="text-muted-foreground mt-2">Join Zidisha and start building customer loyalty</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">{error}</div>
+              <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md">{error}</div>
             )}
 
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">
+              <label htmlFor="name" className="text-sm font-medium text-foreground">
                 Your Name
               </label>
               <Input
@@ -83,11 +83,12 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 placeholder="Enter your name"
+                className="bg-background/50 border-border focus:border-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-medium text-foreground">
                 Email
               </label>
               <Input
@@ -98,11 +99,12 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 placeholder="Enter your email"
+                className="bg-background/50 border-border focus:border-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
+              <label htmlFor="password" className="text-sm font-medium text-foreground">
                 Password
               </label>
               <Input
@@ -113,11 +115,12 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 placeholder="Create a password"
+                className="bg-background/50 border-border focus:border-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-medium">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
                 Confirm Password
               </label>
               <Input
@@ -128,17 +131,18 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 placeholder="Confirm your password"
+                className="bg-background/50 border-border focus:border-primary"
               />
             </div>
 
-            <AnimatedButton type="submit" className="w-full" disabled={loading}>
+            <AnimatedButton type="submit" className="w-full py-2.5 text-lg" disabled={loading}>
               {loading ? "Creating account..." : "Create Account"}
             </AnimatedButton>
           </form>
 
-          <div className="mt-6 text-center text-sm">
+          <div className="mt-8 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="text-primary hover:underline font-medium">
               Sign in
             </Link>
           </div>

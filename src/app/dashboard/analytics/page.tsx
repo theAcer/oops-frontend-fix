@@ -1,7 +1,7 @@
 "use client"
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { RevenueChart } from "@/components/charts/revenue-chart"
@@ -16,7 +16,7 @@ import {
 } from "@/hooks/use-api"
 import { formatCurrency } from "@/lib/utils"
 import { TrendingUp, Users, CreditCard, Target, Clock } from "lucide-react"
-import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
+import { BlurredCard } from "@/components/blurred-card"
 
 export default function AnalyticsPage() {
   const { data: dashboardData, isLoading: dashboardLoading } = useDashboardAnalytics()
@@ -53,13 +53,13 @@ export default function AnalyticsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-            <p className="text-gray-600">Comprehensive business insights and performance metrics</p>
+            <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
+            <p className="text-muted-foreground mt-1">Comprehensive business insights and performance metrics</p>
           </div>
-          <Button variant="outline">
+          <Button variant="outline" className="bg-background/50 border-border text-foreground hover:bg-accent">
             <Clock className="h-4 w-4 mr-2" />
             Real-time View
           </Button>
@@ -68,41 +68,41 @@ export default function AnalyticsPage() {
         {/* Real-time Metrics */}
         <BlurredCard>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Clock className="h-5 w-5" />
+            <CardTitle className="flex items-center space-x-2 text-foreground">
+              <Clock className="h-5 w-5 text-primary" />
               <span>Today's Performance</span>
             </CardTitle>
-            <CardDescription>Live metrics updated every 10 seconds</CardDescription>
+            <CardDescription className="text-muted-foreground">Live metrics updated every 10 seconds</CardDescription>
           </CardHeader>
           <CardContent>
             {realTimeLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {[...Array(4)].map((_, i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-                    <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-4 bg-muted rounded w-1/2 mb-2"></div>
+                    <div className="h-8 bg-muted rounded w-3/4"></div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <p className="text-sm text-gray-600">Today's Revenue</p>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-sm text-muted-foreground">Today's Revenue</p>
+                  <p className="text-2xl font-bold text-success">
                     {realTimeData ? formatCurrency(realTimeData.today_revenue || 0) : formatCurrency(0)}
                   </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-gray-600">Today's Transactions</p>
-                  <p className="text-2xl font-bold text-blue-600">{realTimeData?.today_transactions || 0}</p>
+                  <p className="text-sm text-muted-foreground">Today's Transactions</p>
+                  <p className="text-2xl font-bold text-primary">{realTimeData?.today_transactions || 0}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-gray-600">New Customers</p>
-                  <p className="text-2xl font-bold text-purple-600">{realTimeData?.today_new_customers || 0}</p>
+                  <p className="text-sm text-muted-foreground">New Customers</p>
+                  <p className="text-2xl font-bold text-brand-secondary">{realTimeData?.today_new_customers || 0}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-gray-600">Active Sessions</p>
-                  <p className="text-2xl font-bold text-orange-600">{realTimeData?.active_sessions || 0}</p>
+                  <p className="text-sm text-muted-foreground">Active Sessions</p>
+                  <p className="text-2xl font-bold text-warning">{realTimeData?.active_sessions || 0}</p>
                 </div>
               </div>
             )}
@@ -113,11 +113,11 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <BlurredCard>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenue Growth</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Revenue Growth</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-success">
                 +{dashboardData?.revenue_growth?.toFixed(1) || 0}%
               </div>
               <p className="text-xs text-muted-foreground">vs last month</p>
@@ -126,11 +126,11 @@ export default function AnalyticsPage() {
 
           <BlurredCard>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Customer Retention</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Customer Retention</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-primary">
                 {dashboardData?.customer_retention_rate?.toFixed(1) || 0}%
               </div>
               <p className="text-xs text-muted-foreground">retention rate</p>
@@ -139,11 +139,11 @@ export default function AnalyticsPage() {
 
           <BlurredCard>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Order Value</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Avg Order Value</CardTitle>
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-600">
+              <div className="text-2xl font-bold text-brand-secondary">
                 {dashboardData ? formatCurrency(dashboardData.average_order_value) : formatCurrency(0)}
               </div>
               <p className="text-xs text-muted-foreground">per transaction</p>
@@ -152,11 +152,11 @@ export default function AnalyticsPage() {
 
           <BlurredCard>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Loyalty Engagement</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Loyalty Engagement</CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-warning">
                 {dashboardData?.loyalty_program_engagement?.toFixed(1) || 0}%
               </div>
               <p className="text-xs text-muted-foreground">program engagement</p>
@@ -168,8 +168,8 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <BlurredCard>
             <CardHeader>
-              <CardTitle>Revenue Trends</CardTitle>
-              <CardDescription>Monthly revenue and transaction volume</CardDescription>
+              <CardTitle className="text-foreground">Revenue Trends</CardTitle>
+              <CardDescription className="text-muted-foreground">Monthly revenue and transaction volume</CardDescription>
             </CardHeader>
             <CardContent>
               {revenueLoading ? (
@@ -184,8 +184,8 @@ export default function AnalyticsPage() {
 
           <BlurredCard>
             <CardHeader>
-              <CardTitle>Customer Growth</CardTitle>
-              <CardDescription>New vs returning customers by month</CardDescription>
+              <CardTitle className="text-foreground">Customer Growth</CardTitle>
+              <CardDescription className="text-muted-foreground">New vs returning customers by month</CardDescription>
             </CardHeader>
             <CardContent>
               {customerLoading ? (
@@ -202,8 +202,8 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <BlurredCard>
             <CardHeader>
-              <CardTitle>Loyalty Program Distribution</CardTitle>
-              <CardDescription>Customer distribution across loyalty tiers</CardDescription>
+              <CardTitle className="text-foreground">Loyalty Program Distribution</CardTitle>
+              <CardDescription className="text-muted-foreground">Customer distribution across loyalty tiers</CardDescription>
             </CardHeader>
             <CardContent>
               {loyaltyLoading ? (
@@ -218,37 +218,37 @@ export default function AnalyticsPage() {
 
           <BlurredCard>
             <CardHeader>
-              <CardTitle>Performance Insights</CardTitle>
-              <CardDescription>Key business insights and recommendations</CardDescription>
+              <CardTitle className="text-foreground">Performance Insights</CardTitle>
+              <CardDescription className="text-muted-foreground">Key business insights and recommendations</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/20">
                   <div>
-                    <p className="font-medium text-green-800">Revenue Growth</p>
-                    <p className="text-sm text-green-600">Strong month-over-month growth</p>
+                    <p className="font-medium text-success">Revenue Growth</p>
+                    <p className="text-sm text-muted-foreground">Strong month-over-month growth</p>
                   </div>
-                  <Badge variant="default" className="bg-green-100 text-green-800">
+                  <Badge variant="default" className="bg-success/20 text-success hover:bg-success/30">
                     Excellent
                   </Badge>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-warning/10 rounded-lg border border-warning/20">
                   <div>
-                    <p className="font-medium text-yellow-800">Customer Retention</p>
-                    <p className="text-sm text-yellow-600">Room for improvement in retention</p>
+                    <p className="font-medium text-warning">Customer Retention</p>
+                    <p className="text-sm text-muted-foreground">Room for improvement in retention</p>
                   </div>
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                  <Badge variant="secondary" className="bg-warning/20 text-warning hover:bg-warning/30">
                     Good
                   </Badge>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg border border-primary/20">
                   <div>
-                    <p className="font-medium text-blue-800">Loyalty Engagement</p>
-                    <p className="text-sm text-blue-600">High program participation</p>
+                    <p className="font-medium text-primary">Loyalty Engagement</p>
+                    <p className="text-sm text-muted-foreground">High program participation</p>
                   </div>
-                  <Badge variant="default" className="bg-blue-100 text-blue-800">
+                  <Badge variant="default" className="bg-primary/20 text-primary-foreground hover:bg-primary/30">
                     Great
                   </Badge>
                 </div>

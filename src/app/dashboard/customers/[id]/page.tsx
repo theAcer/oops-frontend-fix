@@ -2,14 +2,14 @@
 
 import { useParams } from "next/navigation"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCustomer, useTransactions } from "@/hooks/use-api"
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils"
 import { ArrowLeft, Mail, Phone, Calendar, CreditCard, Gift } from "lucide-react"
 import Link from "next/link"
-import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
+import { BlurredCard } from "@/components/blurred-card"
 
 export default function CustomerDetailPage() {
   const params = useParams()
@@ -28,7 +28,7 @@ export default function CustomerDetailPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-600">Error loading customer data. Please try again.</p>
+          <p className="text-destructive">Error loading customer data. Please try again.</p>
         </div>
       </DashboardLayout>
     )
@@ -48,7 +48,7 @@ export default function CustomerDetailPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-600">Customer not found</p>
+          <p className="text-muted-foreground">Customer not found</p>
         </div>
       </DashboardLayout>
     )
@@ -56,10 +56,10 @@ export default function CustomerDetailPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center space-x-4">
           <Link href="/dashboard/customers">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:bg-accent hover:text-foreground">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Customers
             </Button>
@@ -72,8 +72,8 @@ export default function CustomerDetailPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-2xl">{customer.name}</CardTitle>
-                    <CardDescription>Customer since {formatDate(customer.created_at)}</CardDescription>
+                    <CardTitle className="text-2xl text-foreground">{customer.name}</CardTitle>
+                    <CardDescription className="text-muted-foreground">Customer since {formatDate(customer.created_at)}</CardDescription>
                   </div>
                   <Badge variant={customer.loyalty_points > 1000 ? "default" : "outline"}>
                     {customer.loyalty_points > 1000 ? "VIP Customer" : "Regular Customer"}
@@ -81,22 +81,22 @@ export default function CustomerDetailPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{customer.email || "No email provided"}</span>
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground">{customer.email || "No email provided"}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Phone className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{customer.phone}</span>
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground">{customer.phone}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">Last visit: {formatDate(customer.last_visit)}</span>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground">Last visit: {formatDate(customer.last_visit)}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <CreditCard className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">Total spent: {formatCurrency(customer.total_spent)}</span>
+                    <CreditCard className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground">Total spent: {formatCurrency(customer.total_spent)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -104,8 +104,8 @@ export default function CustomerDetailPage() {
 
             <BlurredCard>
               <CardHeader>
-                <CardTitle>Recent Transactions</CardTitle>
-                <CardDescription>Latest 5 transactions from this customer</CardDescription>
+                <CardTitle className="text-foreground">Recent Transactions</CardTitle>
+                <CardDescription className="text-muted-foreground">Latest 5 transactions from this customer</CardDescription>
               </CardHeader>
               <CardContent>
                 {transactionsLoading ? (
@@ -115,12 +115,12 @@ export default function CustomerDetailPage() {
                 ) : transactions.length > 0 ? (
                   <div className="space-y-4">
                     {transactions.map((transaction) => (
-                      <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div key={transaction.id} className="flex items-center justify-between p-4 border border-border/50 rounded-lg bg-background/50">
                         <div>
-                          <p className="font-medium">{formatCurrency(transaction.amount)}</p>
-                          <p className="text-sm text-gray-500">{formatDateTime(transaction.transaction_date)}</p>
+                          <p className="font-medium text-foreground">{formatCurrency(transaction.amount)}</p>
+                          <p className="text-sm text-muted-foreground">{formatDateTime(transaction.transaction_date)}</p>
                           {transaction.description && (
-                            <p className="text-sm text-gray-600">{transaction.description}</p>
+                            <p className="text-sm text-muted-foreground">{transaction.description}</p>
                           )}
                         </div>
                         <Badge variant={transaction.status === "completed" ? "default" : "secondary"}>
@@ -130,7 +130,7 @@ export default function CustomerDetailPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-8">No transactions found</p>
+                  <p className="text-muted-foreground text-center py-8">No transactions found</p>
                 )}
               </CardContent>
             </BlurredCard>
@@ -139,8 +139,8 @@ export default function CustomerDetailPage() {
           <div className="space-y-6">
             <BlurredCard>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Gift className="h-5 w-5" />
+                <CardTitle className="flex items-center space-x-2 text-foreground">
+                  <Gift className="h-5 w-5 text-primary" />
                   <span>Loyalty Status</span>
                 </CardTitle>
               </CardHeader>
@@ -148,15 +148,15 @@ export default function CustomerDetailPage() {
                 <div className="space-y-4">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-primary">{customer.loyalty_points}</div>
-                    <p className="text-sm text-gray-600">Available Points</p>
+                    <p className="text-sm text-muted-foreground">Available Points</p>
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm text-foreground">
                       <span>Progress to next tier</span>
                       <span>{Math.min(customer.loyalty_points, 2000)}/2000</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-muted rounded-full h-2">
                       <div
                         className="bg-primary h-2 rounded-full"
                         style={{ width: `${Math.min((customer.loyalty_points / 2000) * 100, 100)}%` }}
@@ -164,9 +164,9 @@ export default function CustomerDetailPage() {
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t">
-                    <h4 className="font-medium mb-2">Benefits</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
+                  <div className="pt-4 border-t border-border/50">
+                    <h4 className="font-medium mb-2 text-foreground">Benefits</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
                       <li>• Earn 1 point per KES spent</li>
                       <li>• Redeem points for discounts</li>
                       {customer.loyalty_points > 1000 && <li>• VIP customer perks</li>}
@@ -178,17 +178,17 @@ export default function CustomerDetailPage() {
 
             <BlurredCard>
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+                <CardTitle className="text-foreground">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start bg-transparent">
+                  <Button variant="outline" className="w-full justify-start bg-background/50 border-border text-foreground hover:bg-accent">
                     Send SMS Campaign
                   </Button>
-                  <Button variant="outline" className="w-full justify-start bg-transparent">
+                  <Button variant="outline" className="w-full justify-start bg-background/50 border-border text-foreground hover:bg-accent">
                     View AI Insights
                   </Button>
-                  <Button variant="outline" className="w-full justify-start bg-transparent">
+                  <Button variant="outline" className="w-full justify-start bg-background/50 border-border text-foreground hover:bg-accent">
                     Update Information
                   </Button>
                 </div>

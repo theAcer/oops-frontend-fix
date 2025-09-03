@@ -5,16 +5,18 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { apiService } from "@/services/api-service"
 import { useAuth } from "@/contexts/auth-context"
 import { ArrowLeft, Save, Send } from "lucide-react"
 import Link from "next/link"
-import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
-import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
+import { AnimatedButton } from "@/components/animated-button"
+import { BlurredCard } from "@/components/blurred-card"
 
 export default function CreateCampaignPage() {
   const router = useRouter()
@@ -23,12 +25,12 @@ export default function CreateCampaignPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    campaign_type: "sms",
+    campaign_type: "discount", // Changed default to discount as per backend enum
     target_audience: "all_customers",
     budget: 0,
     start_date: "",
     end_date: "",
-    message: "",
+    sms_message: "", // Changed from 'message' to 'sms_message' to match backend schema
   })
 
   const handleSubmit = async (e: React.FormEvent, launch = false) => {
@@ -41,6 +43,9 @@ export default function CreateCampaignPage() {
         ...formData,
         merchant_id: user.merchant_id,
         status: launch ? "active" : "draft",
+        // Ensure dates are in ISO format if backend expects it
+        start_date: formData.start_date ? new Date(formData.start_date).toISOString() : undefined,
+        end_date: formData.end_date ? new Date(formData.end_date).toISOString() : undefined,
       }
 
       const campaign = await apiService.createCampaign(campaignData)
@@ -57,7 +62,7 @@ export default function CreateCampaignPage() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
@@ -65,12 +70,19 @@ export default function CreateCampaignPage() {
     }))
   }
 
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center space-x-4">
           <Link href="/dashboard/campaigns">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:bg-accent hover:text-foreground">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Campaigns
             </Button>
@@ -78,22 +90,22 @@ export default function CreateCampaignPage() {
         </div>
 
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Create New Campaign</h1>
-          <p className="text-gray-600">Design and launch your marketing campaign</p>
+          <h1 className="text-3xl font-bold text-foreground">Create New Campaign</h1>
+          <p className="text-muted-foreground mt-1">Design and launch your marketing campaign</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <BlurredCard>
               <CardHeader>
-                <CardTitle>Campaign Details</CardTitle>
-                <CardDescription>Configure your campaign settings and content</CardDescription>
+                <CardTitle className="text-foreground">Campaign Details</CardTitle>
+                <CardDescription className="text-muted-foreground">Configure your campaign settings and content</CardDescription>
               </CardHeader>
               <CardContent>
                 <form className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label htmlFor="name" className="text-sm font-medium">
+                      <label htmlFor="name" className="text-sm font-medium text-foreground">
                         Campaign Name
                       </label>
                       <Input
@@ -103,65 +115,67 @@ export default function CreateCampaignPage() {
                         onChange={handleChange}
                         placeholder="Enter campaign name"
                         required
+                        className="bg-background/50 border-border focus:border-primary"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <label htmlFor="campaign_type" className="text-sm font-medium">
+                      <label htmlFor="campaign_type" className="text-sm font-medium text-foreground">
                         Campaign Type
                       </label>
-                      <select
-                        id="campaign_type"
-                        name="campaign_type"
-                        value={formData.campaign_type}
-                        onChange={handleChange}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      >
-                        <option value="sms">SMS Campaign</option>
-                        <option value="email">Email Campaign</option>
-                        <option value="loyalty">Loyalty Campaign</option>
-                        <option value="retention">Retention Campaign</option>
-                      </select>
+                      <Select onValueChange={(value) => handleSelectChange("campaign_type", value)} value={formData.campaign_type} required>
+                        <SelectTrigger className="w-full bg-background/50 border-border focus:border-primary">
+                          <SelectValue placeholder="Select campaign type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="discount">Discount</SelectItem>
+                          <SelectItem value="points_bonus">Points Bonus</SelectItem>
+                          <SelectItem value="free_item">Free Item</SelectItem>
+                          <SelectItem value="cashback">Cashback</SelectItem>
+                          <SelectItem value="referral">Referral</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="description" className="text-sm font-medium">
+                    <label htmlFor="description" className="text-sm font-medium text-foreground">
                       Description
                     </label>
-                    <textarea
+                    <Textarea
                       id="description"
                       name="description"
                       value={formData.description}
                       onChange={handleChange}
                       placeholder="Describe your campaign objectives"
                       rows={3}
-                      className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      className="bg-background/50 border-border focus:border-primary"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label htmlFor="target_audience" className="text-sm font-medium">
+                      <label htmlFor="target_audience" className="text-sm font-medium text-foreground">
                         Target Audience
                       </label>
-                      <select
-                        id="target_audience"
-                        name="target_audience"
-                        value={formData.target_audience}
-                        onChange={handleChange}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      >
-                        <option value="all_customers">All Customers</option>
-                        <option value="vip_customers">VIP Customers</option>
-                        <option value="new_customers">New Customers</option>
-                        <option value="inactive_customers">Inactive Customers</option>
-                        <option value="high_spenders">High Spenders</option>
-                      </select>
+                      <Select onValueChange={(value) => handleSelectChange("target_audience", value)} value={formData.target_audience} required>
+                        <SelectTrigger className="w-full bg-background/50 border-border focus:border-primary">
+                          <SelectValue placeholder="Select target audience" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all_customers">All Customers</SelectItem>
+                          <SelectItem value="new_customers">New Customers</SelectItem>
+                          <SelectItem value="regular_customers">Regular Customers</SelectItem>
+                          <SelectItem value="vip_customers">VIP Customers</SelectItem>
+                          <SelectItem value="at_risk_customers">At-Risk Customers</SelectItem>
+                          <SelectItem value="churned_customers">Churned Customers</SelectItem>
+                          <SelectItem value="custom_segment">Custom Segment</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="space-y-2">
-                      <label htmlFor="budget" className="text-sm font-medium">
+                      <label htmlFor="budget" className="text-sm font-medium text-foreground">
                         Budget (KES)
                       </label>
                       <Input
@@ -173,13 +187,14 @@ export default function CreateCampaignPage() {
                         placeholder="0"
                         min="0"
                         step="100"
+                        className="bg-background/50 border-border focus:border-primary"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label htmlFor="start_date" className="text-sm font-medium">
+                      <label htmlFor="start_date" className="text-sm font-medium text-foreground">
                         Start Date
                       </label>
                       <Input
@@ -189,11 +204,12 @@ export default function CreateCampaignPage() {
                         value={formData.start_date}
                         onChange={handleChange}
                         required
+                        className="bg-background/50 border-border focus:border-primary"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <label htmlFor="end_date" className="text-sm font-medium">
+                      <label htmlFor="end_date" className="text-sm font-medium text-foreground">
                         End Date
                       </label>
                       <Input
@@ -203,24 +219,25 @@ export default function CreateCampaignPage() {
                         value={formData.end_date}
                         onChange={handleChange}
                         required
+                        className="bg-background/50 border-border focus:border-primary"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="message" className="text-sm font-medium">
-                      Campaign Message
+                    <label htmlFor="sms_message" className="text-sm font-medium text-foreground">
+                      Campaign Message (SMS)
                     </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
+                    <Textarea
+                      id="sms_message"
+                      name="sms_message"
+                      value={formData.sms_message}
                       onChange={handleChange}
                       placeholder="Enter your campaign message..."
                       rows={4}
-                      className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      className="bg-background/50 border-border focus:border-primary"
                     />
-                    <p className="text-xs text-gray-500">{formData.message.length}/160 characters (SMS limit)</p>
+                    <p className="text-xs text-muted-foreground">{formData.sms_message.length}/160 characters (SMS limit)</p>
                   </div>
 
                   <div className="flex space-x-4">
@@ -229,7 +246,7 @@ export default function CreateCampaignPage() {
                       variant="outline"
                       onClick={(e) => handleSubmit(e, false)}
                       disabled={loading}
-                      className="bg-transparent"
+                      className="bg-background/50 border-border text-foreground hover:bg-accent"
                     >
                       <Save className="h-4 w-4 mr-2" />
                       Save as Draft
@@ -247,31 +264,31 @@ export default function CreateCampaignPage() {
           <div className="space-y-6">
             <BlurredCard>
               <CardHeader>
-                <CardTitle>Campaign Preview</CardTitle>
-                <CardDescription>How your campaign will appear</CardDescription>
+                <CardTitle className="text-foreground">Campaign Preview</CardTitle>
+                <CardDescription className="text-muted-foreground">How your campaign will appear</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm font-medium">Campaign Name</p>
-                    <p className="text-sm text-gray-600">{formData.name || "Untitled Campaign"}</p>
+                    <p className="text-sm font-medium text-foreground">Campaign Name</p>
+                    <p className="text-sm text-muted-foreground">{formData.name || "Untitled Campaign"}</p>
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium">Type</p>
-                    <Badge variant="outline">{formData.campaign_type}</Badge>
+                    <p className="text-sm font-medium text-foreground">Type</p>
+                    <Badge variant="outline" className="bg-secondary/50 text-secondary-foreground">{formData.campaign_type}</Badge>
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium">Target</p>
-                    <p className="text-sm text-gray-600">{formData.target_audience.replace("_", " ")}</p>
+                    <p className="text-sm font-medium text-foreground">Target</p>
+                    <p className="text-sm text-muted-foreground">{formData.target_audience.replace("_", " ")}</p>
                   </div>
 
-                  {formData.message && (
+                  {formData.sms_message && (
                     <div>
-                      <p className="text-sm font-medium">Message Preview</p>
-                      <div className="p-3 bg-gray-50 rounded-lg border">
-                        <p className="text-sm">{formData.message}</p>
+                      <p className="text-sm font-medium text-foreground">Message Preview</p>
+                      <div className="p-3 bg-background/50 rounded-lg border border-border/50">
+                        <p className="text-sm text-muted-foreground">{formData.sms_message}</p>
                       </div>
                     </div>
                   )}
@@ -281,20 +298,20 @@ export default function CreateCampaignPage() {
 
             <BlurredCard>
               <CardHeader>
-                <CardTitle>Campaign Tips</CardTitle>
+                <CardTitle className="text-foreground">Campaign Tips</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3 text-sm">
+                <div className="space-y-3 text-sm text-muted-foreground">
                   <div className="flex items-start space-x-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5"></div>
+                    <div className="w-2 h-2 bg-primary rounded-full mt-1.5"></div>
                     <p>Keep SMS messages under 160 characters for best delivery rates</p>
                   </div>
                   <div className="flex items-start space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5"></div>
+                    <div className="w-2 h-2 bg-success rounded-full mt-1.5"></div>
                     <p>Personalize messages with customer names for higher engagement</p>
                   </div>
                   <div className="flex items-start space-x-2">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-1.5"></div>
+                    <div className="w-2 h-2 bg-brand-secondary rounded-full mt-1.5"></div>
                     <p>Schedule campaigns during peak customer activity hours</p>
                   </div>
                 </div>

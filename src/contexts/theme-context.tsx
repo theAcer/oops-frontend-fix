@@ -25,18 +25,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Read theme from localStorage on mount
     const storedTheme = localStorage.getItem('theme') as Theme;
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    let initialTheme: Theme;
     if (storedTheme) {
-      setTheme(storedTheme);
-      applyTheme(storedTheme); // Apply immediately on mount
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setTheme('dark');
-      applyTheme('dark');
+      initialTheme = storedTheme;
+    } else if (systemPrefersDark) {
+      initialTheme = 'dark';
     } else {
-      setTheme('light');
-      applyTheme('light');
+      initialTheme = 'light';
     }
+    
+    setTheme(initialTheme);
+    applyTheme(initialTheme);
     setMounted(true);
-  }, [applyTheme]); // Depend on applyTheme
+  }, [applyTheme]);
 
   useEffect(() => {
     if (mounted) {

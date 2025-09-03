@@ -5,23 +5,24 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Import Select components
 import { useAuth } from "@/contexts/auth-context"
 import { apiService } from "@/services/api-service"
 import { ArrowLeft, Save } from "lucide-react"
 import Link from "next/link"
-import { AnimatedButton } from "@/components/animated-button" // Import AnimatedButton
-import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
+import { AnimatedButton } from "@/components/animated-button"
+import { BlurredCard } from "@/components/blurred-card"
 
 export default function BecomeMerchantPage() {
   const router = useRouter()
-  const { user, logout } = useAuth() // Get user and logout from auth context
+  const { user, logout } = useAuth()
   const [formData, setFormData] = useState({
     businessName: "",
-    ownerName: user?.name || "", // Pre-fill with user's name
-    email: user?.email || "", // Pre-fill with user's email
+    ownerName: user?.name || "",
+    email: user?.email || "",
     phone: "",
     businessType: "",
     mpesaTillNumber: "",
@@ -32,7 +33,7 @@ export default function BecomeMerchantPage() {
   // Redirect if user already has a merchant_id
   if (user && user.merchant_id) {
     router.push("/dashboard");
-    return null; // Or show a message that they are already a merchant
+    return null;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,9 +56,6 @@ export default function BecomeMerchantPage() {
         mpesa_till_number: formData.mpesaTillNumber,
       })
       
-      // After successful merchant creation and linking, refresh user data
-      // A simple way is to log out and log back in, or refetch user data
-      // For now, let's just redirect to dashboard and rely on next page load to refresh user
       router.push("/dashboard")
     } catch (err: any) {
       console.error("Failed to register merchant:", err)
@@ -75,12 +73,19 @@ export default function BecomeMerchantPage() {
     }))
   }
 
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center space-x-4">
           <Link href="/dashboard">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:bg-accent hover:text-foreground">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
@@ -88,23 +93,23 @@ export default function BecomeMerchantPage() {
         </div>
 
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Become a Merchant</h1>
-          <p className="text-gray-600">Register your business to access loyalty features</p>
+          <h1 className="text-3xl font-bold text-foreground">Become a Merchant</h1>
+          <p className="text-muted-foreground mt-1">Register your business to access loyalty features</p>
         </div>
 
         <BlurredCard>
           <CardHeader>
-            <CardTitle>Business Details</CardTitle>
-            <CardDescription>Provide your business information to get started</CardDescription>
+            <CardTitle className="text-foreground">Business Details</CardTitle>
+            <CardDescription className="text-muted-foreground">Provide your business information to get started</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">{error}</div>
+                <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md">{error}</div>
               )}
 
               <div className="space-y-2">
-                <label htmlFor="businessName" className="text-sm font-medium">
+                <label htmlFor="businessName" className="text-sm font-medium text-foreground">
                   Business Name
                 </label>
                 <Input
@@ -115,11 +120,12 @@ export default function BecomeMerchantPage() {
                   onChange={handleChange}
                   required
                   placeholder="e.g., My Awesome Shop"
+                  className="bg-background/50 border-border focus:border-primary"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="ownerName" className="text-sm font-medium">
+                <label htmlFor="ownerName" className="text-sm font-medium text-foreground">
                   Owner Name
                 </label>
                 <Input
@@ -130,12 +136,13 @@ export default function BecomeMerchantPage() {
                   onChange={handleChange}
                   required
                   placeholder="Your full name"
-                  disabled // Owner name is pre-filled from user data
+                  disabled
+                  className="bg-background/50 border-border focus:border-primary disabled:opacity-70 disabled:cursor-not-allowed"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">
+                <label htmlFor="email" className="text-sm font-medium text-foreground">
                   Business Email
                 </label>
                 <Input
@@ -146,12 +153,13 @@ export default function BecomeMerchantPage() {
                   onChange={handleChange}
                   required
                   placeholder="business@example.com"
-                  disabled // Email is pre-filled from user data
+                  disabled
+                  className="bg-background/50 border-border focus:border-primary disabled:opacity-70 disabled:cursor-not-allowed"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="phone" className="text-sm font-medium">
+                <label htmlFor="phone" className="text-sm font-medium text-foreground">
                   Business Phone Number
                 </label>
                 <Input
@@ -162,32 +170,30 @@ export default function BecomeMerchantPage() {
                   onChange={handleChange}
                   required
                   placeholder="e.g., 254712345678"
+                  className="bg-background/50 border-border focus:border-primary"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="businessType" className="text-sm font-medium">
+                <label htmlFor="businessType" className="text-sm font-medium text-foreground">
                   Business Type
                 </label>
-                <select
-                  id="businessType"
-                  name="businessType"
-                  value={formData.businessType}
-                  onChange={handleChange}
-                  required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <option value="">Select business type</option>
-                  <option value="retail">Retail</option>
-                  <option value="restaurant">Restaurant</option>
-                  <option value="service">Service</option>
-                  <option value="ecommerce">E-commerce</option>
-                  <option value="other">Other</option>
-                </select>
+                <Select onValueChange={(value) => handleSelectChange("businessType", value)} value={formData.businessType} required>
+                  <SelectTrigger className="w-full bg-background/50 border-border focus:border-primary">
+                    <SelectValue placeholder="Select business type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="retail">Retail</SelectItem>
+                    <SelectItem value="restaurant">Restaurant</SelectItem>
+                    <SelectItem value="service">Service</SelectItem>
+                    <SelectItem value="ecommerce">E-commerce</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="mpesaTillNumber" className="text-sm font-medium">
+                <label htmlFor="mpesaTillNumber" className="text-sm font-medium text-foreground">
                   M-Pesa Till Number
                 </label>
                 <Input
@@ -198,10 +204,11 @@ export default function BecomeMerchantPage() {
                   onChange={handleChange}
                   required
                   placeholder="Enter your M-Pesa Till Number"
+                  className="bg-background/50 border-border focus:border-primary"
                 />
               </div>
 
-              <AnimatedButton type="submit" className="w-full" disabled={loading}>
+              <AnimatedButton type="submit" className="w-full py-2.5 text-lg" disabled={loading}>
                 {loading ? "Registering Business..." : "Register My Business"}
               </AnimatedButton>
             </form>

@@ -1,6 +1,6 @@
 "use client"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -10,7 +10,7 @@ import Link from "next/link"
 import { useCampaigns } from "@/hooks/use-api"
 import { apiService } from "@/services/api-service"
 import { useAuth } from "@/contexts/auth-context"
-import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
+import { BlurredCard } from "@/components/blurred-card"
 
 export default function CampaignsPage() {
   const { user } = useAuth()
@@ -33,7 +33,7 @@ export default function CampaignsPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-600">Error loading campaigns. Please try again.</p>
+          <p className="text-destructive">Error loading campaigns. Please try again.</p>
         </div>
       </DashboardLayout>
     )
@@ -41,11 +41,11 @@ export default function CampaignsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Marketing Campaigns</h1>
-            <p className="text-gray-600">Create and manage your marketing campaigns</p>
+            <h1 className="text-3xl font-bold text-foreground">Marketing Campaigns</h1>
+            <p className="text-muted-foreground mt-1">Create and manage your marketing campaigns</p>
           </div>
           <Link href="/dashboard/campaigns/create">
             <Button>
@@ -59,19 +59,19 @@ export default function CampaignsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <BlurredCard>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Campaigns</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{campaigns.length}</div>
+              <div className="text-2xl font-bold text-foreground">{campaigns.length}</div>
             </CardContent>
           </BlurredCard>
 
           <BlurredCard>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Active Campaigns</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-success">
                 {campaigns.filter((c) => c.status === "active").length}
               </div>
             </CardContent>
@@ -79,10 +79,10 @@ export default function CampaignsPage() {
 
           <BlurredCard>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Draft Campaigns</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Draft Campaigns</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">
+              <div className="text-2xl font-bold text-warning">
                 {campaigns.filter((c) => c.status === "draft").length}
               </div>
             </CardContent>
@@ -90,10 +90,10 @@ export default function CampaignsPage() {
 
           <BlurredCard>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Budget</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-primary">
                 {formatCurrency(campaigns.reduce((sum, c) => sum + c.budget, 0))}
               </div>
             </CardContent>
@@ -103,8 +103,8 @@ export default function CampaignsPage() {
         {/* Campaigns Table */}
         <BlurredCard>
           <CardHeader>
-            <CardTitle>All Campaigns</CardTitle>
-            <CardDescription>Manage your marketing campaigns and track performance</CardDescription>
+            <CardTitle className="text-foreground">All Campaigns</CardTitle>
+            <CardDescription className="text-muted-foreground">Manage your marketing campaigns and track performance</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -129,15 +129,15 @@ export default function CampaignsPage() {
                     <TableRow key={campaign.id}>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{campaign.name}</p>
-                          <p className="text-sm text-gray-500 truncate max-w-xs">{campaign.description}</p>
+                          <p className="font-medium text-foreground">{campaign.name}</p>
+                          <p className="text-sm text-muted-foreground truncate max-w-xs">{campaign.description}</p>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{campaign.campaign_type}</Badge>
+                        <Badge variant="outline" className="bg-secondary/50 text-secondary-foreground">{campaign.campaign_type}</Badge>
                       </TableCell>
-                      <TableCell>{campaign.target_audience}</TableCell>
-                      <TableCell>{formatCurrency(campaign.budget)}</TableCell>
+                      <TableCell className="text-muted-foreground">{campaign.target_audience}</TableCell>
+                      <TableCell className="text-foreground">{formatCurrency(campaign.budget)}</TableCell>
                       <TableCell>
                         <Badge
                           variant={
@@ -151,7 +151,7 @@ export default function CampaignsPage() {
                           {campaign.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>{formatDate(campaign.start_date)}</TableCell>
+                      <TableCell className="text-muted-foreground">{formatDate(campaign.start_date)}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
                           {campaign.status === "draft" && (
@@ -159,17 +159,17 @@ export default function CampaignsPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleLaunchCampaign(campaign.id)}
-                              className="bg-transparent"
+                              className="bg-background/50 border-border text-foreground hover:bg-accent"
                             >
                               <Play className="h-4 w-4" />
                             </Button>
                           )}
                           <Link href={`/dashboard/campaigns/${campaign.id}`}>
-                            <Button variant="outline" size="sm" className="bg-transparent">
+                            <Button variant="outline" size="sm" className="bg-background/50 border-border text-foreground hover:bg-accent">
                               <Eye className="h-4 w-4" />
                             </Button>
                           </Link>
-                          <Button variant="outline" size="sm" className="bg-transparent">
+                          <Button variant="outline" size="sm" className="bg-background/50 border-border text-foreground hover:bg-accent">
                             <BarChart3 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -180,7 +180,7 @@ export default function CampaignsPage() {
               </Table>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">No campaigns created yet</p>
+                <p className="text-muted-foreground mb-4">No campaigns created yet</p>
                 <Link href="/dashboard/campaigns/create">
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />

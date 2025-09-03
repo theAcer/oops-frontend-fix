@@ -8,19 +8,18 @@ import logging
 
 from app.core.database import get_db
 from app.services.sms_service import SMSService
-from app.services.ai_service import AIRecommendationService # Corrected import
+from app.services.ai_service import AIService
 from app.models.customer import Customer
 from app.models.loyalty import CustomerLoyalty
 from app.models.campaign import Campaign
-from app.core.config import settings # Import settings
 
 logger = logging.getLogger(__name__)
 
 # Initialize Celery app
 celery_app = Celery(
     "notification_tasks",
-    broker=settings.REDIS_URL, # Use settings.REDIS_URL
-    backend=settings.REDIS_URL # Use settings.REDIS_URL
+    broker="redis://localhost:6379/0",
+    backend="redis://localhost:6379/0"
 )
 
 @celery_app.task
@@ -82,7 +81,7 @@ async def _send_churn_prevention_campaigns():
     try:
         async for db in get_db():
             sms_service = SMSService(db)
-            ai_service = AIRecommendationService(db) # Corrected class name
+            ai_service = AIService(db)
             
             # Get high-risk customers
             high_risk_customers = await db.execute(
@@ -93,21 +92,14 @@ async def _send_churn_prevention_campaigns():
             
             for customer in customers:
                 # Get AI-generated offer
-                # The original code called `ai_service.get_personalized_recommendations` which doesn't exist.
-                # Assuming the intent was to get offers, I'll use `generate_personalized_offers`.
-                offers = await ai_service.generate_personalized_offers(customer.id)
-                
-                # Extract discount and expiry from offers if available, otherwise use defaults
-                discount = 20
-                expiry = "this weekend"
-                if offers and len(offers) > 0 and offers[0].get("type") == "discount":
-                    discount = offers[0].get("discount_percentage", 20)
-                    # No direct expiry in current offer schema, so keeping default
+                recommendations = await ai_service.get_personalized_recommendations(
+                    customer.merchant_id, customer.id
+                )
                 
                 # Send churn prevention SMS
                 offer_details = {
-                    "discount": discount,
-                    "expiry": expiry
+                    "discount": 20,  # Default 20% discount
+                    "expiry": "this weekend"
                 }
                 
                 await sms_service.send_churn_prevention_sms(

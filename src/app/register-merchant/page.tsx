@@ -7,9 +7,10 @@ import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { BlurredCard } from "@/components/blurred-card" // Import BlurredCard
-import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card" // Keep Card parts for structure
+import { BlurredCard } from "@/components/blurred-card"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AnimatedButton } from "@/components/animated-button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Import Select components
 
 export default function RegisterMerchantPage() {
   const [formData, setFormData] = useState({
@@ -66,21 +67,28 @@ export default function RegisterMerchantPage() {
     }))
   }
 
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <BlurredCard className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12">
+      <BlurredCard className="w-full max-w-lg p-6">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Register Your Business</CardTitle>
-          <CardDescription>Create your merchant account and start boosting loyalty</CardDescription>
+          <CardTitle className="text-3xl font-bold text-foreground">Register Your Business</CardTitle>
+          <CardDescription className="text-muted-foreground mt-2">Create your merchant account and start boosting loyalty</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">{error}</div>
+              <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md">{error}</div>
             )}
 
             <div className="space-y-2">
-              <label htmlFor="businessName" className="text-sm font-medium">
+              <label htmlFor="businessName" className="text-sm font-medium text-foreground">
                 Business Name
               </label>
               <Input
@@ -91,11 +99,12 @@ export default function RegisterMerchantPage() {
                 onChange={handleChange}
                 required
                 placeholder="e.g., My Awesome Shop"
+                className="bg-background/50 border-border focus:border-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="ownerName" className="text-sm font-medium">
+              <label htmlFor="ownerName" className="text-sm font-medium text-foreground">
                 Owner Name
               </label>
               <Input
@@ -106,11 +115,12 @@ export default function RegisterMerchantPage() {
                 onChange={handleChange}
                 required
                 placeholder="Your full name"
+                className="bg-background/50 border-border focus:border-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-medium text-foreground">
                 Business Email
               </label>
               <Input
@@ -121,11 +131,12 @@ export default function RegisterMerchantPage() {
                 onChange={handleChange}
                 required
                 placeholder="business@example.com"
+                className="bg-background/50 border-border focus:border-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="phone" className="text-sm font-medium">
+              <label htmlFor="phone" className="text-sm font-medium text-foreground">
                 Business Phone Number
               </label>
               <Input
@@ -136,32 +147,30 @@ export default function RegisterMerchantPage() {
                 onChange={handleChange}
                 required
                 placeholder="e.g., 254712345678"
+                className="bg-background/50 border-border focus:border-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="businessType" className="text-sm font-medium">
+              <label htmlFor="businessType" className="text-sm font-medium text-foreground">
                 Business Type
               </label>
-              <select
-                id="businessType"
-                name="businessType"
-                value={formData.businessType}
-                onChange={handleChange}
-                required
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <option value="">Select business type</option>
-                <option value="retail">Retail</option>
-                <option value="restaurant">Restaurant</option>
-                <option value="service">Service</option>
-                <option value="ecommerce">E-commerce</option>
-                <option value="other">Other</option>
-              </select>
+              <Select onValueChange={(value) => handleSelectChange("businessType", value)} value={formData.businessType} required>
+                <SelectTrigger className="w-full bg-background/50 border-border focus:border-primary">
+                  <SelectValue placeholder="Select business type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="retail">Retail</SelectItem>
+                  <SelectItem value="restaurant">Restaurant</SelectItem>
+                  <SelectItem value="service">Service</SelectItem>
+                  <SelectItem value="ecommerce">E-commerce</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="mpesaTillNumber" className="text-sm font-medium">
+              <label htmlFor="mpesaTillNumber" className="text-sm font-medium text-foreground">
                 M-Pesa Till Number
               </label>
               <Input
@@ -172,11 +181,12 @@ export default function RegisterMerchantPage() {
                 onChange={handleChange}
                 required
                 placeholder="Enter your M-Pesa Till Number"
+                className="bg-background/50 border-border focus:border-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
+              <label htmlFor="password" className="text-sm font-medium text-foreground">
                 Password
               </label>
               <Input
@@ -187,11 +197,12 @@ export default function RegisterMerchantPage() {
                 onChange={handleChange}
                 required
                 placeholder="Create a password for your account"
+                className="bg-background/50 border-border focus:border-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-medium">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
                 Confirm Password
               </label>
               <Input
@@ -202,17 +213,18 @@ export default function RegisterMerchantPage() {
                 onChange={handleChange}
                 required
                 placeholder="Confirm your password"
+                className="bg-background/50 border-border focus:border-primary"
               />
             </div>
 
-            <AnimatedButton type="submit" className="w-full" disabled={loading}>
+            <AnimatedButton type="submit" className="w-full py-2.5 text-lg" disabled={loading}>
               {loading ? "Registering..." : "Register Business & Account"}
             </AnimatedButton>
           </form>
 
-          <div className="mt-6 text-center text-sm">
+          <div className="mt-8 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="text-primary hover:underline font-medium">
               Sign in
             </Link>
           </div>

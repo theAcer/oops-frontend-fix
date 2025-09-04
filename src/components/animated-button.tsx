@@ -48,7 +48,7 @@ export function AnimatedButton({ children, className, ...props }: AnimatedButton
   return (
     <Button
       ref={buttonRef}
-      className={cn("relative overflow-hidden", className)}
+      className={cn("relative overflow-hidden bg-gradient-to-r from-primary-start to-primary-end", className)} // Added gradient
       // Explicitly ensure asChild is false or omitted, as this component always renders a button.
       // The default for ButtonProps.asChild is already false, so simply not passing it is sufficient.
       {...props}

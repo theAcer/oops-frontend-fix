@@ -4,98 +4,92 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* White */
-    --foreground: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
+    --font-size: 14px;
+    --background: 0 0% 99.6%; /* #fefefe */
+    --foreground: 262 55% 16.5%; /* #2a1440 */
+    --card: 0 0% 100%; /* #ffffff */
+    --card-foreground: 262 55% 16.5%; /* #2a1440 */
+    --popover: 0 0% 100%; /* #ffffff */
+    --popover-foreground: 262 55% 16.5%; /* #2a1440 */
+    --primary: 262 83% 58%; /* #7c3aed */
+    --primary-foreground: 0 0% 100%; /* #ffffff */
+    --secondary: 39 92% 50%; /* #f59e0b */
+    --secondary-foreground: 262 55% 16.5%; /* #2a1440 */
+    --muted: 262 100% 98.6%; /* #f8f5ff */
+    --muted-foreground: 262 25% 63.9%; /* #6b5b95 */
+    --accent: 48 96% 89%; /* #fef3c7 */
+    --accent-foreground: 262 55% 16.5%; /* #2a1440 */
+    --destructive: 0 84% 40%; /* #dc2626 */
+    --destructive-foreground: 0 0% 100%; /* #ffffff */
+    --border: 262 83% 58% / 0.15; /* rgba(124, 58, 237, 0.15) */
+    --input: var(--input-background); /* Mapped to input-background */
+    --input-background: 262 100% 98.6%; /* #f8f5ff */
+    --switch-background: 262 55% 89%; /* #e2d5f3 */
+    --ring: 262 83% 65%; /* #a855f7 */
+    --chart-1: 262 83% 58%; /* #7c3aed */
+    --chart-2: 39 92% 50%; /* #f59e0b */
+    --chart-3: 262 83% 65%; /* #a855f7 */
+    --chart-4: 43 94% 69%; /* #fbbf24 */
+    --chart-5: 262 83% 63%; /* #8b5cf6 */
+    --radius: 0.625rem; /* 10px */
+    --sidebar: 262 100% 99%; /* #faf8ff */
+    --sidebar-foreground: 262 55% 16.5%; /* #2a1440 */
+    --sidebar-primary: 262 83% 58%; /* #7c3aed */
+    --sidebar-primary-foreground: 0 0% 100%; /* #ffffff */
+    --sidebar-accent: 262 100% 97.5%; /* #f3f0ff */
+    --sidebar-accent-foreground: 262 55% 16.5%; /* #2a1440 */
+    --sidebar-border: 262 55% 89%; /* #e2d5f3 */
+    --sidebar-ring: 262 83% 65%; /* #a855f7 */
 
-    --muted: 210 40% 96.1%; /* Light Gray */
-    --muted-foreground: 215.4 16.3% 46.9%; /* Gray */
-
-    --popover: 0 0% 100%; /* White */
-    --popover-foreground: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
-
-    --card: 0 0% 100%; /* White */
-    --card-foreground: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
-
-    --border: 214.3 31.8% 91.4%; /* Light Gray */
-    --input: 214.3 31.8% 91.4%; /* Light Gray */
-
-    --primary: 214 89% 52%; /* Figma Vibrant Blue */
-    --primary-foreground: 0 0% 100%; /* White */
-
-    --secondary: 210 40% 96.1%; /* Light Gray */
-    --secondary-foreground: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
-
-    --accent: 270 80% 60%; /* Figma Purple/Pink Accent */
-    --accent-foreground: 0 0% 100%; /* White */
-
-    --destructive: 0 84.2% 60.2%; /* Red */
-    --destructive-foreground: 0 0% 100%; /* White */
-
-    --ring: 215 20.2% 65.1%; /* Gray */
-
-    --radius: 0.5rem; /* Consistent with Figma's rounded corners */
-
-    /* Custom colors for success/warning/brand */
-    --success: 142.1 76.2% 36.3%; /* Green */
-    --success-foreground: 0 0% 100%; /* White */
-    --warning: 38.5 92.4% 50%; /* Orange */
-    --warning-foreground: 0 0% 100%; /* White */
-    --brand-primary: 214 89% 52%; /* Align with new primary */
-    --brand-secondary: 270 80% 60%; /* Align with new accent */
-
-    /* Chart colors (can be adjusted for better contrast if needed) */
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    /* Button Gradient Colors (derived from Figma primary) */
+    --btn-gradient-start: 262 83% 58%; /* #7c3aed */
+    --btn-gradient-end: 262 83% 65%;   /* #a855f7 */
   }
 
   .dark {
-    --background: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
-    --foreground: 210 40% 98%; /* White */
+    --background: 262 83% 11.2%; /* #1a0d2e */
+    --foreground: 262 100% 97.5%; /* #f3f0ff */
+    --card: 262 55% 18.6%; /* #241447 */
+    --card-foreground: 262 100% 97.5%; /* #f3f0ff */
+    --popover: 262 55% 18.6%; /* #241447 */
+    --popover-foreground: 262 100% 97.5%; /* #f3f0ff */
+    --primary: 262 83% 65%; /* #a855f7 */
+    --primary-foreground: 262 83% 11.2%; /* #1a0d2e */
+    --secondary: 43 94% 69%; /* #fbbf24 */
+    --secondary-foreground: 262 83% 11.2%; /* #1a0d2e */
+    --muted: 262 55% 20.6%; /* #2d1b4e */
+    --muted-foreground: 262 55% 76%; /* #c4a7e7 */
+    --accent: 262 40% 33.3%; /* #44337a */
+    --accent-foreground: 262 100% 97.5%; /* #f3f0ff */
+    --destructive: 0 84% 70%; /* #f87171 */
+    --destructive-foreground: 262 83% 11.2%; /* #1a0d2e */
+    --border: 262 83% 65% / 0.2; /* rgba(168, 85, 247, 0.2) */
+    --input: 262 55% 20.6%; /* #2d1b4e */
+    --input-background: 262 55% 20.6%; /* #2d1b4e */
+    --switch-background: 262 40% 33.3%; /* #44337a */
+    --ring: 262 83% 63%; /* #8b5cf6 */
+    --chart-1: 262 83% 65%; /* #a855f7 */
+    --chart-2: 43 94% 69%; /* #fbbf24 */
+    --chart-3: 262 83% 63%; /* #8b5cf6 */
+    --chart-4: 39 92% 50%; /* #f59e0b */
+    --chart-5: 262 83% 75%; /* #c084fc */
+    --sidebar: 262 83% 9.4%; /* #16082a */
+    --sidebar-foreground: 262 100% 97.5%; /* #f3f0ff */
+    --sidebar-primary: 262 83% 65%; /* #a855f7 */
+    --sidebar-primary-foreground: 0 0% 100%; /* #ffffff */
+    --sidebar-accent: 262 55% 20.6%; /* #2d1b4e */
+    --sidebar-accent-foreground: 262 100% 97.5%; /* #f3f0ff */
+    --sidebar-border: 262 40% 33.3%; /* #44337a */
+    --sidebar-ring: 262 83% 63%; /* #8b5cf6 */
 
-    --muted: 217.2 32.6% 17.5%; /* Darker Gray */
-    --muted-foreground: 215 20.2% 65.1%; /* Gray */
-
-    --popover: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
-    --popover-foreground: 210 40% 98%; /* White */
-
-    --card: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
-    --card-foreground: 210 40% 98%; /* White */
-
-    --border: 217.2 32.6% 17.5%; /* Darker Gray */
-    --input: 217.2 32.6% 17.5%; /* Darker Gray */
-
-    --primary: 214 89% 52%; /* Figma Vibrant Blue */
-    --primary-foreground: 0 0% 100%; /* White */
-
-    --secondary: 217.2 32.6% 17.5%; /* Darker Gray */
-    --secondary-foreground: 210 40% 98%; /* White */
-
-    --accent: 270 80% 60%; /* Figma Purple/Pink Accent */
-    --accent-foreground: 0 0% 100%; /* White */
-
-    --destructive: 0 62.8% 30.6%; /* Dark Red */
-    --destructive-foreground: 0 0% 100%; /* White */
-
-    --ring: 215 20.2% 65.1%; /* Gray */
-
-    /* Custom colors for success/warning/brand in dark mode */
-    --success: 142.1 70.6% 45.3%; /* Slightly lighter green for dark mode */
-    --success-foreground: 0 0% 100%; /* White */
-    --warning: 38.5 80% 60%; /* Slightly lighter orange for dark mode */
-    --warning-foreground: 0 0% 100%; /* White */
-    --brand-primary: 214 89% 52%; /* Align with new primary */
-    --brand-secondary: 270 80% 60%; /* Align with new accent */
-
-    /* Chart colors for dark mode */
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* Button Gradient Colors (derived from Figma primary) */
+    --btn-gradient-start: 262 83% 65%; /* #a855f7 */
+    --btn-gradient-end: 262 83% 75%;   /* #c084fc */
   }
+}
+
+html {
+  font-size: var(--font-size);
 }
 
 @layer base {

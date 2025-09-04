@@ -58,16 +58,34 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
-        "brand-primary": "hsl(var(--brand-primary))",
-        "brand-secondary": "hsl(var(--brand-secondary))",
+        "brand-primary": "hsl(var(--brand-primary))", // This was not in Figma's globals.css, keeping for now
+        "brand-secondary": "hsl(var(--brand-secondary))", // This was not in Figma's globals.css, keeping for now
         "chart-1": "hsl(var(--chart-1))",
         "chart-2": "hsl(var(--chart-2))",
         "chart-3": "hsl(var(--chart-3))",
         "chart-4": "hsl(var(--chart-4))",
         "chart-5": "hsl(var(--chart-5))",
+        // New sidebar colors
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: {
+            DEFAULT: "hsl(var(--sidebar-primary))",
+            foreground: "hsl(var(--sidebar-primary-foreground))",
+          },
+          accent: {
+            DEFAULT: "hsl(var(--sidebar-accent))",
+            foreground: "hsl(var(--sidebar-accent-foreground))",
+          },
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
+        // Button gradient colors
+        "primary-start": "hsl(var(--btn-gradient-start))",
+        "primary-end": "hsl(var(--btn-gradient-end))",
       },
       borderRadius: {
-        lg: "var(--radius)",
+        lg: "var(--radius)", // 0.625rem
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },

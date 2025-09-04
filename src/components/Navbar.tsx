@@ -30,7 +30,7 @@ const Navbar = () => {
     { name: 'Customers', href: '/customers', icon: Users },
     { name: 'Loyalty', href: '/loyalty', icon: Gift },
     { name: 'Campaigns', href: '/campaigns', icon: BarChart },
-    { name: 'Notifications', href: '/notifications', icon: Bell },
+    { name: 'Notifications', href: '/notifications', icon: Bell }, // Added Notifications link
     { name: 'Settings', href: '/settings', icon: Settings },
   ] : [];
 

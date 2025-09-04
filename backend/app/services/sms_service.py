@@ -7,7 +7,7 @@ from sqlalchemy import select
 from app.core.config import settings
 from app.models.notification import Notification, NotificationType, NotificationStatus
 from app.models.customer import Customer
-from app.models.merchant import Merchant
+from app.models.merchant import Merchant # Import Merchant model
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class SMSService:
         self, 
         phone_number: str, 
         message: str, 
-        merchant_id: int,
+        merchant_id: int, # merchant_id is now required
         notification_type: NotificationType = NotificationType.PROMOTIONAL,
         customer_id: Optional[int] = None,
         campaign_id: Optional[int] = None
@@ -60,17 +60,18 @@ class SMSService:
                 
                 # Log notification in database
                 notification = Notification(
-                    merchant_id=merchant_id,
+                    merchant_id=merchant_id, # Use the passed merchant_id
                     customer_id=customer_id,
                     campaign_id=campaign_id,
                     notification_type=notification_type,
-                    channel="sms",
-                    recipient_phone=formatted_phone,
-                    message_content=message,
+                    recipient=formatted_phone, # Changed from recipient_phone to recipient
+                    message=message, # Changed from message_content to message
                     status=NotificationStatus.SENT if response.status_code == 201 else NotificationStatus.FAILED,
-                    external_id=response_data.get("SMSMessageData", {}).get("Recipients", [{}])[0].get("messageId"),
+                    provider="africastalking", # Explicitly set provider
+                    provider_message_id=response_data.get("SMSMessageData", {}).get("Recipients", [{}])[0].get("messageId"),
                     sent_at=datetime.utcnow() if response.status_code == 201 else None,
-                    error_message=response_data.get("SMSMessageData", {}).get("Message") if response.status_code != 201 else None
+                    error_message=response_data.get("SMSMessageData", {}).get("Message") if response.status_code != 201 else None,
+                    cost=float(response_data.get("SMSMessageData", {}).get("Recipients", [{}])[0].get("cost", "0").split(" ")[1]) # Extract cost as float
                 )
                 
                 self.db.add(notification)
@@ -78,9 +79,9 @@ class SMSService:
                 
                 return {
                     "success": response.status_code == 201,
-                    "message_id": notification.external_id,
+                    "message_id": notification.provider_message_id, # Use provider_message_id
                     "notification_id": notification.id,
-                    "cost": response_data.get("SMSMessageData", {}).get("Recipients", [{}])[0].get("cost"),
+                    "cost": notification.cost,
                     "status": response_data.get("SMSMessageData", {}).get("Recipients", [{}])[0].get("status")
                 }
                 
@@ -89,14 +90,14 @@ class SMSService:
             
             # Log failed notification
             notification = Notification(
-                merchant_id=merchant_id,
+                merchant_id=merchant_id, # Use the passed merchant_id
                 customer_id=customer_id,
                 campaign_id=campaign_id,
                 notification_type=notification_type,
-                channel="sms",
-                recipient_phone=phone_number,
-                message_content=message,
+                recipient=phone_number, # Changed from recipient_phone to recipient
+                message=message, # Changed from message_content to message
                 status=NotificationStatus.FAILED,
+                provider="africastalking",
                 error_message=str(e)
             )
             
@@ -113,7 +114,7 @@ class SMSService:
         self, 
         recipients: List[Dict[str, Any]], 
         message: str,
-        merchant_id: int,
+        merchant_id: int, # merchant_id is now required
         notification_type: NotificationType = NotificationType.PROMOTIONAL,
         campaign_id: Optional[int] = None
     ) -> Dict[str, Any]:
@@ -135,7 +136,7 @@ class SMSService:
             result = await self.send_sms(
                 phone_number=phone,
                 message=personalized_message,
-                merchant_id=merchant_id,
+                merchant_id=merchant_id, # Pass merchant_id
                 notification_type=notification_type,
                 customer_id=customer_id,
                 campaign_id=campaign_id
@@ -183,7 +184,7 @@ class SMSService:
         return await self.send_sms(
             phone_number=customer.phone,
             message=message,
-            merchant_id=customer.merchant_id,
+            merchant_id=customer.merchant_id, # Pass merchant_id from customer
             notification_type=NotificationType.LOYALTY,
             customer_id=customer_id
         )
@@ -207,6 +208,11 @@ class SMSService:
         
         # Prepare recipients list
         recipients = []
+        # Assuming all customers in a campaign belong to the same merchant
+        merchant_id = None
+        if customers:
+            merchant_id = customers[0].merchant_id
+
         for customer in customers:
             recipients.append({
                 "phone": customer.phone,
@@ -218,7 +224,7 @@ class SMSService:
         return await self.send_bulk_sms(
             recipients=recipients,
             message=message_template,
-            merchant_id=customers[0].merchant_id,
+            merchant_id=merchant_id, # Pass merchant_id
             notification_type=NotificationType.PROMOTIONAL,
             campaign_id=campaign_id
         )
@@ -244,7 +250,7 @@ class SMSService:
         return await self.send_sms(
             phone_number=customer.phone,
             message=message,
-            merchant_id=customer.merchant_id,
+            merchant_id=customer.merchant_id, # Pass merchant_id from customer
             notification_type=NotificationType.RETENTION,
             customer_id=customer_id
         )
@@ -259,10 +265,13 @@ class SMSService:
             return f"+{clean_phone}"
         elif clean_phone.startswith('0'):
             return f"+254{clean_phone[1:]}"
-        elif len(clean_phone) == 9:
+        elif len(clean_phone) == 9: # Assuming 9-digit numbers are missing '0' prefix
             return f"+254{clean_phone}"
         else:
-            return f"+254{clean_phone}"
+            # If it's not a standard Kenyan format, assume it's already international or try to prepend +254
+            if not clean_phone.startswith('+'):
+                return f"+254{clean_phone}" # Default to +254 if no other prefix
+            return clean_phone
     
     def _generate_loyalty_message(
         self, 
@@ -314,13 +323,13 @@ class SMSService:
             history.append({
                 "id": notification.id,
                 "type": notification.notification_type.value,
-                "channel": notification.channel,
-                "recipient": notification.recipient_phone,
-                "message": notification.message_content,
+                "recipient": notification.recipient, # Changed from recipient_phone to recipient
+                "message": notification.message, # Changed from message_content to message
                 "status": notification.status.value,
                 "sent_at": notification.sent_at.isoformat() if notification.sent_at else None,
                 "created_at": notification.created_at.isoformat(),
-                "error": notification.error_message
+                "error": notification.error_message,
+                "cost": float(notification.cost)
             })
         
         return history
@@ -344,7 +353,7 @@ class SMSService:
             ).where(
                 and_(
                     Notification.merchant_id == merchant_id,
-                    Notification.channel == "sms",
+                    Notification.notification_type.in_([NotificationType.SMS, NotificationType.PROMOTIONAL, NotificationType.LOYALTY, NotificationType.RETENTION]), # Filter for SMS-related types
                     Notification.created_at >= start_date
                 )
             ).group_by(Notification.status, Notification.notification_type)

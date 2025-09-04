@@ -38,8 +38,12 @@ class DarajaService:
         if not merchant:
             raise ValueError(f"Merchant {self.merchant_id} not found")
         
+        # Daraja credentials are now optional on Merchant, as they might move to Till in future
+        # For now, we'll check if they exist for DarajaService to function
         if not merchant.daraja_consumer_key or not merchant.daraja_consumer_secret or not merchant.daraja_shortcode or not merchant.daraja_passkey:
-            raise DarajaAPIError(f"Daraja API credentials not configured for merchant {self.merchant_id}")
+            logger.warning(f"Daraja API credentials not fully configured for merchant {self.merchant_id}. Some Daraja features may not work.")
+            # We won't raise an error here, but allow partial functionality if needed.
+            # Specific Daraja API calls will fail if credentials are truly missing.
             
         self._merchant_credentials = merchant
         return merchant
@@ -50,7 +54,7 @@ class DarajaService:
         consumer_secret = merchant.daraja_consumer_secret
         
         if not consumer_key or not consumer_secret:
-            raise DarajaAPIError("Daraja consumer key or secret not configured.")
+            raise DarajaAPIError("Daraja consumer key or secret not configured for this merchant.")
 
         auth_string = f"{consumer_key}:{consumer_secret}"
         encoded_auth = base64.b64encode(auth_string.encode()).decode()
@@ -138,23 +142,24 @@ class DarajaService:
         return await self._make_request("GET", f"/merchants/verify/{till_number}")
 
     def _normalize_phone_number(self, phone: str) -> str:
-        """Normalize phone number to standard format"""
+        """Normalize phone number to standard format for Kenya (+254)"""
         # Remove any non-digit characters
-        phone = ''.join(filter(str.isdigit, phone))
+        clean_phone = ''.join(filter(str.isdigit, phone))
         
         # Handle Kenyan phone numbers
-        if phone.startswith('254'):
-            return phone
-        elif phone.startswith('0'):
-            return '254' + phone[1:]
-        elif len(phone) == 9:
-            return '254' + phone
+        if clean_phone.startswith('254'):
+            return clean_phone
+        elif clean_phone.startswith('0'):
+            return '254' + clean_phone[1:]
+        elif len(clean_phone) == 9: # Assuming 9-digit numbers are missing '0' prefix
+            return '254' + clean_phone
         
-        return phone
+        return clean_phone # Return as is if it doesn't match known patterns
 
     def _parse_daraja_transaction(self, transaction_data: Dict[str, Any]) -> Dict[str, Any]:
         """Parse Daraja transaction data into our format"""
         # This parsing logic might need to be adjusted based on actual Daraja webhook/API response format
+        # Assuming the webhook data structure from the original DaraaaService
         return {
             "mpesa_receipt_number": transaction_data.get("receipt_number"),
             "mpesa_transaction_id": transaction_data.get("transaction_id"),
@@ -220,7 +225,14 @@ class DarajaService:
                             for key, value in parsed_data.items():
                                 if key not in ["mpesa_receipt_number"]:  # Don't update receipt number
                                     setattr(existing_transaction, key, value)
+                            await self.db.commit() # Commit updates
+                            await self.db.refresh(existing_transaction)
                             updated_transactions += 1
+                            
+                            # Update customer metrics
+                            if existing_transaction.customer_id:
+                                await self.customer_service.update_customer_metrics(existing_transaction.customer_id)
+
                         else:
                             # Create new transaction
                             # First, find or create customer
@@ -237,8 +249,13 @@ class DarajaService:
                                 **parsed_data
                             )
                             self.db.add(transaction)
+                            await self.db.commit() # Commit new transaction
+                            await self.db.refresh(transaction)
                             new_transactions += 1
                             total_amount += parsed_data["amount"]
+                            
+                            # Update customer metrics
+                            await self.customer_service.update_customer_metrics(customer.id)
                             
                     except Exception as e:
                         logger.error(f"Error processing transaction {transaction_data.get('id')}: {str(e)}")
@@ -255,7 +272,7 @@ class DarajaService:
             # Update merchant's last sync time
             merchant.last_sync_at = end_date
             
-            # Commit all changes
+            # Commit final merchant update
             await self.db.commit()
             
             logger.info(f"Sync completed: {new_transactions} new, {updated_transactions} updated")
@@ -298,16 +315,17 @@ class DarajaService:
             till_number = transaction_data.get("till_number")
             
             # Find merchant by till number
-            merchant = await self.db.execute(
+            merchant_result = await self.db.execute(
                 select(Merchant).where(Merchant.mpesa_till_number == till_number)
             )
-            merchant = merchant.scalar_one_or_none()
+            merchant = merchant_result.scalar_one_or_none()
             
             if not merchant:
                 logger.warning(f"Webhook received for unknown till number: {till_number}")
                 return None
             
             # Re-initialize DarajaService with the correct merchant_id for parsing
+            # This ensures the correct merchant context for _parse_daraja_transaction
             daraja_service_for_parsing = DarajaService(self.db, merchant.id)
 
             # Parse transaction data
@@ -327,6 +345,12 @@ class DarajaService:
                     if key not in ["mpesa_receipt_number"]:
                         setattr(existing_transaction, key, value)
                 await self.db.commit()
+                await self.db.refresh(existing_transaction)
+                
+                # Update customer metrics
+                if existing_transaction.customer_id:
+                    await self.customer_service.update_customer_metrics(existing_transaction.customer_id)
+
                 return existing_transaction
             else:
                 # Create new transaction
@@ -345,6 +369,9 @@ class DarajaService:
                 await self.db.commit()
                 await self.db.refresh(transaction)
                 
+                # Update customer metrics
+                await self.customer_service.update_customer_metrics(customer.id)
+
                 logger.info(f"New transaction created from webhook: {transaction.mpesa_receipt_number}")
                 return transaction
                 

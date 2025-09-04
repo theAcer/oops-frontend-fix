@@ -9,13 +9,13 @@ import RegisterPage from './pages/Auth/RegisterPage';
 import LinkMerchantPage from './pages/Auth/LinkMerchantPage';
 import DashboardPage from './pages/Dashboard/DashboardPage';
 import IndexPage from './pages/Index';
+import NotificationsPage from './pages/Notifications/NotificationsPage'; // Import NotificationsPage
 import { Toaster } from 'react-hot-toast'; // For toast notifications
 
 // Placeholder for other pages
 const CustomersPage = () => <div className="p-4">Customers Page (Coming Soon!)</div>;
 const LoyaltyPage = () => <div className="p-4">Loyalty Page (Coming Soon!)</div>;
 const CampaignsPage = () => <div className="p-4">Campaigns Page (Coming Soon!)</div>;
-const NotificationsPage = () => <div className="p-4">Notifications Page (Coming Soon!)</div>;
 const SettingsPage = () => <div className="p-4">Settings Page (Coming Soon!)</div>;
 
 // A component to protect routes

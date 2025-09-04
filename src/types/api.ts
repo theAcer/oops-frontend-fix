@@ -131,13 +131,13 @@ export interface LoyaltyProgramResponse {
 export interface NotificationHistoryItem {
   id: number;
   type: string;
-  channel: string;
-  recipient: string;
-  message: string;
+  recipient: string; // Changed from recipient_phone to recipient
+  message: string; // Changed from message_content to message
   status: string;
   sent_at?: string;
   created_at: string;
   error?: string;
+  cost: number; // Added cost
 }
 
 // Request Payloads
@@ -224,6 +224,15 @@ export interface LoyaltyProgramUpdateRequest {
   is_active?: boolean;
   start_date?: string;
   end_date?: string;
+}
+
+export interface SimulateDarajaTransactionRequest {
+  till_number: string;
+  amount: number;
+  customer_phone: string;
+  customer_name?: string;
+  mpesa_receipt_number?: string;
+  transaction_date?: string;
 }
 
 // Dashboard and Analytics Types

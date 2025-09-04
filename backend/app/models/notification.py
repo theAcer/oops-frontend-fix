@@ -10,6 +10,8 @@ class NotificationType(str, enum.Enum):
     WHATSAPP = "whatsapp"
     PUSH = "push"
     PROMOTIONAL = "promotional"
+    LOYALTY = "loyalty" # Added LOYALTY type
+    RETENTION = "retention" # Added RETENTION type
 
 class NotificationStatus(str, enum.Enum):
     PENDING = "pending"
@@ -22,6 +24,7 @@ class Notification(Base):
     __tablename__ = "notifications"
 
     id = Column(Integer, primary_key=True, index=True)
+    merchant_id = Column(Integer, ForeignKey("merchants.id"), nullable=False) # Added merchant_id
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
     campaign_id = Column(Integer, ForeignKey("campaigns.id"), nullable=True)
     
@@ -50,5 +53,6 @@ class Notification(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
+    merchant = relationship("Merchant") # Added merchant relationship
     customer = relationship("Customer")
     campaign = relationship("Campaign")

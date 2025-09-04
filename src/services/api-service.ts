@@ -6,9 +6,10 @@ import type {
   DashboardAnalytics,
   Campaign,
   LoyaltyProgram,
-  NotificationHistory,
+  NotificationHistoryItem, // Changed from NotificationHistory to NotificationHistoryItem
   AuthUser,
   TokenResponse,
+  SimulateDarajaTransactionRequest, // Import new request type
 } from "@/types/api"
 
 export const apiService = {
@@ -22,7 +23,7 @@ export const apiService = {
     email: string,
     password: string,
     name: string,
-    merchantId?: string, // Made optional
+    merchantId?: number, // Changed to number
   ): Promise<AuthUser> {
     const response = await api.post("/api/v1/auth/register", {
       email,
@@ -39,40 +40,40 @@ export const apiService = {
   },
 
   // Dashboard Analytics
-  async getDashboardAnalytics(merchantId: string): Promise<DashboardAnalytics> {
+  async getDashboardAnalytics(merchantId: number): Promise<DashboardAnalytics> { // Changed to number
     const response = await api.get(`/api/v1/analytics/dashboard/${merchantId}`)
     return response.data
   },
 
   // Customer Management
-  async getCustomers(merchantId: string, page = 1, limit = 10): Promise<{ customers: Customer[]; total: number }> {
+  async getCustomers(merchantId: number, page = 1, limit = 10): Promise<{ customers: Customer[]; total: number }> { // Changed to number
     const response = await api.get(`/api/v1/customers?merchant_id=${merchantId}&skip=${(page - 1) * limit}&limit=${limit}`)
     return response.data
   },
 
-  async getCustomer(customerId: string): Promise<Customer> {
+  async getCustomer(customerId: number): Promise<Customer> { // Changed to number
     const response = await api.get(`/api/v1/customers/${customerId}`)
     return response.data
   },
 
-  async updateCustomer(customerId: string, data: Partial<Customer>): Promise<Customer> {
+  async updateCustomer(customerId: number, data: Partial<Customer>): Promise<Customer> { // Changed to number
     const response = await api.put(`/api/v1/customers/${customerId}`, data)
     return response.data
   },
 
-  async getCustomerLoyalty(customerId: string): Promise<{ points: number; tier: string; rewards: any[] }> {
+  async getCustomerLoyalty(customerId: number): Promise<{ points: number; tier: string; rewards: any[] }> { // Changed to number
     const response = await api.get(`/api/v1/customers/${customerId}/loyalty`)
     return response.data
   },
 
   // Transaction Management
   async getTransactions(
-    merchantId: string,
-    filters?: { customer_id?: string; start_date?: string; end_date?: string; page?: number; limit?: number },
+    merchantId: number, // Changed to number
+    filters?: { customer_id?: number; start_date?: string; end_date?: string; page?: number; limit?: number }, // Changed customer_id to number
   ): Promise<{ transactions: Transaction[]; total: number }> {
     const params = new URLSearchParams()
-    params.append("merchant_id", merchantId)
-    if (filters?.customer_id) params.append("customer_id", filters.customer_id)
+    params.append("merchant_id", merchantId.toString()) // Ensure merchantId is string for params
+    if (filters?.customer_id) params.append("customer_id", filters.customer_id.toString())
     if (filters?.start_date) params.append("start_date", filters.start_date)
     if (filters?.end_date) params.append("end_date", filters.end_date)
     if (filters?.page) params.append("skip", ((filters.page - 1) * (filters.limit || 20)).toString())
@@ -82,15 +83,19 @@ export const apiService = {
     return response.data
   },
 
-  async getTransaction(transactionId: string): Promise<Transaction> {
+  async getTransaction(transactionId: number): Promise<Transaction> { // Changed to number
     const response = await api.get(`/api/v1/transactions/${transactionId}`)
     return response.data
   },
 
-  async syncTransactions(merchantId: string): Promise<{ synced: number; message: string }> {
-    // Changed to call the new Daraja sync endpoint
+  async syncTransactions(merchantId: number): Promise<{ new_transactions: number; updated_transactions: number; total_amount: number; sync_period_start: string; sync_period_end: string }> { // Changed to number, updated return type
     const response = await api.post(`/api/v1/transactions/sync-daraja`, { merchant_id: merchantId })
     return response.data
+  },
+
+  async simulateDarajaTransaction(data: SimulateDarajaTransactionRequest): Promise<{ message: string; transaction_id: number }> { // New method
+    const response = await api.post("/api/v1/webhooks/daraja/simulate-transaction", data);
+    return response.data;
   },
 
   // Merchant Management
@@ -104,110 +109,110 @@ export const apiService = {
     return response.data
   },
 
-  async getMerchant(merchantId: string): Promise<Merchant> {
+  async getMerchant(merchantId: number): Promise<Merchant> { // Changed to number
     const response = await api.get(`/api/v1/merchants/${merchantId}`)
     return response.data
   },
 
-  async updateMerchant(merchantId: string, data: Partial<Merchant>): Promise<Merchant> {
+  async updateMerchant(merchantId: number, data: Partial<Merchant>): Promise<Merchant> { // Changed to number
     const response = await api.put(`/api/v1/merchants/${merchantId}`, data)
     return response.data
   },
 
   // Analytics endpoints
-  async getRevenueAnalytics(merchantId: string): Promise<any> {
+  async getRevenueAnalytics(merchantId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/analytics/revenue/${merchantId}`)
     return response.data
   },
 
-  async getCustomerAnalytics(merchantId: string): Promise<any> {
+  async getCustomerAnalytics(merchantId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/analytics/customers/${merchantId}`)
     return response.data
   },
 
-  async getLoyaltyAnalytics(merchantId: string): Promise<any> {
+  async getLoyaltyAnalytics(merchantId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/analytics/loyalty/${merchantId}`)
     return response.data
   },
 
-  async getCampaignAnalytics(merchantId: string): Promise<any> {
+  async getCampaignAnalytics(merchantId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/analytics/campaigns/${merchantId}`)
     return response.data
   },
 
-  async getCustomerInsights(merchantId: string): Promise<any> {
+  async getCustomerInsights(merchantId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/analytics/customer-insights/${merchantId}`)
     return response.data
   },
 
-  async getChurnRisk(merchantId: string): Promise<any> {
+  async getChurnRisk(merchantId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/analytics/churn-risk/${merchantId}`)
     return response.data
   },
 
-  async getRevenueTrends(merchantId: string): Promise<any> {
+  async getRevenueTrends(merchantId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/analytics/revenue-trends/${merchantId}`)
     return response.data
   },
 
-  async getRealTimeMetrics(merchantId: string): Promise<any> {
+  async getRealTimeMetrics(merchantId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/analytics/real-time/${merchantId}`)
     return response.data
   },
 
   // AI Recommendations endpoints
-  async getCustomerAnalysisAI(customerId: string): Promise<any> {
+  async getCustomerAnalysisAI(customerId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/ai/customer/${customerId}/analysis`)
     return response.data
   },
 
-  async getChurnRiskAI(customerId: string): Promise<any> {
+  async getChurnRiskAI(customerId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/ai/customer/${customerId}/churn-risk`)
     return response.data
   },
 
-  async getNextPurchasePrediction(customerId: string): Promise<any> {
+  async getNextPurchasePrediction(customerId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/ai/customer/${customerId}/next-purchase`)
     return response.data
   },
 
-  async getPersonalizedOffers(customerId: string): Promise<any> {
+  async getPersonalizedOffers(customerId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/ai/customer/${customerId}/offers`)
     return response.data
   },
 
-  async getLifetimeValue(customerId: string): Promise<any> {
+  async getLifetimeValue(customerId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/ai/customer/${customerId}/lifetime-value`)
     return response.data
   },
 
-  async getCampaignTiming(merchantId: string): Promise<any> {
+  async getCampaignTiming(merchantId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/ai/merchant/${merchantId}/campaign-timing`)
     return response.data
   },
 
-  async getMerchantInsights(merchantId: string): Promise<any> {
+  async getMerchantInsights(merchantId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/ai/merchant/${merchantId}/insights`)
     return response.data
   },
 
-  async trainModels(merchantId: string): Promise<any> {
+  async trainModels(merchantId: number): Promise<any> { // Changed to number
     const response = await api.post(`/api/v1/ai/merchant/${merchantId}/train-models`)
     return response.data
   },
 
-  async getAIRecommendationsSummary(customerId: string): Promise<any> {
+  async getAIRecommendationsSummary(customerId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/ai/customer/${customerId}/recommendations/summary`)
     return response.data
   },
 
   // Campaign Management
-  async getCampaigns(merchantId: string): Promise<{ campaigns: Campaign[]; total: number }> {
+  async getCampaigns(merchantId: number): Promise<{ campaigns: Campaign[]; total: number }> { // Changed to number
     const response = await api.get(`/api/v1/campaigns?merchant_id=${merchantId}`)
     return response.data
   },
 
-  async getCampaign(campaignId: string): Promise<Campaign> {
+  async getCampaign(campaignId: number): Promise<Campaign> { // Changed to number
     const response = await api.get(`/api/v1/campaigns/${campaignId}`)
     return response.data
   },
@@ -217,28 +222,28 @@ export const apiService = {
     return response.data
   },
 
-  async updateCampaign(campaignId: string, data: Partial<Campaign>): Promise<Campaign> {
+  async updateCampaign(campaignId: number, data: Partial<Campaign>): Promise<Campaign> { // Changed to number
     const response = await api.put(`/api/v1/campaigns/${campaignId}`, data)
     return response.data
   },
 
-  async launchCampaign(campaignId: string): Promise<{ message: string }> {
+  async launchCampaign(campaignId: number): Promise<{ message: string }> { // Changed to number
     const response = await api.post(`/api/v1/campaigns/${campaignId}/launch`)
     return response.data
   },
 
-  async getCampaignPerformance(campaignId: string): Promise<any> {
+  async getCampaignPerformance(campaignId: number): Promise<any> { // Changed to number
     const response = await api.get(`/api/v1/campaigns/${campaignId}/performance`)
     return response.data
   },
 
   // Loyalty Program Management
-  async getLoyaltyPrograms(merchantId: string): Promise<{ programs: LoyaltyProgram[]; total: number }> {
+  async getLoyaltyPrograms(merchantId: number): Promise<{ programs: LoyaltyProgram[]; total: number }> { // Changed to number
     const response = await api.get(`/api/v1/loyalty/programs?merchant_id=${merchantId}`)
     return response.data
   },
 
-  async getLoyaltyProgram(programId: string): Promise<LoyaltyProgram> {
+  async getLoyaltyProgram(programId: number): Promise<LoyaltyProgram> { // Changed to number
     const response = await api.get(`/api/v1/loyalty/programs/${programId}`)
     return response.data
   },
@@ -248,62 +253,62 @@ export const apiService = {
     return response.data
   },
 
-  async updateLoyaltyProgram(programId: string, data: Partial<LoyaltyProgram>): Promise<LoyaltyProgram> {
+  async updateLoyaltyProgram(programId: number, data: Partial<LoyaltyProgram>): Promise<LoyaltyProgram> { // Changed to number
     const response = await api.put(`/api/v1/loyalty/programs/${programId}`, data)
     return response.data
   },
 
-  async activateLoyaltyProgram(programId: string): Promise<{ message: string }> {
+  async activateLoyaltyProgram(programId: number): Promise<{ message: string }> { // Changed to number
     const response = await api.post(`/api/v1/loyalty/programs/${programId}/activate`)
     return response.data
   },
 
-  async calculateRewards(transactionData: { transaction_id: string; program_id: string }): Promise<any> {
+  async calculateRewards(transactionData: { transaction_id: number; program_id: number }): Promise<any> { // Changed to number
     const response = await api.post("/api/v1/loyalty/calculate-rewards", transactionData)
     return response.data
   },
 
-  async redeemReward(rewardId: string): Promise<{ message: string }> {
-    const response = await api.post(`/api/v1/loyalty/rewards/${rewardId}/redeem`)
+  async redeemReward(rewardId: number, customerId: number): Promise<{ message: string }> { // Changed to number
+    const response = await api.post(`/api/v1/loyalty/rewards/${rewardId}/redeem`, { customer_id: customerId })
     return response.data
   },
 
-  async getCustomerRewards(customerId: string): Promise<any[]> {
+  async getCustomerRewards(customerId: number): Promise<any[]> { // Changed to number
     const response = await api.get(`/api/v1/loyalty/customers/${customerId}/rewards`)
     return response.data
   },
 
   // Notifications
-  async sendSMS(merchantId: string, data: { recipient: string; message: string }): Promise<any> {
+  async sendSMS(merchantId: number, data: { phone_number: string; message: string; customer_id?: number; campaign_id?: number; notification_type?: string }): Promise<any> { // Changed to number, updated data structure
     const response = await api.post(`/api/v1/notifications/sms/send/${merchantId}`, data)
     return response.data
   },
 
-  async sendBulkSMS(merchantId: string, data: { recipients: string[]; message: string }): Promise<any> {
+  async sendBulkSMS(merchantId: number, data: { recipients: { phone: string; customer_id?: number; name?: string }[]; message: string; notification_type?: string; campaign_id?: number }): Promise<any> { // Changed to number, updated data structure
     const response = await api.post(`/api/v1/notifications/sms/bulk/${merchantId}`, data)
     return response.data
   },
 
   async sendSMSCampaign(data: {
-    campaign_id: string
-    target_customers: number[]
-    message_template: string
+    campaign_id: number; // Changed to number
+    target_customers: number[];
+    message_template: string;
   }): Promise<any> {
     const response = await api.post("/api/v1/notifications/sms/campaign", data)
     return response.data
   },
 
-  async getNotificationHistory(merchantId: string): Promise<{ notifications: NotificationHistory[]; total: number }> {
-    const response = await api.get(`/api/v1/notifications/history/${merchantId}`)
+  async getNotificationHistory(merchantId: number, limit: number = 50): Promise<{ notifications: NotificationHistoryItem[]; count: number }> { // Changed to number, updated return type
+    const response = await api.get(`/api/v1/notifications/history/${merchantId}?limit=${limit}`)
     return response.data
   },
 
-  async getNotificationAnalytics(merchantId: string): Promise<any> {
-    const response = await api.get(`/api/v1/notifications/analytics/${merchantId}`)
+  async getNotificationAnalytics(merchantId: number, days: number = 30): Promise<any> { // Changed to number
+    const response = await api.get(`/api/v1/notifications/analytics/${merchantId}?days=${days}`)
     return response.data
   },
 
-  async getMessageTemplates(): Promise<any[]> {
+  async getMessageTemplates(): Promise<any> { // Changed return type to any as it's a dict
     const response = await api.get("/api/v1/notifications/templates")
     return response.data
   },

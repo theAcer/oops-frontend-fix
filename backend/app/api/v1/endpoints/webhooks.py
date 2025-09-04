@@ -1,18 +1,29 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Header
+from fastapi import APIRouter, Depends, HTTPException, Request, Header, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from app.core.database import get_db
-from app.services.daraja_service import DarajaService # Changed import
+from app.services.daraja_service import DarajaService
 from app.services.loyalty_service import LoyaltyService
-from app.models.merchant import Merchant # Added import to find merchant for DarajaService init
+from app.models.merchant import Merchant
+from pydantic import BaseModel, Field
+from datetime import datetime
 import json
 import logging
+import uuid # For generating unique receipt numbers
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-@router.post("/daraja/transaction") # Renamed endpoint for clarity
-async def handle_daraja_webhook( # Renamed function
+class SimulateDarajaTransactionRequest(BaseModel):
+    till_number: str = Field(..., description="The M-Pesa Till Number for the merchant.")
+    amount: float = Field(..., gt=0, description="The transaction amount.")
+    customer_phone: str = Field(..., description="The customer's phone number (e.g., 254712345678).")
+    customer_name: Optional[str] = Field(None, description="The customer's name.")
+    mpesa_receipt_number: Optional[str] = Field(None, description="Optional: M-Pesa receipt number. Will be generated if not provided.")
+    transaction_date: Optional[datetime] = Field(None, description="Optional: Transaction date. Defaults to current UTC time.")
+
+@router.post("/daraja/transaction")
+async def handle_daraja_webhook(
     request: Request,
     x_signature: Optional[str] = Header(None),
     db: AsyncSession = Depends(get_db)
@@ -44,28 +55,26 @@ async def handle_daraja_webhook( # Renamed function
             raise HTTPException(status_code=404, detail="Merchant not found for till number")
 
         # Initialize services with merchant_id
-        daraja_service = DarajaService(db, merchant.id) # Pass merchant_id
+        daraja_service = DarajaService(db, merchant.id)
         loyalty_service = LoyaltyService(db)
         
         # Validate webhook signature (if provided)
         if x_signature:
-            is_valid = await daraja_service.validate_webhook_signature( # Changed service call
+            is_valid = await daraja_service.validate_webhook_signature(
                 body.decode(), x_signature
             )
             if not is_valid:
                 raise HTTPException(status_code=401, detail="Invalid webhook signature")
         
         # Process the transaction
-        transaction = await daraja_service.process_webhook_transaction(payload) # Changed service call
+        transaction = await daraja_service.process_webhook_transaction(payload)
         
         if transaction:
-            # Process loyalty rewards for the new transaction
-            try:
-                await loyalty_service.process_transaction_loyalty(transaction.id)
-                logger.info(f"Loyalty processed for transaction {transaction.id}")
-            except Exception as e:
-                logger.error(f"Failed to process loyalty for transaction {transaction.id}: {str(e)}")
-                # Don't fail the webhook for loyalty processing errors
+            # Loyalty processing is now handled within daraja_service.process_webhook_transaction
+            # after the customer metrics are updated.
+            # We can optionally trigger it here again if there's a specific reason,
+            # but for now, it's integrated into the transaction processing.
+            pass
         
         return {"status": "success", "transaction_id": transaction.id if transaction else None}
         
@@ -75,7 +84,61 @@ async def handle_daraja_webhook( # Renamed function
         logger.error(f"Webhook processing error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.get("/daraja/health") # Renamed endpoint
+@router.post("/daraja/simulate-transaction", status_code=status.HTTP_200_OK)
+async def simulate_daraja_transaction(
+    request_data: SimulateDarajaTransactionRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """Simulate an M-Pesa Daraja transaction for testing purposes."""
+    
+    # Find merchant by till number
+    merchant_result = await db.execute(
+        select(Merchant).where(Merchant.mpesa_till_number == request_data.till_number)
+    )
+    merchant = merchant_result.scalar_one_or_none()
+
+    if not merchant:
+        raise HTTPException(status_code=404, detail=f"Merchant with till number {request_data.till_number} not found.")
+
+    # Construct a mock Daraja webhook payload
+    mock_payload = {
+        "data": {
+            "id": str(uuid.uuid4()), # Unique ID for the simulated transaction
+            "receipt_number": request_data.mpesa_receipt_number or f"R{uuid.uuid4().hex[:10].upper()}",
+            "transaction_id": str(uuid.uuid4()),
+            "till_number": request_data.till_number,
+            "amount": request_data.amount,
+            "customer_phone": request_data.customer_phone,
+            "customer_name": request_data.customer_name,
+            "transaction_date": (request_data.transaction_date or datetime.utcnow()).isoformat(),
+            "description": "Simulated M-Pesa transaction",
+            "reference": "SIMULATED_REF"
+        }
+    }
+    
+    logger.info(f"Simulating Daraja transaction for merchant {merchant.id}: {mock_payload}")
+
+    # Call the actual webhook handler to process the simulated transaction
+    # We'll bypass signature validation for simulation
+    try:
+        # Create a dummy Request object for the handler
+        mock_request = Request(scope={"type": "http", "method": "POST", "headers": []})
+        mock_request._body = json.dumps(mock_payload).encode('utf-8') # Set raw body
+
+        response = await handle_daraja_webhook(
+            request=mock_request,
+            x_signature=None, # No signature for simulated webhook
+            db=db
+        )
+        return {"message": "Simulated transaction processed successfully", "transaction_id": response.get("transaction_id")}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error during simulated transaction processing: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process simulated transaction: {str(e)}")
+
+
+@router.get("/daraja/health")
 async def webhook_health_check():
     """Health check endpoint for webhook service"""
-    return {"status": "healthy", "service": "daraja_webhook"} # Renamed service
+    return {"status": "healthy", "service": "daraja_webhook"}

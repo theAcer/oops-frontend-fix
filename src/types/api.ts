@@ -1,4 +1,4 @@
-import { BusinessType } from './enums'; // We'll create this enum soon
+import { BusinessType, LoyaltyProgramType } from './enums'; // Added LoyaltyProgramType import
 
 export interface UserResponse {
   id: number;
@@ -203,6 +203,27 @@ export interface CustomerUpdateRequest {
   customer_segment?: string;
   preferred_contact_method?: string;
   marketing_consent?: boolean;
+}
+
+export interface LoyaltyProgramCreateRequest {
+  merchant_id: number;
+  name: string;
+  description?: string;
+  program_type: LoyaltyProgramType;
+  points_per_currency?: number;
+  minimum_spend?: number;
+  visits_required?: number;
+  reward_visits?: number;
+}
+
+export interface LoyaltyProgramUpdateRequest {
+  name?: string;
+  description?: string;
+  points_per_currency?: number;
+  minimum_spend?: number;
+  is_active?: boolean;
+  start_date?: string;
+  end_date?: string;
 }
 
 // Dashboard and Analytics Types

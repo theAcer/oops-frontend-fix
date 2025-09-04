@@ -186,3 +186,164 @@ export interface MerchantLinkRequest {
   daraja_shortcode?: string;
   daraja_passkey?: string;
 }
+
+// Dashboard and Analytics Types
+export interface GrowthMetrics {
+  revenue_growth: number;
+  transaction_growth: number;
+  customer_growth: number;
+  avg_value_growth: number;
+}
+
+export interface OverviewMetrics {
+  total_revenue: number;
+  total_transactions: number;
+  average_transaction_value: number;
+  unique_customers: number;
+  total_customers: number;
+  new_customers: number;
+  at_risk_customers: number;
+  average_churn_risk: number;
+  growth_metrics: GrowthMetrics;
+}
+
+export interface DailyRevenueTrend {
+  date: string;
+  revenue: number;
+  transactions: number;
+}
+
+export interface HourlyPattern {
+  hour: number;
+  revenue: number;
+  transactions: number;
+}
+
+export interface WeeklyPattern {
+  day: string;
+  revenue: number;
+  transactions: number;
+  avg_transaction: number;
+}
+
+export interface RevenueDistribution {
+  range: string;
+  count: number;
+  revenue: number;
+}
+
+export interface RevenueAnalytics {
+  daily_trend: DailyRevenueTrend[];
+  hourly_patterns: HourlyPattern[];
+  weekly_patterns: WeeklyPattern[];
+  revenue_distribution: RevenueDistribution[];
+  peak_hour?: number;
+  peak_day?: string;
+}
+
+export interface CustomerSegmentData {
+  count: number;
+  avg_spent: number;
+  avg_transactions: number;
+  avg_churn_risk: number;
+}
+
+export interface CLVDistribution {
+  range: string;
+  count: number;
+}
+
+export interface TopCustomer {
+  id: number;
+  name: string;
+  phone: string;
+  total_spent: number;
+  total_transactions: number;
+  loyalty_tier: string;
+  churn_risk_score: number;
+}
+
+export interface ChurnRiskDistribution {
+  risk_level: string;
+  count: number;
+}
+
+export interface CustomerAnalytics {
+  segments: { [key: string]: CustomerSegmentData };
+  new_customers_in_period: number;
+  clv_distribution: CLVDistribution[];
+  top_customers: TopCustomer[];
+  churn_risk_distribution: ChurnRiskDistribution[];
+}
+
+export interface LoyaltyTierDistribution {
+  bronze: number;
+  silver: number;
+  gold: number;
+  platinum: number;
+}
+
+export interface LoyaltyRewardsStats {
+  total_issued: number;
+  total_redeemed: number;
+  redemption_rate: number;
+  total_points_awarded: number;
+}
+
+export interface LoyaltyPeriodActivity {
+  points_issued: number;
+  rewards_issued: number;
+}
+
+export interface LoyaltyAnalytics {
+  program_id: number;
+  program_name: string;
+  total_members: number;
+  average_points: number;
+  total_points_issued: number;
+  tier_distribution: LoyaltyTierDistribution;
+  rewards: LoyaltyRewardsStats;
+  period_activity: LoyaltyPeriodActivity;
+}
+
+export interface CampaignPerformanceItem {
+  id: number;
+  name: string;
+  type: string;
+  status: string;
+  target_customers: number;
+  reached_customers: number;
+  conversions: number;
+  conversion_rate: number;
+  revenue_generated: number;
+  sms_sent: number;
+  launched_at?: string;
+}
+
+export interface CampaignTypePerformance {
+  type: string;
+  count: number;
+  avg_conversion_rate: number;
+  total_revenue: number;
+}
+
+export interface CampaignAnalytics {
+  active_campaigns: number;
+  campaigns_in_period: CampaignPerformanceItem[];
+  campaign_type_performance: CampaignTypePerformance[];
+  total_campaigns_launched: number;
+}
+
+export interface DashboardResponse {
+  merchant_id: number;
+  period: {
+    start_date: string;
+    end_date: string;
+  };
+  overview: OverviewMetrics;
+  revenue: RevenueAnalytics;
+  customers: CustomerAnalytics;
+  loyalty: LoyaltyAnalytics;
+  campaigns: CampaignAnalytics;
+  generated_at: string;
+}

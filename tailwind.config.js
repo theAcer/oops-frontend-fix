@@ -58,8 +58,8 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
-        "brand-primary": "hsl(var(--brand-primary))", // This was not in Figma's globals.css, keeping for now
-        "brand-secondary": "hsl(var(--brand-secondary))", // This was not in Figma's globals.css, keeping for now
+        "brand-primary": "hsl(var(--brand-primary))",
+        "brand-secondary": "hsl(var(--brand-secondary))",
         "chart-1": "hsl(var(--chart-1))",
         "chart-2": "hsl(var(--chart-2))",
         "chart-3": "hsl(var(--chart-3))",

@@ -41,9 +41,9 @@
     --sidebar-border: 262 55% 89%; /* #e2d5f3 */
     --sidebar-ring: 262 83% 65%; /* #a855f7 */
 
-    /* Button Gradient Colors (derived from Figma primary) */
-    --btn-gradient-start: 262 83% 58%; /* #7c3aed */
-    --btn-gradient-end: 262 83% 65%;   /* #a855f7 */
+    /* Button Gradient Colors (derived from Figma primary and secondary) */
+    --btn-gradient-start: var(--primary);
+    --btn-gradient-end: var(--secondary);
   }
 
   .dark {
@@ -82,9 +82,9 @@
     --sidebar-border: 262 40% 33.3%; /* #44337a */
     --sidebar-ring: 262 83% 63%; /* #8b5cf6 */
 
-    /* Button Gradient Colors (derived from Figma primary) */
-    --btn-gradient-start: 262 83% 65%; /* #a855f7 */
-    --btn-gradient-end: 262 83% 75%;   /* #c084fc */
+    /* Button Gradient Colors (derived from Figma primary and secondary) */
+    --btn-gradient-start: var(--primary);
+    --btn-gradient-end: var(--secondary);
   }
 }
 

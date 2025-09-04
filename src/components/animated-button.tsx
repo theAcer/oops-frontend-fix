@@ -5,8 +5,6 @@ import { Button, ButtonProps } from '@/components/ui/button';
 import { gsap } from 'gsap';
 import { cn } from '@/lib/utils';
 
-// Omit 'asChild' from ButtonProps because AnimatedButton is not designed to be a slot itself.
-// It always renders its own internal structure.
 interface AnimatedButtonProps extends Omit<ButtonProps, 'asChild'> {
   children: React.ReactNode;
   className?: string;
@@ -25,11 +23,10 @@ export function AnimatedButton({ children, className, ...props }: AnimatedButton
     gsap.set(sheen, { x: "-100%" });
 
     const handleMouseEnter = () => {
-      gsap.to(sheen, {
-        x: "100%",
-        duration: 0.8,
-        ease: "power1.out",
-      });
+      const tl = gsap.timeline();
+      tl.to(sheen, { x: "100%", duration: 0.8, ease: "power1.out" }) // First pass
+        .set(sheen, { x: "-100%" }) // Reset instantly
+        .to(sheen, { x: "100%", duration: 0.8, ease: "power1.out", delay: 0.1 }); // Second pass with slight delay
     };
 
     const handleMouseLeave = () => {
@@ -48,9 +45,7 @@ export function AnimatedButton({ children, className, ...props }: AnimatedButton
   return (
     <Button
       ref={buttonRef}
-      className={cn("relative overflow-hidden bg-gradient-to-r from-primary-start to-primary-end", className)} // Added gradient
-      // Explicitly ensure asChild is false or omitted, as this component always renders a button.
-      // The default for ButtonProps.asChild is already false, so simply not passing it is sufficient.
+      className={cn("relative overflow-hidden bg-gradient-to-r from-primary-start to-primary-end", className)}
       {...props}
     >
       <div
@@ -58,7 +53,7 @@ export function AnimatedButton({ children, className, ...props }: AnimatedButton
         className="absolute inset-0 w-1/4 bg-white/30 transform -skew-x-12 pointer-events-none"
         style={{
           filter: 'blur(5px)',
-          left: '-25%', // Start off-screen to the left
+          left: '-25%',
         }}
       />
       <span className="relative z-10">{children}</span>

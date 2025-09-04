@@ -187,6 +187,24 @@ export interface MerchantLinkRequest {
   daraja_passkey?: string;
 }
 
+export interface CustomerCreateRequest {
+  merchant_id: number;
+  phone: string;
+  name?: string;
+  email?: string;
+  customer_segment?: string;
+  preferred_contact_method?: string;
+  marketing_consent?: boolean;
+}
+
+export interface CustomerUpdateRequest {
+  name?: string;
+  email?: string;
+  customer_segment?: string;
+  preferred_contact_method?: string;
+  marketing_consent?: boolean;
+}
+
 // Dashboard and Analytics Types
 export interface GrowthMetrics {
   revenue_growth: number;

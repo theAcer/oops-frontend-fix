@@ -13,7 +13,7 @@ services:
       - api
     volumes:
       - .:/app
-      - /app/node_modules # This line prevents the host's node_modules from overriding the container's
+       # This line prevents the host's node_modules from overriding the container's
     working_dir: /app
     command: npm run dev
     profiles: ["dev"]

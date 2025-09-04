@@ -1,15 +1,17 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
-  --color-background: hsl(220 14% 96%); /* Light background for the app */
-  --color-foreground: hsl(222 47% 11%); /* Dark text for contrast */
-  --color-card: hsl(0 0% 100%); /* White cards */
+:root {
+  --color-background: hsl(220 14% 96%);
+  --color-foreground: hsl(222 47% 11%);
+  --color-card: hsl(0 0% 100%);
   --color-card-foreground: hsl(222 47% 11%);
   --color-popover: hsl(0 0% 100%);
   --color-popover-foreground: hsl(222 47% 11%);
-  --color-primary: hsl(221 83% 53%); /* Figma's primary blue */
-  --color-primary-foreground: hsl(0 0% 100%); /* White text on primary */
-  --color-secondary: hsl(210 40% 96%); /* Light gray secondary */
+  --color-primary: hsl(221 83% 53%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(210 40% 96%);
   --color-secondary-foreground: hsl(222 47% 11%);
   --color-muted: hsl(210 40% 96%);
   --color-muted-foreground: hsl(215 16% 47%);
@@ -29,8 +31,8 @@
   --color-success-foreground: hsl(210 40% 98%);
   --color-warning: hsl(38 92% 50%);
   --color-warning-foreground: hsl(48 96% 89%);
-  --color-brand-primary: hsl(221 83% 53%); /* Figma's primary blue */
-  --color-brand-secondary: hsl(262 83% 58%); /* Figma's secondary purple */
+  --color-brand-primary: hsl(221 83% 53%);
+  --color-brand-secondary: hsl(262 83% 58%);
   --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(262 83% 58%));
   --gradient-subtle: linear-gradient(180deg, hsl(210 40% 98%), hsl(214 32% 91%));
   --shadow-elegant: 0 10px 30px -10px hsl(221 83% 53% / 0.2);
@@ -42,9 +44,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-background: hsl(222 47% 11%); /* Dark background for the app */
-    --color-foreground: hsl(210 40% 98%); /* Light text for contrast */
-    --color-card: hsl(222 47% 15%); /* Darker cards */
+    --color-background: hsl(222 47% 11%);
+    --color-foreground: hsl(210 40% 98%);
+    --color-card: hsl(222 47% 15%);
     --color-card-foreground: hsl(210 40% 98%);
     --color-popover: hsl(222 47% 11%);
     --color-popover-foreground: hsl(210 40% 98%);
@@ -73,6 +75,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

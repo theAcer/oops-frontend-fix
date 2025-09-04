@@ -1,4 +1,4 @@
-# Stage 1: Dependencies
+# Stage 1: Dependencies (Base for Development)
 FROM node:20-alpine AS base
 
 WORKDIR /app
@@ -13,22 +13,31 @@ RUN \
   else npm install; \
   fi
 
-# Stage 2: Builder (for production build, not used in dev profile but good practice)
+# Copy the rest of the application code for development
+COPY . .
+
+# Expose the port Next.js runs on in development
+EXPOSE 3000
+
+# Stage 2: Builder (for production build)
 FROM base AS builder
 
 WORKDIR /app
 
-COPY . .
+# The code is already copied in the base stage, so no need to copy again here.
+# If you had specific build-time files not needed for dev, you'd copy them here.
+# For Next.js, the `npm run build` command will use the already copied source.
 
 RUN npm run build
 
-# Stage 3: Runner (for production, not used in dev profile but good practice)
+# Stage 3: Runner (for production)
 FROM node:20-alpine AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV production
 
+# Copy necessary files from the builder stage for standalone output
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static

@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token")
+    const token = localStorage.getItem("accessToken") // Changed from "auth_token" to "accessToken"
     if (token) {
       apiService
         .getMe() // Use apiService.getMe()
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(response)
         })
         .catch(() => {
-          localStorage.removeItem("auth_token")
+          localStorage.removeItem("accessToken") // Changed from "auth_token" to "accessToken"
         })
         .finally(() => {
           setLoading(false)
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await apiService.login(email, password) // Use apiService.login()
-      localStorage.setItem("auth_token", response.access_token)
+      localStorage.setItem("accessToken", response.access_token) // Changed from "auth_token" to "accessToken"
 
       const userData = await apiService.getMe() // Fetch user details after login
       setUser(userData)
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       )
 
       const { access_token } = await apiService.login(email, password); // Log in the user after registration
-      localStorage.setItem("auth_token", access_token);
+      localStorage.setItem("accessToken", access_token); // Changed from "auth_token" to "accessToken"
 
       const userData = await apiService.getMe(); // Fetch user details after login
       setUser(userData);
@@ -127,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       )
 
       const { access_token } = await apiService.login(email, password); // Log in the user after registration
-      localStorage.setItem("auth_token", access_token);
+      localStorage.setItem("accessToken", access_token); // Changed from "auth_token" to "accessToken"
 
       const userData = await apiService.getMe(); // Fetch user details after login
       setUser(userData);
@@ -139,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = () => {
-    localStorage.removeItem("auth_token")
+    localStorage.removeItem("accessToken") // Changed from "auth_token" to "accessToken"
     setUser(null)
     router.push("/login")
   }

@@ -5,43 +5,43 @@
 @layer base {
   :root {
     --background: 0 0% 100%; /* White */
-    --foreground: 222.2 47.4% 11.2%; /* Dark Blue */
+    --foreground: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
 
     --muted: 210 40% 96.1%; /* Light Gray */
     --muted-foreground: 215.4 16.3% 46.9%; /* Gray */
 
     --popover: 0 0% 100%; /* White */
-    --popover-foreground: 222.2 47.4% 11.2%; /* Dark Blue */
+    --popover-foreground: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
 
     --card: 0 0% 100%; /* White */
-    --card-foreground: 222.2 47.4% 11.2%; /* Dark Blue */
+    --card-foreground: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
 
     --border: 214.3 31.8% 91.4%; /* Light Gray */
     --input: 214.3 31.8% 91.4%; /* Light Gray */
 
-    --primary: 221 83% 53%; /* Blue */
+    --primary: 214 89% 52%; /* Figma Vibrant Blue */
     --primary-foreground: 0 0% 100%; /* White */
 
     --secondary: 210 40% 96.1%; /* Light Gray */
-    --secondary-foreground: 222.2 47.4% 11.2%; /* Dark Blue */
+    --secondary-foreground: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
 
-    --accent: 210 40% 96.1%; /* Light Gray */
-    --accent-foreground: 222.2 47.4% 11.2%; /* Dark Blue */
+    --accent: 270 80% 60%; /* Figma Purple/Pink Accent */
+    --accent-foreground: 0 0% 100%; /* White */
 
     --destructive: 0 84.2% 60.2%; /* Red */
-    --destructive-foreground: 210 40% 98%; /* White */
+    --destructive-foreground: 0 0% 100%; /* White */
 
     --ring: 215 20.2% 65.1%; /* Gray */
 
-    --radius: 0.5rem; /* Slightly smaller radius for a modern look */
+    --radius: 0.5rem; /* Consistent with Figma's rounded corners */
 
     /* Custom colors for success/warning/brand */
     --success: 142.1 76.2% 36.3%; /* Green */
-    --success-foreground: 210 40% 98%; /* White */
+    --success-foreground: 0 0% 100%; /* White */
     --warning: 38.5 92.4% 50%; /* Orange */
-    --warning-foreground: 48 96% 89%; /* Light Orange */
-    --brand-primary: 221 83% 53%; /* Blue */
-    --brand-secondary: 262 83% 58%; /* Purple */
+    --warning-foreground: 0 0% 100%; /* White */
+    --brand-primary: 214 89% 52%; /* Align with new primary */
+    --brand-secondary: 270 80% 60%; /* Align with new accent */
 
     /* Chart colors (can be adjusted for better contrast if needed) */
     --chart-1: 12 76% 61%;
@@ -52,42 +52,42 @@
   }
 
   .dark {
-    --background: 222.2 47.4% 11.2%; /* Dark Blue */
+    --background: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
     --foreground: 210 40% 98%; /* White */
 
     --muted: 217.2 32.6% 17.5%; /* Darker Gray */
     --muted-foreground: 215 20.2% 65.1%; /* Gray */
 
-    --popover: 222.2 47.4% 11.2%; /* Dark Blue */
+    --popover: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
     --popover-foreground: 210 40% 98%; /* White */
 
-    --card: 222.2 47.4% 11.2%; /* Dark Blue */
+    --card: 222.2 47.4% 11.2%; /* Dark Blue/Gray */
     --card-foreground: 210 40% 98%; /* White */
 
     --border: 217.2 32.6% 17.5%; /* Darker Gray */
     --input: 217.2 32.6% 17.5%; /* Darker Gray */
 
-    --primary: 221 83% 53%; /* Blue (can be adjusted for dark mode if needed) */
+    --primary: 214 89% 52%; /* Figma Vibrant Blue */
     --primary-foreground: 0 0% 100%; /* White */
 
     --secondary: 217.2 32.6% 17.5%; /* Darker Gray */
     --secondary-foreground: 210 40% 98%; /* White */
 
-    --accent: 217.2 32.6% 17.5%; /* Darker Gray */
-    --accent-foreground: 210 40% 98%; /* White */
+    --accent: 270 80% 60%; /* Figma Purple/Pink Accent */
+    --accent-foreground: 0 0% 100%; /* White */
 
     --destructive: 0 62.8% 30.6%; /* Dark Red */
-    --destructive-foreground: 210 40% 98%; /* White */
+    --destructive-foreground: 0 0% 100%; /* White */
 
     --ring: 215 20.2% 65.1%; /* Gray */
 
     /* Custom colors for success/warning/brand in dark mode */
     --success: 142.1 70.6% 45.3%; /* Slightly lighter green for dark mode */
-    --success-foreground: 210 40% 98%; /* White */
+    --success-foreground: 0 0% 100%; /* White */
     --warning: 38.5 80% 60%; /* Slightly lighter orange for dark mode */
-    --warning-foreground: 210 40% 98%; /* White */
-    --brand-primary: 221 83% 53%; /* Blue */
-    --brand-secondary: 262 83% 58%; /* Purple */
+    --warning-foreground: 0 0% 100%; /* White */
+    --brand-primary: 214 89% 52%; /* Align with new primary */
+    --brand-secondary: 270 80% 60%; /* Align with new accent */
 
     /* Chart colors for dark mode */
     --chart-1: 220 70% 50%;

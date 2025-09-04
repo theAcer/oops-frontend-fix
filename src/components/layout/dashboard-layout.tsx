@@ -21,14 +21,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <ProtectedRoute>
-      <div className="h-screen flex bg-background"> {/* Ensure background is applied */}
+      <div className="h-screen flex bg-background">
         <Sidebar isCollapsed={isSidebarCollapsed} />
         <div className={cn(
           "flex-1 flex flex-col overflow-hidden transition-all duration-300",
-          isSidebarCollapsed ? "ml-16" : "ml-64"
+          // Removed ml-16 and ml-64 as flexbox handles the spacing
         )}>
           <Header toggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} />
-          <main className="flex-1 overflow-y-auto p-6 bg-background">{children}</main> {/* Ensure main content area has background */}
+          <main className="flex-1 overflow-y-auto p-6 bg-background">{children}</main>
         </div>
       </div>
     </ProtectedRoute>

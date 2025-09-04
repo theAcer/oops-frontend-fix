@@ -41,6 +41,8 @@ services:
       - DATABASE_URL=postgresql://postgres:password@db:5432/zidisha_db
       - REDIS_URL=redis://redis:6379
       - CORS_ORIGINS=http://localhost:3000,http://frontend:3000,http://localhost:3001,http://localhost:3002
+      - PYTHONPATH=/app
+      - ENVIRONMENT=development # Added for local development
     depends_on:
       - db
       - redis
@@ -56,7 +58,9 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/zidisha_db
       - REDIS_URL=redis://redis:6379
-      - CORS_ORIGINS=http://frontend-prod:3000,http://localhost:3001,http://localhost:3002
+      - CORS_ORIGINS=http://frontend-prod:3000,http://localhost:3001,http://localhost:3002 # This should be the actual production frontend URL
+      - PYTHONPATH=/app
+      - ENVIRONMENT=production # Added for production
     depends_on:
       - db
       - redis

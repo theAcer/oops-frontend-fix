@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 class AIRecommendationService:
     def __init__(self, db: AsyncSession):
         self.db = db
-        self.models_path = "app/ml_models"
+        # Corrected path: now relative to the backend directory
+        self.models_path = "backend/app/ml_models" 
         self.executor = ThreadPoolExecutor(max_workers=2)
         
         # Ensure models directory exists

@@ -31,6 +31,9 @@ class Settings(BaseSettings):
 
     # Environment setting (e.g., development, production)
     ENVIRONMENT: str = "development"
+    
+    # Port for the application to listen on
+    PORT: int = 8000 # Default to 8000, can be overridden by env var
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

@@ -26,7 +26,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://api:8000
       - NEXT_PUBLIC_SUPABASE_URL=https://avcehoxfcyqjllctwjzd.supabase.co
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI0ImF2Y2Vob3hmY3lxamxsY3R3anpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NDk5OTksImV4cCI6MjA3MjAyNTk5OX0.quDmqW9YoYM0F0EV6A6a6VNkr7m1ij7t7CI2Bgoe6FM
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI0ImF2Y2Vob3hmY3lxamllsY3R3anpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NDk5OTksImV4cCI6MjA3MjAyNTk5OX0.quDmqW9YoYM0F0EV6A6a6VNkr7m1ij7t7CI2Bgoe6FM
       - NODE_ENV=production
     depends_on:
       - api

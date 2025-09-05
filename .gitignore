@@ -17,7 +17,6 @@ venv.bak/
 # Environment variables / secrets
 *.env
 instance/
-config.py
 *.db
 *.sqlite3
 

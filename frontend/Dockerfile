@@ -1,8 +1,8 @@
 # Install dependencies
 FROM node:20-alpine AS deps
 WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm install
+COPY package.json ./
+RUN rm -f package-lock.json && npm install
 
 # Builder stage
 FROM node:20-alpine AS builder

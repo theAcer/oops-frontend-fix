@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 from app.core.config import settings
 from app.core.database import init_db
+from app.core.redis import close_redis_client # Import the new function
 from app.api.v1.api import api_router
 
 @asynccontextmanager
@@ -12,6 +13,7 @@ async def lifespan(app: FastAPI):
     await init_db()
     yield
     # Shutdown
+    await close_redis_client() # Ensure Redis client is closed on shutdown
     pass
 
 app = FastAPI(

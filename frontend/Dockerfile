@@ -13,6 +13,13 @@ RUN \
   else echo "No lockfile found, installing dependencies with npm install" && npm install; \
   fi
 
+# --- Development Stage ---
+FROM node:20-alpine AS dev
+WORKDIR /app
+COPY --from=base /app/node_modules ./node_modules
+# No COPY . . here, as we'll use a volume mount for source code in docker-compose.yml
+ENV NEXT_TELEMETRY_DISABLED 1
+
 # Rebuild the source code only when needed
 FROM node:20-alpine AS builder
 WORKDIR /app

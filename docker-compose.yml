@@ -1,25 +1,25 @@
 services:
   frontend:
     build:
-      context: ./frontend # Updated context to frontend directory
-      target: base
+      context: ./frontend
+      target: dev # Changed from 'base' to 'dev'
     ports:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
       - NEXT_PUBLIC_SUPABASE_URL=https://avcehoxfcyqjllctwjzd.supabase.co
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2Y2Vob3hmY3lxamxsY3R3anpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NDk5OTksImV4cCI6MjA3MjAyNTk5OX0.quDmqW9YoYM0F0EV6A6a6VNkr7m1ij7t4CI2Bgoe6FM
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2Y2Vob3hmY3lxamxsY3R3anpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NDk5OTksImexCI6MjA3MjAyNTk5OX0.quDmqW9YoYM0F0EV6A6a6VNkr7m1ij7t4CI2Bgoe6FM
     depends_on:
       - api
     volumes:
-      - ./frontend:/app # Updated volume mount to frontend directory
+      - ./frontend:/app
     working_dir: /app
     command: npm run dev
     profiles: ["dev"]
 
   frontend-prod:
     build:
-      context: ./frontend # Updated context to frontend directory
+      context: ./frontend
       target: runner
     ports:
       - "3000:3000"
@@ -39,15 +39,15 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/zidisha_db
       - REDIS_URL=redis://redis:6379
-      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000,http://localhost:3001,http://localhost:3002,http://localhost:5173 # Added localhost:5173 for Vite dev server
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000,http://localhost:3001,http://localhost:3002,http://localhost:5173
       - PYTHONPATH=/app
-      - ENVIRONMENT=development # Added for local development
+      - ENVIRONMENT=development
     depends_on:
       - db
       - redis
     volumes:
       - ./backend:/app
-    command: uvicorn main:app --host 0.0.0.0 --reload # Removed hardcoded port
+    command: uvicorn main:app --host 0.0.0.0 --reload
     profiles: ["dev"]
 
   api-prod:
@@ -57,13 +57,13 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/zidisha_db
       - REDIS_URL=redis://redis:6379
-      - CORS_ORIGINS=http://frontend-prod:3000,http://localhost:3001,http://localhost:3002 # This should be the actual production frontend URL
+      - CORS_ORIGINS=http://frontend-prod:3000,http://localhost:3001,http://localhost:3002
       - PYTHONPATH=/app
-      - ENVIRONMENT=production # Added for production
+      - ENVIRONMENT=production
     depends_on:
       - db
       - redis
-    command: gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT main:app # Used $PORT environment variable
+    command: gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT main:app
     profiles: ["production"]
 
   db:

@@ -14,19 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Set PYTHONPATH to include the current working directory for module discovery
-ENV PYTHONPATH=/app
-
-# Debugging step: Confirm PYTHONPATH during build
-RUN echo "PYTHONPATH during build: $PYTHONPATH"
-
-# Debugging step: List contents of /app to verify file structure
-# Look for this output in your Render build logs!
-RUN ls -R /app
-
-# Expose port
+# Expose port (this is metadata, but good to keep consistent with default)
 EXPOSE 8000
 
-# Run the application using python -m uvicorn for potentially better module resolution
-# Ensure /app is in PYTHONPATH for the uvicorn command
-CMD ["sh", "-c", "PYTHONPATH=/app python -m uvicorn main:app --host 0.0.0.0 --port 8000"]
+# Run the application, using the PORT environment variable or defaulting to 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "${PORT:-8000}"]

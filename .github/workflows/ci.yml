@@ -115,15 +115,15 @@ jobs:
           node-version: '20'
 
       - name: Install frontend dependencies
-        working-directory: ./
+        working-directory: ./frontend # Updated working directory
         run: npm install
 
       - name: Run frontend tests
-        working-directory: ./
+        working-directory: ./frontend # Updated working directory
         run: npm test
 
       - name: Build frontend
-        working-directory: ./
+        working-directory: ./frontend # Updated working directory
         run: npm run build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:8000

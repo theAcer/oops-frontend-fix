@@ -1,7 +1,7 @@
 services:
   frontend:
     build:
-      context: .
+      context: ./frontend # Updated context to frontend directory
       target: base
     ports:
       - "3000:3000"
@@ -12,22 +12,21 @@ services:
     depends_on:
       - api
     volumes:
-      - .:/app
-       # This line prevents the host's node_modules from overriding the container's
+      - ./frontend:/app # Updated volume mount to frontend directory
     working_dir: /app
     command: npm run dev
     profiles: ["dev"]
 
   frontend-prod:
     build:
-      context: .
+      context: ./frontend # Updated context to frontend directory
       target: runner
     ports:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://api:8000
       - NEXT_PUBLIC_SUPABASE_URL=https://avcehoxfcyqjllctwjzd.supabase.co
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2Y2Vob3hmY3lxamxsY3R3anpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NDk5OTksImV4cCI6MjA3MjAyNTk5OX0.quDmqW9YoYM0F0EV6A6a6VNkr7m1ij7t7CI2Bgoe6FM
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI0ImF2Y2Vob3hmY3lxamxsY3R3anpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NDk5OTksImV4cCI6MjA3MjAyNTk5OX0.quDmqW9YoYM0F0EV6A6a6VNkr7m1ij7t7CI2Bgoe6FM
       - NODE_ENV=production
     depends_on:
       - api
@@ -40,7 +39,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/zidisha_db
       - REDIS_URL=redis://redis:6379
-      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000,http://localhost:3001,http://localhost:3002
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000,http://localhost:3001,http://localhost:3002,http://localhost:5173 # Added localhost:5173 for Vite dev server
       - PYTHONPATH=/app
       - ENVIRONMENT=development # Added for local development
     depends_on:

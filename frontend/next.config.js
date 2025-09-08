@@ -17,10 +17,12 @@ const nextConfig = {
   },
 
   async rewrites() {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    console.log(`[Next.js Config] Using backend URL for rewrites: ${backendUrl}`); // Added log
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.BACKEND_URL || 'http://localhost:8000'}/api/:path*`,
+        destination: `${backendUrl}/api/:path*`,
       },
     ];
   },

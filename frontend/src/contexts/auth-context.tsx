@@ -37,33 +37,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
+    console.log("[AuthContext] Checking for existing access token...") // Added log
     const token = localStorage.getItem("accessToken") // Changed from "auth_token" to "accessToken"
     if (token) {
       apiService
         .getMe() // Use apiService.getMe()
         .then((response) => {
+          console.log("[AuthContext] User data fetched successfully:", response.email); // Added log
           setUser(response)
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error("[AuthContext] Failed to fetch user data with token:", err); // Added log
           localStorage.removeItem("accessToken") // Changed from "auth_token" to "accessToken"
         })
         .finally(() => {
           setLoading(false)
         })
     } else {
+      console.log("[AuthContext] No access token found, user not authenticated."); // Added log
       setLoading(false)
     }
   }, [])
 
   const login = async (email: string, password: string) => {
     try {
+      console.log(`[AuthContext] Attempting to log in user: ${email}`); // Added log
       const response = await apiService.login(email, password) // Use apiService.login()
       localStorage.setItem("accessToken", response.access_token) // Changed from "auth_token" to "accessToken"
+      console.log("[AuthContext] Login successful, fetching user details..."); // Added log
 
       const userData = await apiService.getMe() // Fetch user details after login
       setUser(userData)
       router.push("/dashboard")
     } catch (error) {
+      console.error("[AuthContext] Login failed:", error); // Added log
       throw new Error("Invalid credentials")
     }
   }
@@ -74,6 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
   ) => {
     try {
+      console.log(`[AuthContext] Attempting to register user: ${email}`); // Added log
       // Only create user account
       await apiService.registerUser(
         email,
@@ -84,12 +92,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const { access_token } = await apiService.login(email, password); // Log in the user after registration
       localStorage.setItem("accessToken", access_token); // Changed from "auth_token" to "accessToken"
+      console.log("[AuthContext] Registration successful, fetching user details..."); // Added log
 
       const userData = await apiService.getMe(); // Fetch user details after login
       setUser(userData);
       router.push("/dashboard");
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("[AuthContext] Registration error:", error);
       throw new Error("Registration failed");
     }
   }
@@ -104,6 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
   ) => {
     try {
+      console.log(`[AuthContext] Attempting to register merchant and user for: ${email}`); // Added log
       // First register the merchant
       const merchantData: MerchantCreateRequest = {
         business_name: businessName,
@@ -114,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         mpesa_till_number: mpesaTillNumber,
       }
       const merchantResponse = await apiService.createMerchant(merchantData)
+      console.log("[AuthContext] Merchant registered, ID:", merchantResponse.id); // Added log
 
       // Then create user account linked to the new merchant
       await apiService.registerUser(
@@ -122,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ownerName,
         merchantResponse.id, // Link user to the newly created merchant
       )
+      console.log("[AuthContext] User account linked to merchant, attempting login..."); // Added log
 
       const { access_token } = await apiService.login(email, password); // Log in the user after registration
       localStorage.setItem("accessToken", access_token); // Changed from "auth_token" to "accessToken"
@@ -130,12 +142,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userData);
       router.push("/dashboard");
     } catch (error) {
-      console.error("Merchant registration error:", error);
+      console.error("[AuthContext] Merchant registration error:", error);
       throw new Error("Merchant registration failed");
     }
   }
 
   const logout = () => {
+    console.log("[AuthContext] Logging out user."); // Added log
     localStorage.removeItem("accessToken") // Changed from "auth_token" to "accessToken"
     setUser(null)
     router.push("/login")

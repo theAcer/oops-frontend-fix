@@ -27,11 +27,8 @@ RUN adduser --system --uid 1001 nextjs
 # Copy the entire standalone output, which includes .next/static and public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 
-
 USER nextjs
 
 EXPOSE 3000
-
-ENV PORT 3000
 
 CMD ["node", "server.js"]

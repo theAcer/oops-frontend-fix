@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # CORS_ORIGINS environment variable will be parsed into a list for ALLOWED_HOSTS
-    CORS_ORIGINS: str = "http://localhost:3000","https://zidisha-frontend.onrender.com"
+    CORS_ORIGINS: str = "http://localhost:3000, https://zidisha-frontend.onrender.com"
     
     DEBUG: bool = False
 

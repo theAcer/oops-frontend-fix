@@ -3,7 +3,7 @@ import asyncio
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from app.core.database import Base, get_db
-from main import app # Corrected import: main.py is at the root of the backend directory
+from main import app
 from httpx import AsyncClient
 
 # Use a separate test database
@@ -29,18 +29,18 @@ async def setup_test_db():
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for each test session."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
+# Removed custom event_loop fixture, relying on pytest-asyncio's default
 
 @pytest.fixture(scope="session")
-async def client() -> AsyncGenerator[AsyncClient, None]:
-    """Create an asynchronous test client."""
+async def _client_instance() -> AsyncGenerator[AsyncClient, None]:
+    """Helper fixture to create an asynchronous test client instance for the session."""
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
+
+@pytest.fixture(scope="session")
+def client(_client_instance: AsyncClient) -> AsyncClient:
+    """Provides the AsyncClient instance, ensuring it's properly awaited by pytest-asyncio."""
+    return _client_instance
 
 @pytest.fixture
 async def db() -> AsyncGenerator[AsyncSession, None]:
@@ -51,8 +51,7 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture
 async def create_test_merchant(client: AsyncClient) -> dict:
     """Helper fixture to create a merchant for tests."""
-    # Explicitly await the client fixture to get the AsyncClient instance
-    _client = await client
+    # client is already the AsyncClient instance due to the refactor
     merchant_data = {
         "business_name": "Test Merchant",
         "owner_name": "Test Owner",
@@ -61,15 +60,15 @@ async def create_test_merchant(client: AsyncClient) -> dict:
         "business_type": "retail",
         "mpesa_till_number": "TESTTILL"
     }
-    response = await _client.post("/api/v1/merchants", json=merchant_data)
+    response = await client.post("/api/v1/merchants", json=merchant_data)
     assert response.status_code == 201
     return response.json()
 
 @pytest.fixture
 async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> dict:
     """Helper fixture to create a user linked to a merchant for tests."""
-    _client = await client # Explicitly await
-    merchant = await create_test_merchant # Await the fixture
+    # client is already the AsyncClient instance
+    merchant = await create_test_merchant # This still needs await as it's an async fixture
     merchant_id = merchant["id"]
     user_data = {
         "email": "test_user@example.com",
@@ -77,27 +76,27 @@ async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> d
         "name": "Test User",
         "merchant_id": merchant_id
     }
-    response = await _client.post("/api/v1/auth/register", json=user_data)
+    response = await client.post("/api/v1/auth/register", json=user_data)
     assert response.status_code == 201
     return response.json()
 
 @pytest.fixture
 async def get_auth_token(client: AsyncClient, create_test_user: dict) -> str:
     """Helper fixture to get an auth token for a test user."""
-    _client = await client # Explicitly await
-    user = await create_test_user # Await the fixture
+    # client is already the AsyncClient instance
+    user = await create_test_user # This still needs await
     login_data = {
         "email": user["email"],
         "password": "password123"
     }
-    response = await _client.post("/api/v1/auth/login", json=login_data)
+    response = await client.post("/api/v1/auth/login", json=login_data)
     assert response.status_code == 200
     return response.json()["access_token"]
 
 @pytest.fixture
 async def authenticated_client(client: AsyncClient, get_auth_token: str) -> AsyncClient:
     """Fixture for an authenticated client."""
-    _client = await client # Explicitly await
-    token = await get_auth_token # Await the fixture
-    _client.headers["Authorization"] = f"Bearer {token}"
-    return _client
+    # client is already the AsyncClient instance
+    token = await get_auth_token # This still needs await
+    client.headers["Authorization"] = f"Bearer {token}"
+    return client

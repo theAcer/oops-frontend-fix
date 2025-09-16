@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 from app.core.config import settings
 from app.core.database import init_db
-from app.core.redis import close_redis_client # Import the new function
+from app.core.redis import close_redis_client
 from app.api.v1.api import api_router
 
 @asynccontextmanager
@@ -13,20 +13,21 @@ async def lifespan(app: FastAPI):
     await init_db()
     yield
     # Shutdown
-    await close_redis_client() # Ensure Redis client is closed on shutdown
+    await close_redis_client()
     pass
 
 app = FastAPI(
     title="Zidisha Loyalty Platform",
     description="Loyalty-as-a-Service platform for merchants using M-Pesa transactions",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    redirect_slashes=False # Added this line to disable automatic trailing slash redirects
 )
 
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_HOSTS, # Now correctly uses the derived property
+    allow_origins=settings.ALLOWED_HOSTS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -47,6 +48,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=settings.PORT, # Use the PORT from settings
+        port=settings.PORT,
         reload=True
     )

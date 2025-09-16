@@ -7,7 +7,8 @@ from app.models.customer import Customer
 
 @pytest.mark.asyncio
 async def test_create_campaign(authenticated_client: AsyncClient, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     campaign_data = {
         "merchant_id": merchant_id,
         "name": "New Customer Welcome",
@@ -29,7 +30,8 @@ async def test_create_campaign(authenticated_client: AsyncClient, create_test_me
 
 @pytest.mark.asyncio
 async def test_get_campaigns(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     campaign = Campaign(
         merchant_id=merchant_id,
         name="Existing Campaign",
@@ -48,7 +50,8 @@ async def test_get_campaigns(authenticated_client: AsyncClient, db: AsyncSession
 
 @pytest.mark.asyncio
 async def test_launch_campaign(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     campaign = Campaign(
         merchant_id=merchant_id,
         name="Launch Test Campaign",
@@ -83,7 +86,8 @@ async def test_launch_campaign(authenticated_client: AsyncClient, db: AsyncSessi
 
 @pytest.mark.asyncio
 async def test_get_campaign_performance(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     campaign = Campaign(
         merchant_id=merchant_id,
         name="Performance Campaign",

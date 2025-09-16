@@ -66,7 +66,8 @@ async def create_test_merchant(client: AsyncClient) -> dict:
 @pytest.fixture
 async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> dict:
     """Helper fixture to create a user linked to a merchant for tests."""
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     user_data = {
         "email": "test_user@example.com",
         "password": "password123",
@@ -80,8 +81,9 @@ async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> d
 @pytest.fixture
 async def get_auth_token(client: AsyncClient, create_test_user: dict) -> str:
     """Helper fixture to get an auth token for a test user."""
+    user = await create_test_user # Await the fixture
     login_data = {
-        "email": create_test_user["email"],
+        "email": user["email"],
         "password": "password123"
     }
     response = await client.post("/api/v1/auth/login", json=login_data)
@@ -91,5 +93,6 @@ async def get_auth_token(client: AsyncClient, create_test_user: dict) -> str:
 @pytest.fixture
 async def authenticated_client(client: AsyncClient, get_auth_token: str) -> AsyncClient:
     """Fixture for an authenticated client."""
-    client.headers["Authorization"] = f"Bearer {get_auth_token}"
+    token = await get_auth_token # Await the fixture
+    client.headers["Authorization"] = f"Bearer {token}"
     return client

@@ -10,7 +10,8 @@ from httpx import Response
 
 @pytest.mark.asyncio
 async def test_get_customer_recommendation_summary(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     customer = Customer(
         merchant_id=merchant_id,
         phone="254712345678",
@@ -52,7 +53,8 @@ async def test_get_customer_recommendation_summary(authenticated_client: AsyncCl
 
 @pytest.mark.asyncio
 async def test_train_merchant_models(authenticated_client: AsyncClient, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
 
     # This endpoint triggers a background task, so we just check the immediate response
     response = await authenticated_client.post(f"/api/v1/ai/merchant/{merchant_id}/train-models")

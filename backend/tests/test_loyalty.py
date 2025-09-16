@@ -9,7 +9,8 @@ from app.models.campaign import Reward
 
 @pytest.mark.asyncio
 async def test_create_loyalty_program(authenticated_client: AsyncClient, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     program_data = {
         "merchant_id": merchant_id,
         "name": "Bronze Tier Rewards",
@@ -26,7 +27,8 @@ async def test_create_loyalty_program(authenticated_client: AsyncClient, create_
 
 @pytest.mark.asyncio
 async def test_get_loyalty_programs(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     program = LoyaltyProgram(
         merchant_id=merchant_id,
         name="Test Program",
@@ -45,7 +47,8 @@ async def test_get_loyalty_programs(authenticated_client: AsyncClient, db: Async
 
 @pytest.mark.asyncio
 async def test_activate_loyalty_program(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     program1 = LoyaltyProgram(
         merchant_id=merchant_id,
         name="Program 1",
@@ -79,7 +82,8 @@ async def test_activate_loyalty_program(authenticated_client: AsyncClient, db: A
 
 @pytest.mark.asyncio
 async def test_calculate_and_apply_rewards(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
 
     # Create an active loyalty program
     program = LoyaltyProgram(
@@ -137,7 +141,8 @@ async def test_calculate_and_apply_rewards(authenticated_client: AsyncClient, db
 
 @pytest.mark.asyncio
 async def test_redeem_reward(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
 
     # Create a customer
     customer = Customer(merchant_id=merchant_id, phone="254750000001", name="Redeem Customer")
@@ -168,7 +173,8 @@ async def test_redeem_reward(authenticated_client: AsyncClient, db: AsyncSession
 
 @pytest.mark.asyncio
 async def test_get_customer_rewards(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
 
     # Create a customer
     customer = Customer(merchant_id=merchant_id, phone="254760000001", name="Rewards List Customer")

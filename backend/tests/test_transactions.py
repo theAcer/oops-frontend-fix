@@ -10,7 +10,8 @@ from httpx import Response
 
 @pytest.mark.asyncio
 async def test_get_transactions(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     customer = Customer(merchant_id=merchant_id, phone="254711111111", name="Transaction Customer")
     db.add(customer)
     await db.commit()
@@ -46,7 +47,8 @@ async def test_get_transactions(authenticated_client: AsyncClient, db: AsyncSess
 
 @pytest.mark.asyncio
 async def test_get_transactions_by_customer(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     customer1 = Customer(merchant_id=merchant_id, phone="254711111111", name="Customer A")
     customer2 = Customer(merchant_id=merchant_id, phone="254722222222", name="Customer B")
     db.add_all([customer1, customer2])
@@ -71,7 +73,8 @@ async def test_get_transactions_by_customer(authenticated_client: AsyncClient, d
 
 @pytest.mark.asyncio
 async def test_get_transaction_by_id(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     transaction = Transaction(
         merchant_id=merchant_id,
         customer_id=None,
@@ -100,7 +103,8 @@ async def test_get_transaction_not_found(authenticated_client: AsyncClient):
 @pytest.mark.asyncio
 @respx.mock
 async def test_sync_transactions_from_daraja(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     merchant = await db.execute(db.select(Merchant).filter_by(id=merchant_id))
     merchant = merchant.scalar_one()
     merchant.daraja_consumer_key = "test_key"

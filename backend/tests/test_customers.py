@@ -8,7 +8,8 @@ from app.schemas.customer import CustomerUpdate
 
 @pytest.mark.asyncio
 async def test_get_customers_by_merchant(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     customer1 = Customer(merchant_id=merchant_id, phone="254711111111", name="Customer One")
     customer2 = Customer(merchant_id=merchant_id, phone="254722222222", name="Customer Two")
     db.add_all([customer1, customer2])
@@ -22,7 +23,8 @@ async def test_get_customers_by_merchant(authenticated_client: AsyncClient, db: 
 
 @pytest.mark.asyncio
 async def test_get_customer_by_id(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     customer = Customer(merchant_id=merchant_id, phone="254733333333", name="Single Customer")
     db.add(customer)
     await db.commit()
@@ -42,7 +44,8 @@ async def test_get_customer_not_found(authenticated_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_update_customer(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     customer = Customer(merchant_id=merchant_id, phone="254744444444", name="Old Name", email="old@example.com")
     db.add(customer)
     await db.commit()
@@ -71,7 +74,8 @@ async def test_update_customer_not_found(authenticated_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_get_customer_loyalty(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     customer = Customer(
         merchant_id=merchant_id,
         phone="254755555555",
@@ -98,7 +102,8 @@ async def test_get_customer_loyalty(authenticated_client: AsyncClient, db: Async
 @pytest.mark.asyncio
 async def test_customer_service_find_or_create_customer(db: AsyncSession, create_test_merchant: dict):
     from app.services.customer_service import CustomerService
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     service = CustomerService(db)
 
     # Test create new customer
@@ -121,7 +126,8 @@ async def test_customer_service_find_or_create_customer(db: AsyncSession, create
 @pytest.mark.asyncio
 async def test_customer_service_update_customer_metrics(db: AsyncSession, create_test_merchant: dict):
     from app.services.customer_service import CustomerService
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     service = CustomerService(db)
 
     customer = Customer(merchant_id=merchant_id, phone="254703000000", name="Metrics Customer")

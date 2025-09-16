@@ -9,7 +9,8 @@ from httpx import Response
 
 @pytest.mark.asyncio
 async def test_send_single_sms(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     customer = Customer(merchant_id=merchant_id, phone="254711223344", name="SMS Customer")
     db.add(customer)
     await db.commit()
@@ -57,7 +58,8 @@ async def test_send_single_sms(authenticated_client: AsyncClient, db: AsyncSessi
 
 @pytest.mark.asyncio
 async def test_send_bulk_sms(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     customer1 = Customer(merchant_id=merchant_id, phone="254711111111", name="Customer One")
     customer2 = Customer(merchant_id=merchant_id, phone="254722222222", name="Customer Two")
     db.add_all([customer1, customer2])
@@ -108,7 +110,8 @@ async def test_send_bulk_sms(authenticated_client: AsyncClient, db: AsyncSession
 
 @pytest.mark.asyncio
 async def test_get_notification_history(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     customer = Customer(merchant_id=merchant_id, phone="254788888888", name="History Customer")
     db.add(customer)
     await db.commit()
@@ -145,7 +148,8 @@ async def test_get_notification_history(authenticated_client: AsyncClient, db: A
 
 @pytest.mark.asyncio
 async def test_get_sms_analytics(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant_id = create_test_merchant["id"]
+    merchant = await create_test_merchant # Await the fixture
+    merchant_id = merchant["id"]
     customer = Customer(merchant_id=merchant_id, phone="254799999999", name="Analytics Customer")
     db.add(customer)
     await db.commit()

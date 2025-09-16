@@ -32,15 +32,10 @@ async def setup_test_db():
 # Removed custom event_loop fixture, relying on pytest-asyncio's default
 
 @pytest.fixture(scope="session")
-async def _client_instance() -> AsyncGenerator[AsyncClient, None]:
-    """Helper fixture to create an asynchronous test client instance for the session."""
+async def client() -> AsyncGenerator[AsyncClient, None]:
+    """Create an asynchronous test client."""
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
-
-@pytest.fixture(scope="session")
-def client(_client_instance: AsyncClient) -> AsyncClient:
-    """Provides the AsyncClient instance, ensuring it's properly awaited by pytest-asyncio."""
-    return _client_instance
 
 @pytest.fixture
 async def db() -> AsyncGenerator[AsyncSession, None]:
@@ -51,7 +46,7 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture
 async def create_test_merchant(client: AsyncClient) -> dict:
     """Helper fixture to create a merchant for tests."""
-    # client is already the AsyncClient instance due to the refactor
+    # client is already the AsyncClient instance, no 'await client' needed here
     merchant_data = {
         "business_name": "Test Merchant",
         "owner_name": "Test Owner",
@@ -68,7 +63,7 @@ async def create_test_merchant(client: AsyncClient) -> dict:
 async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> dict:
     """Helper fixture to create a user linked to a merchant for tests."""
     # client is already the AsyncClient instance
-    merchant = await create_test_merchant # This still needs await as it's an async fixture
+    merchant = await create_test_merchant # This still needs await as it's an async fixture yielding a dict
     merchant_id = merchant["id"]
     user_data = {
         "email": "test_user@example.com",

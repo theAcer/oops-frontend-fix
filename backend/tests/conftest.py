@@ -51,6 +51,8 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture
 async def create_test_merchant(client: AsyncClient) -> dict:
     """Helper fixture to create a merchant for tests."""
+    # Explicitly await the client fixture to get the AsyncClient instance
+    _client = await client
     merchant_data = {
         "business_name": "Test Merchant",
         "owner_name": "Test Owner",
@@ -59,13 +61,14 @@ async def create_test_merchant(client: AsyncClient) -> dict:
         "business_type": "retail",
         "mpesa_till_number": "TESTTILL"
     }
-    response = await client.post("/api/v1/merchants", json=merchant_data)
+    response = await _client.post("/api/v1/merchants", json=merchant_data)
     assert response.status_code == 201
     return response.json()
 
 @pytest.fixture
 async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> dict:
     """Helper fixture to create a user linked to a merchant for tests."""
+    _client = await client # Explicitly await
     merchant = await create_test_merchant # Await the fixture
     merchant_id = merchant["id"]
     user_data = {
@@ -74,25 +77,27 @@ async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> d
         "name": "Test User",
         "merchant_id": merchant_id
     }
-    response = await client.post("/api/v1/auth/register", json=user_data)
+    response = await _client.post("/api/v1/auth/register", json=user_data)
     assert response.status_code == 201
     return response.json()
 
 @pytest.fixture
 async def get_auth_token(client: AsyncClient, create_test_user: dict) -> str:
     """Helper fixture to get an auth token for a test user."""
+    _client = await client # Explicitly await
     user = await create_test_user # Await the fixture
     login_data = {
         "email": user["email"],
         "password": "password123"
     }
-    response = await client.post("/api/v1/auth/login", json=login_data)
+    response = await _client.post("/api/v1/auth/login", json=login_data)
     assert response.status_code == 200
     return response.json()["access_token"]
 
 @pytest.fixture
 async def authenticated_client(client: AsyncClient, get_auth_token: str) -> AsyncClient:
     """Fixture for an authenticated client."""
+    _client = await client # Explicitly await
     token = await get_auth_token # Await the fixture
-    client.headers["Authorization"] = f"Bearer {token}"
-    return client
+    _client.headers["Authorization"] = f"Bearer {token}"
+    return _client

@@ -52,7 +52,7 @@ export default function RegisterMerchantPage() {
         formData.mpesaTillNumber,
         formData.password,
       )
-    } catch (err: any) {
+    } catch (_error: any) {
       setError("Registration failed. Please try again.")
     } finally {
       setLoading(false)

@@ -24,7 +24,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password)
-    } catch (err: any) {
+    } catch (_error: any) {
       setError("Invalid email or password")
     } finally {
       setLoading(false)

@@ -17,3 +17,4 @@ joblib
 python-dotenv
 africastalking
 respx
+pytest-asyncio

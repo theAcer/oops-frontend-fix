@@ -53,8 +53,8 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 @pytest_asyncio.fixture
-async def create_test_merchant(db: AsyncSession) -> dict: # Inject db session
-    """Helper fixture to create a merchant for tests."""
+async def create_test_merchant(client: AsyncClient) -> dict: # Now depends on client
+    """Helper fixture to create a merchant for tests via API."""
     merchant_data = {
         "business_name": "Test Merchant",
         "owner_name": "Test Owner",
@@ -63,15 +63,13 @@ async def create_test_merchant(db: AsyncSession) -> dict: # Inject db session
         "business_type": "retail",
         "mpesa_till_number": "TESTTILL"
     }
-    merchant = Merchant(**merchant_data)
-    db.add(merchant)
-    await db.commit()
-    await db.refresh(merchant)
-    return merchant.__dict__ # Return as dict to avoid detached instance issues
+    response = await client.post("/api/v1/merchants/", json=merchant_data)
+    assert response.status_code == 201
+    return response.json()
 
 @pytest_asyncio.fixture
-async def create_test_user(db: AsyncSession, create_test_merchant: dict) -> dict: # Inject db and merchant
-    """Helper fixture to create a user linked to a merchant for tests."""
+async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> dict: # Now depends on client and create_test_merchant
+    """Helper fixture to create a user linked to a merchant for tests via API."""
     merchant_id = create_test_merchant["id"]
     user_data = {
         "email": "test_user@example.com",
@@ -79,14 +77,9 @@ async def create_test_user(db: AsyncSession, create_test_merchant: dict) -> dict
         "name": "Test User",
         "merchant_id": merchant_id
     }
-    auth_service = AuthService(db)
-    user = await auth_service.create_user(
-        email=user_data["email"],
-        password=user_data["password"],
-        name=user_data["name"],
-        merchant_id=user_data["merchant_id"]
-    )
-    return user.__dict__ # Return as dict
+    response = await client.post("/api/v1/auth/register", json=user_data)
+    assert response.status_code == 201
+    return response.json()
 
 @pytest_asyncio.fixture
 async def get_auth_token(client: AsyncClient, create_test_user: dict) -> str:

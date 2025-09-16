@@ -1,44 +1,13 @@
 import pytest
-import pytest_asyncio # Ensure this import is present
+import pytest_asyncio
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.auth_service import AuthService
 from app.models.user import User
 from app.models.merchant import Merchant
 
-@pytest_asyncio.fixture
-async def authenticated_client(client: AsyncClient, db: AsyncSession) -> AsyncClient:
-    """Fixture for an authenticated client with a user linked to a merchant."""
-    # Create a merchant
-    merchant_data = {
-        "business_name": "Auth Test Merchant",
-        "owner_name": "Auth Owner",
-        "email": "auth_merchant@example.com",
-        "phone": "254711111111",
-        "business_type": "retail",
-        "mpesa_till_number": "AUTH123"
-    }
-    merchant_response = await client.post("/api/v1/merchants/", json=merchant_data)
-    assert merchant_response.status_code == 201
-    merchant_id = merchant_response.json()["id"]
-
-    # Register a user and link to the merchant
-    user_data = {
-        "email": "auth_user@example.com",
-        "password": "password123",
-        "name": "Auth User",
-        "merchant_id": merchant_id
-    }
-    await client.post("/api/v1/auth/register", json=user_data)
-
-    # Log in the user
-    login_response = await client.post(
-        "/api/v1/auth/login",
-        json={"email": "auth_user@example.com", "password": "password123"}
-    )
-    token = login_response.json()["access_token"]
-    client.headers["Authorization"] = f"Bearer {token}"
-    return client
+# The authenticated_client fixture is now defined in conftest.py and will be used globally.
+# No need to redefine it here.
 
 @pytest.mark.asyncio
 async def test_create_merchant(client: AsyncClient, setup_test_db: None):

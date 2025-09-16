@@ -44,7 +44,7 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture
 async def create_test_merchant(client: AsyncClient) -> dict:
     """Helper fixture to create a merchant for tests."""
-    _client_instance = await client # Await the client fixture
+    _client_instance = client # Removed await
     merchant_data = {
         "business_name": "Test Merchant",
         "owner_name": "Test Owner",
@@ -60,8 +60,8 @@ async def create_test_merchant(client: AsyncClient) -> dict:
 @pytest.fixture
 async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> dict:
     """Helper fixture to create a user linked to a merchant for tests."""
-    _client_instance = await client # Await the client fixture
-    merchant = await create_test_merchant # Await the create_test_merchant fixture
+    _client_instance = client # Removed await
+    merchant = create_test_merchant # Removed await
     merchant_id = merchant["id"]
     user_data = {
         "email": "test_user@example.com",
@@ -76,8 +76,8 @@ async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> d
 @pytest.fixture
 async def get_auth_token(client: AsyncClient, create_test_user: dict) -> str:
     """Helper fixture to get an auth token for a test user."""
-    _client_instance = await client # Await the client fixture
-    user = await create_test_user # Await the create_test_user fixture
+    _client_instance = client # Removed await
+    user = create_test_user # Removed await
     login_data = {
         "email": user["email"],
         "password": "password123"
@@ -89,7 +89,7 @@ async def get_auth_token(client: AsyncClient, create_test_user: dict) -> str:
 @pytest.fixture
 async def authenticated_client(client: AsyncClient, get_auth_token: str) -> AsyncClient:
     """Fixture for an authenticated client."""
-    _client_instance = await client # Await the client fixture
-    token = await get_auth_token # Await the get_auth_token fixture
+    _client_instance = client # Removed await
+    token = get_auth_token # Removed await
     _client_instance.headers["Authorization"] = f"Bearer {token}"
     return _client_instance

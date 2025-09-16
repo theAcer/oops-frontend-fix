@@ -3,11 +3,11 @@ import asyncio
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from app.core.database import Base, get_db
-from app.main import app
+from main import app # Corrected import: main.py is at the root of the backend directory
 from httpx import AsyncClient
 
 # Use a separate test database
-TEST_DATABASE_URL = "postgresql+asyncpg://postgres:password@localhost:5432/test_db" # Changed 'db' to 'localhost'
+TEST_DATABASE_URL = "postgresql+asyncpg://postgres:password@localhost:5432/test_db"
 
 test_engine = create_async_engine(TEST_DATABASE_URL, echo=False, future=True)
 TestSessionLocal = async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False)

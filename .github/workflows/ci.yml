@@ -53,6 +53,9 @@ jobs:
           pip install -r requirements.txt
           pip list # Verify installed packages
 
+      - name: Install Redis tools
+        run: sudo apt-get update && sudo apt-get install -y redis-tools
+
       - name: Debug Python Path (before tests)
         run: |
           echo "Current working directory: $(pwd)"

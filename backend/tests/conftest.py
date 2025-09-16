@@ -29,8 +29,6 @@ async def setup_test_db():
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
-# Removed custom event_loop fixture, relying on pytest-asyncio's default
-
 @pytest.fixture(scope="session")
 async def client() -> AsyncGenerator[AsyncClient, None]:
     """Create an asynchronous test client."""
@@ -46,7 +44,7 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture
 async def create_test_merchant(client: AsyncClient) -> dict:
     """Helper fixture to create a merchant for tests."""
-    # client is already the AsyncClient instance, no 'await client' needed here
+    _client_instance = await client # Await the client fixture
     merchant_data = {
         "business_name": "Test Merchant",
         "owner_name": "Test Owner",
@@ -55,15 +53,15 @@ async def create_test_merchant(client: AsyncClient) -> dict:
         "business_type": "retail",
         "mpesa_till_number": "TESTTILL"
     }
-    response = await client.post("/api/v1/merchants", json=merchant_data)
+    response = await _client_instance.post("/api/v1/merchants", json=merchant_data)
     assert response.status_code == 201
     return response.json()
 
 @pytest.fixture
 async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> dict:
     """Helper fixture to create a user linked to a merchant for tests."""
-    # client is already the AsyncClient instance
-    merchant = await create_test_merchant # This still needs await as it's an async fixture yielding a dict
+    _client_instance = await client # Await the client fixture
+    merchant = await create_test_merchant # Await the create_test_merchant fixture
     merchant_id = merchant["id"]
     user_data = {
         "email": "test_user@example.com",
@@ -71,27 +69,27 @@ async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> d
         "name": "Test User",
         "merchant_id": merchant_id
     }
-    response = await client.post("/api/v1/auth/register", json=user_data)
+    response = await _client_instance.post("/api/v1/auth/register", json=user_data)
     assert response.status_code == 201
     return response.json()
 
 @pytest.fixture
 async def get_auth_token(client: AsyncClient, create_test_user: dict) -> str:
     """Helper fixture to get an auth token for a test user."""
-    # client is already the AsyncClient instance
-    user = await create_test_user # This still needs await
+    _client_instance = await client # Await the client fixture
+    user = await create_test_user # Await the create_test_user fixture
     login_data = {
         "email": user["email"],
         "password": "password123"
     }
-    response = await client.post("/api/v1/auth/login", json=login_data)
+    response = await _client_instance.post("/api/v1/auth/login", json=login_data)
     assert response.status_code == 200
     return response.json()["access_token"]
 
 @pytest.fixture
 async def authenticated_client(client: AsyncClient, get_auth_token: str) -> AsyncClient:
     """Fixture for an authenticated client."""
-    # client is already the AsyncClient instance
-    token = await get_auth_token # This still needs await
-    client.headers["Authorization"] = f"Bearer {token}"
-    return client
+    _client_instance = await client # Await the client fixture
+    token = await get_auth_token # Await the get_auth_token fixture
+    _client_instance.headers["Authorization"] = f"Bearer {token}"
+    return _client_instance

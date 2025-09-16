@@ -1,5 +1,5 @@
 import pytest
-import pytest_asyncio
+import pytest_asyncio # Ensure this import is present
 import asyncio
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
@@ -53,7 +53,7 @@ async def create_test_merchant(client: AsyncClient) -> dict:
         "business_type": "retail",
         "mpesa_till_number": "TESTTILL"
     }
-    response = await client.post("/api/v1/merchants/", json=merchant_data) # Added trailing slash
+    response = await client.post("/api/v1/merchants/", json=merchant_data)
     assert response.status_code == 201
     return response.json()
 

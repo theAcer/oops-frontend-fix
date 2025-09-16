@@ -1,5 +1,5 @@
 import pytest
-import pytest_asyncio # Added this import
+import pytest_asyncio # Ensure this import is present
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.auth_service import AuthService

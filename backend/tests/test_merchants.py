@@ -5,7 +5,7 @@ from app.services.auth_service import AuthService
 from app.models.user import User
 from app.models.merchant import Merchant
 
-@pytest.fixture
+@pytest_asyncio.fixture # Changed to pytest_asyncio.fixture
 async def authenticated_client(client: AsyncClient, db: AsyncSession) -> AsyncClient:
     """Fixture for an authenticated client with a user linked to a merchant."""
     # Create a merchant
@@ -17,7 +17,7 @@ async def authenticated_client(client: AsyncClient, db: AsyncSession) -> AsyncCl
         "business_type": "retail",
         "mpesa_till_number": "AUTH123"
     }
-    merchant_response = await client.post("/api/v1/merchants", json=merchant_data)
+    merchant_response = await client.post("/api/v1/merchants/", json=merchant_data) # Added trailing slash
     assert merchant_response.status_code == 201
     merchant_id = merchant_response.json()["id"]
 
@@ -50,7 +50,7 @@ async def test_create_merchant(client: AsyncClient, setup_test_db: None):
         "business_type": "retail",
         "mpesa_till_number": "12345"
     }
-    response = await client.post("/api/v1/merchants", json=merchant_data)
+    response = await client.post("/api/v1/merchants/", json=merchant_data) # Added trailing slash
     assert response.status_code == 201
     data = response.json()
     assert data["business_name"] == "Test Business"
@@ -68,7 +68,7 @@ async def test_create_merchant_duplicate_till_number(client: AsyncClient, setup_
         "business_type": "restaurant",
         "mpesa_till_number": "DUPLICATE1"
     }
-    await client.post("/api/v1/merchants", json=merchant_data)
+    await client.post("/api/v1/merchants/", json=merchant_data) # Added trailing slash
 
     duplicate_merchant_data = {
         "business_name": "Second Business",
@@ -78,7 +78,7 @@ async def test_create_merchant_duplicate_till_number(client: AsyncClient, setup_
         "business_type": "service",
         "mpesa_till_number": "DUPLICATE1"
     }
-    response = await client.post("/api/v1/merchants", json=duplicate_merchant_data)
+    response = await client.post("/api/v1/merchants/", json=duplicate_merchant_data) # Added trailing slash
     assert response.status_code == 422 # FastAPI validation error for unique constraint
 
 @pytest.mark.asyncio
@@ -92,7 +92,7 @@ async def test_get_merchant(client: AsyncClient, setup_test_db: None):
         "business_type": "retail",
         "mpesa_till_number": "GET123"
     }
-    create_response = await client.post("/api/v1/merchants", json=merchant_data)
+    create_response = await client.post("/api/v1/merchants/", json=merchant_data) # Added trailing slash
     merchant_id = create_response.json()["id"]
 
     response = await client.get(f"/api/v1/merchants/{merchant_id}")
@@ -119,7 +119,7 @@ async def test_update_merchant(client: AsyncClient, setup_test_db: None):
         "business_type": "retail",
         "mpesa_till_number": "UPDATE123"
     }
-    create_response = await client.post("/api/v1/merchants", json=merchant_data)
+    create_response = await client.post("/api/v1/merchants/", json=merchant_data) # Added trailing slash
     merchant_id = create_response.json()["id"]
 
     update_data = {"business_name": "Updated Business Name", "city": "Nairobi"}
@@ -148,7 +148,7 @@ async def test_delete_merchant(client: AsyncClient, setup_test_db: None):
         "business_type": "retail",
         "mpesa_till_number": "DELETE123"
     }
-    create_response = await client.post("/api/v1/merchants", json=merchant_data)
+    create_response = await client.post("/api/v1/merchants/", json=merchant_data) # Added trailing slash
     merchant_id = create_response.json()["id"]
 
     response = await client.delete(f"/api/v1/merchants/{merchant_id}")

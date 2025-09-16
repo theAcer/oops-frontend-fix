@@ -1,5 +1,5 @@
 import pytest
-import pytest_asyncio # Import pytest_asyncio
+import pytest_asyncio
 import asyncio
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
@@ -20,7 +20,7 @@ async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
 
 app.dependency_overrides[get_db] = override_get_db
 
-@pytest_asyncio.fixture(scope="session", autouse=True) # Changed to pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="session", autouse=True)
 async def setup_test_db():
     """Set up and tear down the test database."""
     async with test_engine.begin() as conn:
@@ -30,22 +30,21 @@ async def setup_test_db():
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
-@pytest_asyncio.fixture(scope="session") # Changed to pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="session")
 async def client() -> AsyncGenerator[AsyncClient, None]:
     """Create an asynchronous test client."""
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
 
-@pytest_asyncio.fixture # Changed to pytest_asyncio.fixture
+@pytest_asyncio.fixture
 async def db() -> AsyncGenerator[AsyncSession, None]:
     """Provide a database session for tests."""
     async with TestSessionLocal() as session:
         yield session
 
-@pytest_asyncio.fixture # Changed to pytest_asyncio.fixture
+@pytest_asyncio.fixture
 async def create_test_merchant(client: AsyncClient) -> dict:
     """Helper fixture to create a merchant for tests."""
-    # client is automatically awaited by pytest_asyncio
     merchant_data = {
         "business_name": "Test Merchant",
         "owner_name": "Test Owner",
@@ -54,14 +53,13 @@ async def create_test_merchant(client: AsyncClient) -> dict:
         "business_type": "retail",
         "mpesa_till_number": "TESTTILL"
     }
-    response = await client.post("/api/v1/merchants", json=merchant_data)
+    response = await client.post("/api/v1/merchants/", json=merchant_data) # Added trailing slash
     assert response.status_code == 201
     return response.json()
 
-@pytest_asyncio.fixture # Changed to pytest_asyncio.fixture
+@pytest_asyncio.fixture
 async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> dict:
     """Helper fixture to create a user linked to a merchant for tests."""
-    # client and create_test_merchant are automatically awaited
     merchant_id = create_test_merchant["id"]
     user_data = {
         "email": "test_user@example.com",
@@ -73,10 +71,9 @@ async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> d
     assert response.status_code == 201
     return response.json()
 
-@pytest_asyncio.fixture # Changed to pytest_asyncio.fixture
+@pytest_asyncio.fixture
 async def get_auth_token(client: AsyncClient, create_test_user: dict) -> str:
     """Helper fixture to get an auth token for a test user."""
-    # client and create_test_user are automatically awaited
     login_data = {
         "email": create_test_user["email"],
         "password": "password123"
@@ -85,9 +82,8 @@ async def get_auth_token(client: AsyncClient, create_test_user: dict) -> str:
     assert response.status_code == 200
     return response.json()["access_token"]
 
-@pytest_asyncio.fixture # Changed to pytest_asyncio.fixture
+@pytest_asyncio.fixture
 async def authenticated_client(client: AsyncClient, get_auth_token: str) -> AsyncClient:
     """Fixture for an authenticated client."""
-    # client and get_auth_token are automatically awaited
     client.headers["Authorization"] = f"Bearer {get_auth_token}"
     return client

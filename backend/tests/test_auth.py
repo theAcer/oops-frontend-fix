@@ -104,7 +104,7 @@ async def test_register_user_with_merchant_id(client: AsyncClient, setup_test_db
         "business_type": "retail",
         "mpesa_till_number": "123456"
     }
-    merchant_response = await client.post("/api/v1/merchants", json=merchant_data)
+    merchant_response = await client.post("/api/v1/merchants/", json=merchant_data) # Added trailing slash
     assert merchant_response.status_code == 201
     merchant_id = merchant_response.json()["id"]
 

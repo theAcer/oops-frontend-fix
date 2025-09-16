@@ -16,7 +16,10 @@ TestSessionLocal = async_sessionmaker(test_engine, class_=AsyncSession, expire_o
 async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
     """Override the get_db dependency for tests."""
     async with TestSessionLocal() as session:
-        yield session
+        try:
+            yield session
+        finally:
+            await session.close()
 
 app.dependency_overrides[get_db] = override_get_db
 
@@ -29,6 +32,7 @@ async def setup_test_db():
     yield
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+    await test_engine.dispose() # Explicitly dispose of the engine
 
 @pytest_asyncio.fixture(scope="session")
 async def client() -> AsyncGenerator[AsyncClient, None]:
@@ -40,7 +44,10 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
 async def db() -> AsyncGenerator[AsyncSession, None]:
     """Provide a database session for tests."""
     async with TestSessionLocal() as session:
-        yield session
+        try:
+            yield session
+        finally:
+            await session.close()
 
 @pytest_asyncio.fixture
 async def create_test_merchant(client: AsyncClient) -> dict:

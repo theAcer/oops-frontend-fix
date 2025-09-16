@@ -39,7 +39,7 @@ async def setup_test_db():
         await conn.run_sync(Base.metadata.drop_all)
     await test_engine.dispose()
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function") # Changed scope to function
 async def client() -> AsyncGenerator[AsyncClient, None]:
     """Create an asynchronous test client."""
     async with AsyncClient(app=app, base_url="http://test") as ac:
@@ -55,7 +55,7 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 @pytest_asyncio.fixture
-async def create_test_merchant(client: AsyncClient) -> Dict[str, Any]: # Now depends on client
+async def create_test_merchant(client: AsyncClient) -> Dict[str, Any]:
     """Helper fixture to create a merchant for tests via API."""
     merchant_data = {
         "business_name": "Test Merchant",
@@ -67,10 +67,10 @@ async def create_test_merchant(client: AsyncClient) -> Dict[str, Any]: # Now dep
     }
     response = await client.post("/api/v1/merchants/", json=merchant_data)
     assert response.status_code == 201
-    return response.json() # Return dict
+    return response.json()
 
 @pytest_asyncio.fixture
-async def create_test_user(client: AsyncClient, create_test_merchant: Dict[str, Any]) -> Dict[str, Any]: # Now depends on client and create_test_merchant
+async def create_test_user(client: AsyncClient, create_test_merchant: Dict[str, Any]) -> Dict[str, Any]:
     """Helper fixture to create a user linked to a merchant for tests via API."""
     merchant_id = create_test_merchant["id"]
     user_data = {
@@ -81,10 +81,10 @@ async def create_test_user(client: AsyncClient, create_test_merchant: Dict[str, 
     }
     response = await client.post("/api/v1/auth/register", json=user_data)
     assert response.status_code == 201
-    return response.json() # Return dict
+    return response.json()
 
 @pytest_asyncio.fixture
-async def get_auth_token(client: AsyncClient, create_test_user: Dict[str, Any]) -> str: # Now depends on client and user
+async def get_auth_token(client: AsyncClient, create_test_user: Dict[str, Any]) -> str:
     """Helper fixture to get an auth token for a test user."""
     login_data = {
         "email": create_test_user["email"],

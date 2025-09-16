@@ -1,4 +1,5 @@
 import pytest
+import pytest_asyncio # Import pytest_asyncio
 import asyncio
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
@@ -19,7 +20,7 @@ async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
 
 app.dependency_overrides[get_db] = override_get_db
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest_asyncio.fixture(scope="session", autouse=True) # Changed to pytest_asyncio.fixture
 async def setup_test_db():
     """Set up and tear down the test database."""
     async with test_engine.begin() as conn:
@@ -29,22 +30,22 @@ async def setup_test_db():
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session") # Changed to pytest_asyncio.fixture
 async def client() -> AsyncGenerator[AsyncClient, None]:
     """Create an asynchronous test client."""
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
 
-@pytest.fixture
+@pytest_asyncio.fixture # Changed to pytest_asyncio.fixture
 async def db() -> AsyncGenerator[AsyncSession, None]:
     """Provide a database session for tests."""
     async with TestSessionLocal() as session:
         yield session
 
-@pytest.fixture
+@pytest_asyncio.fixture # Changed to pytest_asyncio.fixture
 async def create_test_merchant(client: AsyncClient) -> dict:
     """Helper fixture to create a merchant for tests."""
-    _client_instance = client # Removed await
+    # client is automatically awaited by pytest_asyncio
     merchant_data = {
         "business_name": "Test Merchant",
         "owner_name": "Test Owner",
@@ -53,43 +54,40 @@ async def create_test_merchant(client: AsyncClient) -> dict:
         "business_type": "retail",
         "mpesa_till_number": "TESTTILL"
     }
-    response = await _client_instance.post("/api/v1/merchants", json=merchant_data)
+    response = await client.post("/api/v1/merchants", json=merchant_data)
     assert response.status_code == 201
     return response.json()
 
-@pytest.fixture
+@pytest_asyncio.fixture # Changed to pytest_asyncio.fixture
 async def create_test_user(client: AsyncClient, create_test_merchant: dict) -> dict:
     """Helper fixture to create a user linked to a merchant for tests."""
-    _client_instance = client # Removed await
-    merchant = create_test_merchant # Removed await
-    merchant_id = merchant["id"]
+    # client and create_test_merchant are automatically awaited
+    merchant_id = create_test_merchant["id"]
     user_data = {
         "email": "test_user@example.com",
         "password": "password123",
         "name": "Test User",
         "merchant_id": merchant_id
     }
-    response = await _client_instance.post("/api/v1/auth/register", json=user_data)
+    response = await client.post("/api/v1/auth/register", json=user_data)
     assert response.status_code == 201
     return response.json()
 
-@pytest.fixture
+@pytest_asyncio.fixture # Changed to pytest_asyncio.fixture
 async def get_auth_token(client: AsyncClient, create_test_user: dict) -> str:
     """Helper fixture to get an auth token for a test user."""
-    _client_instance = client # Removed await
-    user = create_test_user # Removed await
+    # client and create_test_user are automatically awaited
     login_data = {
-        "email": user["email"],
+        "email": create_test_user["email"],
         "password": "password123"
     }
-    response = await _client_instance.post("/api/v1/auth/login", json=login_data)
+    response = await client.post("/api/v1/auth/login", json=login_data)
     assert response.status_code == 200
     return response.json()["access_token"]
 
-@pytest.fixture
+@pytest_asyncio.fixture # Changed to pytest_asyncio.fixture
 async def authenticated_client(client: AsyncClient, get_auth_token: str) -> AsyncClient:
     """Fixture for an authenticated client."""
-    _client_instance = client # Removed await
-    token = get_auth_token # Removed await
-    _client_instance.headers["Authorization"] = f"Bearer {token}"
-    return _client_instance
+    # client and get_auth_token are automatically awaited
+    client.headers["Authorization"] = f"Bearer {get_auth_token}"
+    return client

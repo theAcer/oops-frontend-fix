@@ -1,7 +1,7 @@
 import pytest
 import pytest_asyncio
 import asyncio
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Dict, Any
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from app.core.database import Base, get_db
 from main import app
@@ -32,6 +32,8 @@ async def setup_test_db():
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
+    # Add a small delay to ensure DB is fully ready
+    await asyncio.sleep(0.1) 
     yield
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
@@ -53,8 +55,8 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 @pytest_asyncio.fixture
-async def create_test_merchant(db: AsyncSession) -> Merchant: # Directly create merchant in DB
-    """Helper fixture to create a merchant for tests."""
+async def create_test_merchant(client: AsyncClient) -> Dict[str, Any]: # Now depends on client
+    """Helper fixture to create a merchant for tests via API."""
     merchant_data = {
         "business_name": "Test Merchant",
         "owner_name": "Test Owner",
@@ -63,36 +65,29 @@ async def create_test_merchant(db: AsyncSession) -> Merchant: # Directly create 
         "business_type": "retail",
         "mpesa_till_number": "TESTTILL"
     }
-    merchant = Merchant(**merchant_data)
-    db.add(merchant)
-    await db.commit()
-    await db.refresh(merchant)
-    return merchant
+    response = await client.post("/api/v1/merchants/", json=merchant_data)
+    assert response.status_code == 201
+    return response.json() # Return dict
 
 @pytest_asyncio.fixture
-async def create_test_user(db: AsyncSession, create_test_merchant: Merchant) -> User: # Directly create user in DB
-    """Helper fixture to create a user linked to a merchant for tests."""
-    merchant_id = create_test_merchant.id
+async def create_test_user(client: AsyncClient, create_test_merchant: Dict[str, Any]) -> Dict[str, Any]: # Now depends on client and create_test_merchant
+    """Helper fixture to create a user linked to a merchant for tests via API."""
+    merchant_id = create_test_merchant["id"]
     user_data = {
         "email": "test_user@example.com",
         "password": "password123",
         "name": "Test User",
         "merchant_id": merchant_id
     }
-    auth_service = AuthService(db)
-    user = await auth_service.create_user(
-        email=user_data["email"],
-        password=user_data["password"],
-        name=user_data["name"],
-        merchant_id=user_data["merchant_id"]
-    )
-    return user
+    response = await client.post("/api/v1/auth/register", json=user_data)
+    assert response.status_code == 201
+    return response.json() # Return dict
 
 @pytest_asyncio.fixture
-async def get_auth_token(client: AsyncClient, create_test_user: User) -> str:
+async def get_auth_token(client: AsyncClient, create_test_user: Dict[str, Any]) -> str: # Now depends on client and user
     """Helper fixture to get an auth token for a test user."""
     login_data = {
-        "email": create_test_user.email,
+        "email": create_test_user["email"],
         "password": "password123"
     }
     response = await client.post("/api/v1/auth/login", json=login_data)

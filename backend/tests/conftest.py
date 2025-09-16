@@ -2,26 +2,31 @@ import pytest
 import pytest_asyncio
 import asyncio
 from typing import AsyncGenerator, Dict, Any
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker, AsyncEngine
 from app.core.database import Base, get_db
 from main import app
 from httpx import AsyncClient
-from app.models.merchant import Merchant # Import Merchant model
-from app.models.user import User # Import User model
-from app.services.auth_service import AuthService # Import AuthService
+from app.models.merchant import Merchant
+from app.models.user import User
+from app.services.auth_service import AuthService
 
 # Use a separate test database
 TEST_DATABASE_URL = "postgresql+asyncpg://postgres:password@localhost:5432/test_db"
 
-test_engine = create_async_engine(TEST_DATABASE_URL, echo=False, future=True)
-TestSessionLocal = async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False)
+# These will be initialized in the session-scoped fixture
+_test_engine: AsyncEngine | None = None
+_TestSessionLocal: async_sessionmaker[AsyncSession] | None = None
 
 async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
     """Override the get_db dependency for tests."""
-    async with TestSessionLocal() as session:
+    if _TestSessionLocal is None:
+        raise RuntimeError("TestSessionLocal not initialized. Ensure setup_test_db fixture runs.")
+    async with _TestSessionLocal() as session:
         try:
             yield session
         finally:
+            # Rollback any changes after each test to ensure isolation
+            await session.rollback() 
             await session.close()
 
 app.dependency_overrides[get_db] = override_get_db
@@ -29,17 +34,34 @@ app.dependency_overrides[get_db] = override_get_db
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def setup_test_db():
     """Set up and tear down the test database."""
-    async with test_engine.begin() as conn:
+    global _test_engine, _TestSessionLocal
+    
+    _test_engine = create_async_engine(
+        TEST_DATABASE_URL,
+        echo=False,
+        future=True
+    )
+    _TestSessionLocal = async_sessionmaker(
+        _test_engine,
+        class_=AsyncSession,
+        expire_on_commit=False
+    )
+
+    async with _test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
+    
     # Add a small delay to ensure DB is fully ready
     await asyncio.sleep(0.1) 
     yield
-    async with test_engine.begin() as conn:
+    
+    async with _test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-    await test_engine.dispose()
+    await _test_engine.dispose()
+    _test_engine = None
+    _TestSessionLocal = None
 
-@pytest_asyncio.fixture(scope="function") # Changed scope to function
+@pytest_asyncio.fixture(scope="function")
 async def client() -> AsyncGenerator[AsyncClient, None]:
     """Create an asynchronous test client."""
     async with AsyncClient(app=app, base_url="http://test") as ac:
@@ -48,10 +70,15 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
 @pytest_asyncio.fixture
 async def db() -> AsyncGenerator[AsyncSession, None]:
     """Provide a database session for tests."""
-    async with TestSessionLocal() as session:
+    # This fixture now relies on _TestSessionLocal being set up by setup_test_db
+    if _TestSessionLocal is None:
+        raise RuntimeError("TestSessionLocal not initialized. Ensure setup_test_db fixture runs.")
+    async with _TestSessionLocal() as session:
         try:
             yield session
         finally:
+            # Rollback any changes after each test to ensure isolation
+            await session.rollback() 
             await session.close()
 
 @pytest_asyncio.fixture

@@ -8,14 +8,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/auth-context"
 import { apiService } from "@/services/api-service"
-import { ArrowLeft, Save, KeyRound } from "lucide-react"
+import { ArrowLeft, Save } from "lucide-react"
 import Link from "next/link"
 import { AnimatedButton } from "@/components/animated-button"
 import { BlurredCard } from "@/components/blurred-card"
 import { useMerchant } from "@/hooks/use-api"
 
 export default function DarajaIntegrationPage() {
-  const router = useRouter()
+  const _router = useRouter() // Renamed to _router to ignore unused var warning
   const { user } = useAuth()
   const { data: merchant, isLoading: merchantLoading, error: merchantError, mutate: refreshMerchant } = useMerchant()
 

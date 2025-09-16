@@ -5,7 +5,6 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BlurredCard } from "@/components/blurred-card"
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -25,7 +24,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password)
-    } catch (err) {
+    } catch (err: any) {
       setError("Invalid email or password")
     } finally {
       setLoading(false)
@@ -81,7 +80,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-8 text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/register" className="text-primary hover:underline font-medium">
               Sign up
             </Link>

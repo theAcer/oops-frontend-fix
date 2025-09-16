@@ -5,7 +5,6 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BlurredCard } from "@/components/blurred-card"
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -44,7 +43,7 @@ export default function RegisterPage() {
         formData.email,
         formData.password,
       )
-    } catch (err) {
+    } catch (err: any) {
       setError("Registration failed. Please try again.")
     } finally {
       setLoading(false)

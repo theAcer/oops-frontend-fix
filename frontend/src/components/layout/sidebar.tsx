@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { BarChart3, Users, CreditCard, Gift, Megaphone, Brain, Bell, Settings, Home, Store, KeyRound } from "lucide-react"
+import { BarChart3, Users, CreditCard, Gift, Megaphone, Brain, Settings, Home, Store, KeyRound } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 
 interface SidebarProps {

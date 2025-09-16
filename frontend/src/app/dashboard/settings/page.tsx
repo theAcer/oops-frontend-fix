@@ -3,7 +3,7 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Settings, KeyRound, User, Store } from "lucide-react"
+import { User, Store } from "lucide-react"
 import Link from "next/link"
 import { BlurredCard } from "@/components/blurred-card"
 import { useAuth } from "@/contexts/auth-context"

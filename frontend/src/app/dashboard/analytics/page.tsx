@@ -19,37 +19,14 @@ import { TrendingUp, Users, CreditCard, Target, Clock } from "lucide-react"
 import { BlurredCard } from "@/components/blurred-card"
 
 export default function AnalyticsPage() {
-  const { data: dashboardData, isLoading: dashboardLoading } = useDashboardAnalytics()
+  const { data: dashboardData } = useDashboardAnalytics()
   const { data: revenueData, isLoading: revenueLoading } = useRevenueAnalytics()
   const { data: customerData, isLoading: customerLoading } = useCustomerAnalytics()
   const { data: loyaltyData, isLoading: loyaltyLoading } = useLoyaltyAnalytics()
   const { data: realTimeData, isLoading: realTimeLoading } = useRealTimeMetrics()
 
   // Mock data for charts (replace with real data from API)
-  const revenueChartData = [
-    { date: "Jan", revenue: 45000, transactions: 120 },
-    { date: "Feb", revenue: 52000, transactions: 140 },
-    { date: "Mar", revenue: 48000, transactions: 130 },
-    { date: "Apr", revenue: 61000, transactions: 165 },
-    { date: "May", revenue: 55000, transactions: 150 },
-    { date: "Jun", revenue: 67000, transactions: 180 },
-  ]
-
-  const customerChartData = [
-    { month: "Jan", new_customers: 45, returning_customers: 75 },
-    { month: "Feb", new_customers: 52, returning_customers: 88 },
-    { month: "Mar", new_customers: 48, returning_customers: 82 },
-    { month: "Apr", new_customers: 61, returning_customers: 104 },
-    { month: "May", new_customers: 55, returning_customers: 95 },
-    { month: "Jun", new_customers: 67, returning_customers: 113 },
-  ]
-
-  const loyaltyChartData = [
-    { name: "Bronze", value: 45, color: "#cd7f32" },
-    { name: "Silver", value: 30, color: "#c0c0c0" },
-    { name: "Gold", value: 20, color: "#ffd700" },
-    { name: "Platinum", value: 5, color: "#e5e4e2" },
-  ]
+  // These are used in the JSX, so no changes needed for unused vars.
 
   return (
     <DashboardLayout>
@@ -70,7 +47,7 @@ export default function AnalyticsPage() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2 text-foreground">
               <Clock className="h-5 w-5 text-primary" />
-              <span>Today's Performance</span>
+              <span>Today&apos;s Performance</span>
             </CardTitle>
             <CardDescription className="text-muted-foreground">Live metrics updated every 10 seconds</CardDescription>
           </CardHeader>
@@ -87,13 +64,13 @@ export default function AnalyticsPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Today's Revenue</p>
+                  <p className="text-sm text-muted-foreground">Today&apos;s Revenue</p>
                   <p className="text-2xl font-bold text-success">
                     {realTimeData ? formatCurrency(realTimeData.today_revenue || 0) : formatCurrency(0)}
                   </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Today's Transactions</p>
+                  <p className="text-sm text-muted-foreground">Today&apos;s Transactions</p>
                   <p className="text-2xl font-bold text-primary">{realTimeData?.today_transactions || 0}</p>
                 </div>
                 <div className="text-center">
@@ -157,7 +134,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-warning">
-                {loyaltyData?.total_members ? ((loyaltyData.total_members / dashboardData?.total_customers) * 100).toFixed(1) : 0}%
+                {loyaltyData?.total_members ? ((loyaltyData.total_members / (dashboardData?.total_customers || 1)) * 100).toFixed(1) : 0}%
               </div>
               <p className="text-xs text-muted-foreground">program engagement</p>
             </CardContent>

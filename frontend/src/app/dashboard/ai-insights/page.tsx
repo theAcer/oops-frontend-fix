@@ -19,9 +19,9 @@ export default function AIInsightsPage() {
   const [trainingModels, setTrainingModels] = useState(false)
   const { user } = useAuth()
 
-  const { data: merchantInsights, isLoading: insightsLoading, mutate: refreshInsights } = useMerchantInsights()
+  const { data: merchantInsights, mutate: refreshInsights } = useMerchantInsights()
   const { data: churnRiskData, isLoading: churnLoading } = useChurnRisk()
-  const { data: customerInsights, isLoading: customerInsightsLoading } = useCustomerInsights()
+  const { isLoading: customerInsightsLoading } = useCustomerInsights()
 
   const handleTrainModels = async () => {
     if (!user?.merchant_id) return

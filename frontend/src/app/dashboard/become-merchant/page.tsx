@@ -11,14 +11,14 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Import Select components
 import { useAuth } from "@/contexts/auth-context"
 import { apiService } from "@/services/api-service"
-import { ArrowLeft, Save } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { AnimatedButton } from "@/components/animated-button"
 import { BlurredCard } from "@/components/blurred-card"
 
 export default function BecomeMerchantPage() {
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
     businessName: "",
     ownerName: user?.name || "",

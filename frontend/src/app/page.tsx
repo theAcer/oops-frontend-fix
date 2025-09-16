@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { ArrowRight, BarChart3, Users, Zap } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { BlurredCard } from "@/components/blurred-card"
 import { AnimatedButton } from "@/components/animated-button"
 import { CardContent } from "@/components/ui/card"

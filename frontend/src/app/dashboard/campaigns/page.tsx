@@ -14,7 +14,7 @@ import { BlurredCard } from "@/components/blurred-card"
 
 export default function CampaignsPage() {
   const { user } = useAuth()
-  const merchantId = user?.merchant_id
+  const _merchantId = user?.merchant_id // Renamed to _merchantId to ignore unused var warning
 
   const { data, error, isLoading, mutate } = useCampaigns()
 

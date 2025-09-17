@@ -93,36 +93,44 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 @pytest_asyncio.fixture
-async def create_test_merchant(db: AsyncSession) -> Merchant:
-    """Helper fixture to create a merchant directly in the database."""
-    merchant = Merchant(
-        business_name="Test Merchant",
-        owner_name="Test Owner",
-        email="test_merchant@example.com",
-        phone="254700000000",
-        business_type="retail",
-        mpesa_till_number="TESTTILL"
-    )
-    db.add(merchant)
-    await db.commit()
-    await db.refresh(merchant)
-    return merchant
+async def create_test_merchant() -> Merchant:
+    """Helper fixture to create a merchant directly in the database using its own session."""
+    if _TestSessionLocal is None:
+        raise RuntimeError("TestSessionLocal not initialized. Ensure setup_test_db fixture runs.")
+    async with _TestSessionLocal() as session:
+        merchant = Merchant(
+            business_name="Test Merchant",
+            owner_name="Test Owner",
+            email="test_merchant@example.com",
+            phone="254700000000",
+            business_type="retail",
+            mpesa_till_number="TESTTILL"
+        )
+        session.add(merchant)
+        await session.commit()
+        await session.refresh(merchant)
+        # The session is closed automatically by the 'async with' block
+        return merchant
 
 @pytest_asyncio.fixture
-async def create_test_user(db: AsyncSession, create_test_merchant: Merchant) -> User:
-    """Helper fixture to create a user directly in the database."""
-    auth_service = AuthService(db) # Instantiate AuthService with the current session
-    hashed_password = auth_service.get_password_hash("password123")
-    user = User(
-        email="test_user@example.com",
-        hashed_password=hashed_password,
-        name="Test User",
-        merchant_id=create_test_merchant.id
-    )
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
-    return user
+async def create_test_user(create_test_merchant: Merchant) -> User:
+    """Helper fixture to create a user directly in the database using its own session."""
+    if _TestSessionLocal is None:
+        raise RuntimeError("TestSessionLocal not initialized. Ensure setup_test_db fixture runs.")
+    async with _TestSessionLocal() as session:
+        auth_service = AuthService(session) # Instantiate AuthService with the current session
+        hashed_password = auth_service.get_password_hash("password123")
+        user = User(
+            email="test_user@example.com",
+            hashed_password=hashed_password,
+            name="Test User",
+            merchant_id=create_test_merchant.id
+        )
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        # The session is closed automatically by the 'async with' block
+        return user
 
 @pytest_asyncio.fixture
 async def get_auth_token(client: AsyncClient, create_test_user: User) -> str:

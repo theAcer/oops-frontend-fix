@@ -99,6 +99,6 @@ async def create_test_merchant(db: AsyncSession) -> Merchant: # Now depends on t
         mpesa_till_number="TESTTILL"
     )
     db.add(merchant)
-    await db.commit() # Commit within the shared session
+    await db.flush() # Changed from commit to flush
     await db.refresh(merchant)
     return merchant

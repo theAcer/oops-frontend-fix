@@ -1,50 +1,48 @@
-.PHONY: help dev build up down logs clean
+# Makefile for Zidisha Loyalty Platform
 
-help: ## Show this help message
-	@echo 'Usage: make [target]'
-	@echo ''
-	@echo 'Targets:'
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+.PHONY: dev prod up down build clean logs logs-api logs-frontend db-shell test-backend
 
-dev: ## Start development environment
-	docker-compose up --build
+# Start development environment
+dev:
+	docker-compose -f docker-compose.yml up --build --remove-orphans --wait frontend api db redis
 
-build: ## Build all services
-	docker-compose build
+# Start production environment
+prod:
+	docker-compose -f docker-compose.yml up --build --remove-orphans --wait frontend-prod api-prod db redis nginx
 
-up: ## Start all services in background
-	docker-compose up -d
+# Bring up all services (default to dev profile)
+up:
+	docker-compose -f docker-compose.yml up --build --remove-orphans --wait
 
-down: ## Stop all services
-	docker-compose down
+# Bring down all services
+down:
+	docker-compose -f docker-compose.yml down --remove-orphans
 
-logs: ## Show logs for all services
-	docker-compose logs -f
+# Build all services
+build:
+	docker-compose -f docker-compose.yml build
 
-logs-api: ## Show API logs
-	docker-compose logs -f api
+# Clean up Docker resources
+clean:
+	docker-compose -f docker-compose.yml down --volumes --rmi all --remove-orphans
 
-logs-frontend: ## Show frontend logs
-	docker-compose logs -f frontend
+# View logs for all services
+logs:
+	docker-compose -f docker-compose.yml logs -f
 
-clean: ## Clean up containers, networks, and volumes
-	docker-compose down -v --remove-orphans
-	docker system prune -f
+# View logs for API service
+logs-api:
+	docker-compose -f docker-compose.yml logs -f api
 
-prod: ## Start production environment with nginx
-	docker-compose --profile production up --build
+# View logs for Frontend service
+logs-frontend:
+	docker-compose -f docker-compose.yml logs -f frontend
 
-restart: ## Restart all services
-	docker-compose restart
+# Access PostgreSQL database shell
+db-shell:
+	docker-compose -f docker-compose.yml exec db psql -U postgres zidisha_db
 
-shell-api: ## Open shell in API container
-	docker-compose exec api bash
-
-shell-frontend: ## Open shell in frontend container
-	docker-compose exec frontend sh
-
-db-shell: ## Open PostgreSQL shell
-	docker-compose exec db psql -U postgres -d zidisha_db
-
-redis-shell: ## Open Redis CLI
-	docker-compose exec redis redis-cli
+# Run backend tests in a dedicated container
+test-backend:
+	docker-compose -f docker-compose.yml build test # Ensure the test service image is built
+	docker-compose -f docker-compose.yml run --rm test # Run tests and remove container afterwards

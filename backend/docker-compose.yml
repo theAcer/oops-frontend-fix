@@ -30,5 +30,30 @@ services:
     ports:
       - "6379:6379"
 
+  test: # New service for running backend tests
+    build: .
+    env_file:
+      - .env # Load environment variables from .env file
+    environment:
+      # Override DATABASE_URL for tests to use a separate test database
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/test_db
+      - REDIS_URL=redis://redis:6379
+      - PYTHONPATH=/app # Ensure Python can find app modules
+      - DEBUG=True # Enable debug mode for tests
+    depends_on:
+      db:
+        condition: service_healthy # Ensure DB is healthy before running tests
+      redis:
+        condition: service_healthy # Ensure Redis is healthy before running tests
+    volumes:
+      - .:/app
+    command: /bin/bash -c "pytest tests/" # Command to run pytest
+    # Add health checks for db and redis to ensure they are ready
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    
 volumes:
   postgres_data:

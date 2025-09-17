@@ -86,8 +86,8 @@ jobs:
       - name: Run backend tests
         working-directory: ./backend # Set working directory for pytest
         env:
-          DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/test_db
-          REDIS_URL: redis://localhost:6379
+          DATABASE_URL: postgresql+asyncpg://postgres:password@db:5432/test_db # Changed localhost to db
+          REDIS_URL: redis://redis:6379
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           ALGORITHM: HS256
           ACCESS_TOKEN_EXPIRE_MINUTES: 30

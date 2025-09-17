@@ -48,8 +48,4 @@ test-backend:
 
 # Run a specific backend test file in a dedicated container
 test-file:
-	@if [ -z "$(FILE)" ]; then \
-		echo "Usage: make test-file FILE=tests/path/to/your_test.py"; \
-		exit 1; \
-	fi
 	docker-compose --profile test -f docker-compose.yml run --rm test pytest $(FILE)

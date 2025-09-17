@@ -30,6 +30,7 @@ async def test_async_engine() -> AsyncGenerator[AsyncEngine, None]:
     Provides a session-scoped asynchronous engine for tests.
     Creates and drops schema once per test session, with explicit connection management.
     """
+    print(f"Connecting to test database at: {TEST_DATABASE_URL}") # Added logging here
     engine = create_async_engine(TEST_DATABASE_URL, echo=False, poolclass=NullPool)
 
     # Explicitly connect for schema creation to ensure isolation

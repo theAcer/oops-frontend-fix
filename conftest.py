@@ -28,14 +28,7 @@ TestAsyncSessionLocal = async_sessionmaker(
     expire_on_commit=False,
 )
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """
-    Creates an instance of the default event loop for the test session.
-    """
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
+# Removed the custom event_loop fixture. pytest-asyncio handles this automatically.
 
 @pytest.fixture(scope="session", autouse=True)
 async def schema_setup():

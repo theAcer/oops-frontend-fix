@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     DARAJA_API_URL: str = "https://sandbox.safaricom.co.ke" # Default to sandbox
     DARAAA_API_KEY: Optional[str] = None # Used for the mock Daraja service
 
+    # Port for local uvicorn server
+    PORT: int = 8000
+
     @property
     def ALLOWED_HOSTS(self) -> List[str]:
         """Parses the comma-separated CORS_ORIGINS string into a list of allowed hosts."""

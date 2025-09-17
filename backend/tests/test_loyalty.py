@@ -6,11 +6,11 @@ from app.models.loyalty import LoyaltyProgram, LoyaltyProgramType, CustomerLoyal
 from app.models.customer import Customer
 from app.models.transaction import Transaction, TransactionStatus, TransactionType
 from app.models.campaign import Reward
+from app.models.merchant import Merchant # Import Merchant
 
 @pytest.mark.asyncio
-async def test_create_loyalty_program(authenticated_client: AsyncClient, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_create_loyalty_program(authenticated_client: AsyncClient, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
     program_data = {
         "merchant_id": merchant_id,
         "name": "Bronze Tier Rewards",
@@ -26,9 +26,8 @@ async def test_create_loyalty_program(authenticated_client: AsyncClient, create_
     assert data["is_active"] == True # Default is_active is True in model
 
 @pytest.mark.asyncio
-async def test_get_loyalty_programs(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_get_loyalty_programs(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
     program = LoyaltyProgram(
         merchant_id=merchant_id,
         name="Test Program",
@@ -46,9 +45,8 @@ async def test_get_loyalty_programs(authenticated_client: AsyncClient, db: Async
     assert data[0]["name"] == "Test Program"
 
 @pytest.mark.asyncio
-async def test_activate_loyalty_program(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_activate_loyalty_program(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
     program1 = LoyaltyProgram(
         merchant_id=merchant_id,
         name="Program 1",
@@ -81,9 +79,8 @@ async def test_activate_loyalty_program(authenticated_client: AsyncClient, db: A
     assert program2.is_active == False
 
 @pytest.mark.asyncio
-async def test_calculate_and_apply_rewards(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_calculate_and_apply_rewards(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
 
     # Create an active loyalty program
     program = LoyaltyProgram(
@@ -140,9 +137,8 @@ async def test_calculate_and_apply_rewards(authenticated_client: AsyncClient, db
     assert transaction.loyalty_points_earned == 100
 
 @pytest.mark.asyncio
-async def test_redeem_reward(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_redeem_reward(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
 
     # Create a customer
     customer = Customer(merchant_id=merchant_id, phone="254750000001", name="Redeem Customer")
@@ -172,9 +168,8 @@ async def test_redeem_reward(authenticated_client: AsyncClient, db: AsyncSession
     assert reward.redeemed_at is not None
 
 @pytest.mark.asyncio
-async def test_get_customer_rewards(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_get_customer_rewards(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
 
     # Create a customer
     customer = Customer(merchant_id=merchant_id, phone="254760000001", name="Rewards List Customer")

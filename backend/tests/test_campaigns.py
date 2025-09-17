@@ -4,11 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 from app.models.campaign import Campaign, CampaignStatus, CampaignType, TargetAudience
 from app.models.customer import Customer
+from app.models.merchant import Merchant # Import Merchant
 
 @pytest.mark.asyncio
-async def test_create_campaign(authenticated_client: AsyncClient, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_create_campaign(authenticated_client: AsyncClient, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
     campaign_data = {
         "merchant_id": merchant_id,
         "name": "New Customer Welcome",
@@ -29,9 +29,8 @@ async def test_create_campaign(authenticated_client: AsyncClient, create_test_me
     assert data["status"] == "draft" # Default status is draft
 
 @pytest.mark.asyncio
-async def test_get_campaigns(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_get_campaigns(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
     campaign = Campaign(
         merchant_id=merchant_id,
         name="Existing Campaign",
@@ -49,9 +48,8 @@ async def test_get_campaigns(authenticated_client: AsyncClient, db: AsyncSession
     assert data[0]["name"] == "Existing Campaign"
 
 @pytest.mark.asyncio
-async def test_launch_campaign(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_launch_campaign(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
     campaign = Campaign(
         merchant_id=merchant_id,
         name="Launch Test Campaign",
@@ -85,9 +83,8 @@ async def test_launch_campaign(authenticated_client: AsyncClient, db: AsyncSessi
     assert campaign.reached_customers_count >= 1 # Should include the test customer (if SMS sent)
 
 @pytest.mark.asyncio
-async def test_get_campaign_performance(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_get_campaign_performance(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
     campaign = Campaign(
         merchant_id=merchant_id,
         name="Performance Campaign",

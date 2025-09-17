@@ -136,7 +136,7 @@ async def test_delete_merchant_not_found(client: AsyncClient, setup_test_db: Non
     assert response.json()["detail"] == "Merchant not found"
 
 @pytest.mark.asyncio
-async def test_link_user_to_merchant(authenticated_client: AsyncClient, db: AsyncSession):
+async def test_link_user_to_merchant(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
     """Test linking an authenticated user to a new merchant."""
     # The authenticated_client fixture already has a user linked to a merchant.
     # We need to create a new user that is NOT linked to a merchant first.
@@ -183,7 +183,7 @@ async def test_link_user_to_merchant(authenticated_client: AsyncClient, db: Asyn
     assert user_in_db.merchant_id == new_merchant_id
 
 @pytest.mark.asyncio
-async def test_link_user_to_merchant_already_linked(authenticated_client: AsyncClient):
+async def test_link_user_to_merchant_already_linked(authenticated_client: AsyncClient, create_test_merchant: Merchant):
     """Test linking a user who is already linked to a merchant."""
     # The authenticated_client fixture already has a user linked to a merchant.
     # We'll use its token to try and link to another merchant.

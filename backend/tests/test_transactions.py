@@ -9,9 +9,8 @@ import respx
 from httpx import Response
 
 @pytest.mark.asyncio
-async def test_get_transactions(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_get_transactions(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
     customer = Customer(merchant_id=merchant_id, phone="254711111111", name="Transaction Customer")
     db.add(customer)
     await db.commit()
@@ -46,9 +45,8 @@ async def test_get_transactions(authenticated_client: AsyncClient, db: AsyncSess
     assert any(t["mpesa_receipt_number"] == "TRX001" for t in data)
 
 @pytest.mark.asyncio
-async def test_get_transactions_by_customer(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_get_transactions_by_customer(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
     customer1 = Customer(merchant_id=merchant_id, phone="254711111111", name="Customer A")
     customer2 = Customer(merchant_id=merchant_id, phone="254722222222", name="Customer B")
     db.add_all([customer1, customer2])
@@ -72,9 +70,8 @@ async def test_get_transactions_by_customer(authenticated_client: AsyncClient, d
     assert data[0]["mpesa_receipt_number"] == "CUST001"
 
 @pytest.mark.asyncio
-async def test_get_transaction_by_id(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_get_transaction_by_id(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
     transaction = Transaction(
         merchant_id=merchant_id,
         customer_id=None,
@@ -102,11 +99,9 @@ async def test_get_transaction_not_found(authenticated_client: AsyncClient):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_sync_transactions_from_daraja(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
-    merchant = await db.execute(db.select(Merchant).filter_by(id=merchant_id))
-    merchant = merchant.scalar_one()
+async def test_sync_transactions_from_daraja(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant = create_test_merchant
+    merchant_id = merchant.id
     merchant.daraja_consumer_key = "test_key"
     merchant.daraja_consumer_secret = "test_secret"
     merchant.daraja_shortcode = "174379"

@@ -5,13 +5,12 @@ from datetime import datetime, timedelta
 from app.models.merchant import Merchant
 from app.models.customer import Customer
 from app.models.transaction import Transaction, TransactionStatus, TransactionType
-from app.models.loyalty import LoyaltyProgram, CustomerLoyalty
+from app.models.loyalty import LoyaltyProgram, CustomerLoyalty, LoyaltyProgramType
 from app.models.campaign import Campaign, CampaignStatus, CampaignType, TargetAudience
 
 @pytest.mark.asyncio
-async def test_get_merchant_dashboard(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_get_merchant_dashboard(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
 
     # Create test data
     customer = Customer(merchant_id=merchant_id, phone="254712345678", name="Test Customer", churn_risk_score=0.5)
@@ -43,9 +42,8 @@ async def test_get_merchant_dashboard(authenticated_client: AsyncClient, db: Asy
     assert data["overview"]["unique_customers"] == 1
 
 @pytest.mark.asyncio
-async def test_get_revenue_analytics(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_get_revenue_analytics(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
 
     # Create test transactions
     for i in range(5):
@@ -71,9 +69,8 @@ async def test_get_revenue_analytics(authenticated_client: AsyncClient, db: Asyn
     assert "weekly_patterns" in data
 
 @pytest.mark.asyncio
-async def test_get_customer_analytics(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_get_customer_analytics(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
 
     # Create test customers
     db.add(Customer(merchant_id=merchant_id, phone="254720000001", name="New Customer", customer_segment="new", total_spent=500, total_transactions=1, churn_risk_score=0.1))
@@ -93,9 +90,8 @@ async def test_get_customer_analytics(authenticated_client: AsyncClient, db: Asy
     assert "churn_risk_distribution" in data
 
 @pytest.mark.asyncio
-async def test_get_loyalty_analytics(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_get_loyalty_analytics(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
 
     # Create an active loyalty program
     program = LoyaltyProgram(
@@ -138,9 +134,8 @@ async def test_get_loyalty_analytics(authenticated_client: AsyncClient, db: Asyn
     assert data["tier_distribution"]["silver"] >= 1
 
 @pytest.mark.asyncio
-async def test_get_campaign_analytics(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: dict):
-    merchant = await create_test_merchant # Await the fixture
-    merchant_id = merchant["id"]
+async def test_get_campaign_analytics(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
+    merchant_id = create_test_merchant.id
 
     # Create a campaign
     campaign = Campaign(

@@ -77,11 +77,21 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck: # Existing healthcheck for db
+      test: ["CMD-SHELL", "pg_isready -U postgres -h localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck: # Added healthcheck for redis
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
 
   nginx:
     image: nginx:alpine
@@ -119,11 +129,6 @@ services:
     volumes:
       - ./backend:/app
     command: /bin/bash -c "pytest tests/" # Command to run pytest
-    healthcheck: # Health checks for db and redis are already defined in their services
-      test: ["CMD-SHELL", "pg_isready -U postgres -h db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
     profiles: ["test"] # Only run this service when 'test' profile is active
 
 volumes:

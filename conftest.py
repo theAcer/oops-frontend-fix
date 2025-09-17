@@ -1,13 +1,19 @@
 import asyncio
 import pytest
+import logging
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker, AsyncEngine
 from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
-from app.core.database import Base
+from app.core.database import Base, get_db # Import get_db to override it
 from app.models.merchant import Merchant # Assuming Merchant model is needed for create_test_merchant
+from app.main import app # Import your FastAPI app
+
+# Configure SQLAlchemy logging for visibility
+logging.basicConfig()
+logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
 # Use a separate test database URL if available, otherwise use the main one
 # Ensure the test database URL is also async
@@ -61,6 +67,19 @@ async def db(test_async_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, Non
             await trans.rollback()
             # Close the session to release the connection back to the pool
             await session.close()
+
+# ------------------------
+# FASTAPI DEPENDENCY OVERRIDE
+# ------------------------
+@pytest.fixture(autouse=True) # autouse=True makes this fixture run for every test
+async def override_get_db(db: AsyncSession):
+    """Override FastAPI's get_db dependency to use the test session."""
+    async def _get_test_db():
+        yield db
+    app.dependency_overrides[get_db] = _get_test_db
+    yield
+    # Clear overrides after the test is done to prevent interference with other tests
+    app.dependency_overrides.clear()
 
 # ------------------------
 # TEST DATA HELPERS

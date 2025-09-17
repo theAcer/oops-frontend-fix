@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      target: dev # Changed from 'base' to 'dev'
+      target: dev
     ports:
       - "3000:3000"
     environment:
@@ -26,7 +26,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://api:8000
       - NEXT_PUBLIC_SUPABASE_URL=https://avcehoxfcyqjllctwjzd.supabase.co
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI0ImF2Y2Vob3hmY3lxamllsY3R3anpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NDk5OTksImV4cCI6MjA3MjAyNTk5OX0.quDmqW9YoYM0F0EV6A6a6VNkr7m1ij7t7CI2Bgoe6FM
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI0ImF2Y2Vob3hmY3lxamllsY3R3anpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NDk5OTksImV4cCI6MjA3MjAyNTk5OX00.quDmqW9YoYM0F0EV6A6a6VNkr7m1ij7t7CI2Bgoe6FM
       - NODE_ENV=production
     depends_on:
       - api
@@ -60,6 +60,7 @@ services:
       - CORS_ORIGINS=http://frontend-prod:3000,http://localhost:3001,http://localhost:3002
       - PYTHONPATH=/app
       - ENVIRONMENT=production
+      - PORT=8000 # Added default port to silence warning
     depends_on:
       - db
       - redis
@@ -92,6 +93,38 @@ services:
       - frontend-prod
       - api-prod
     profiles: ["production"]
+
+  test: # New service for running backend tests
+    build: ./backend # Build from the backend Dockerfile
+    environment:
+      # Override DATABASE_URL for tests to use a separate test database
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/test_db
+      - REDIS_URL=redis://redis:6379
+      - PYTHONPATH=/app # Ensure Python can find app modules
+      - DEBUG=True # Enable debug mode for tests
+      - SECRET_KEY=test-secret-key # Required for auth tests
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - CORS_ORIGINS=http://localhost:3000
+      - AFRICAS_TALKING_API_KEY=mock_key
+      - AFRICAS_TALKING_USERNAME=mock_user
+      - SMS_SENDER_ID=LOYALTY
+      - DARAJA_API_URL=https://sandbox.safaricom.co.ke
+      - DARAAA_API_KEY=mock_daraja_key
+    depends_on:
+      db:
+        condition: service_healthy # Ensure DB is healthy before running tests
+      redis:
+        condition: service_healthy # Ensure Redis is healthy before running tests
+    volumes:
+      - ./backend:/app
+    command: /bin/bash -c "pytest tests/" # Command to run pytest
+    healthcheck: # Health checks for db and redis are already defined in their services
+      test: ["CMD-SHELL", "pg_isready -U postgres -h db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    profiles: ["test"] # Only run this service when 'test' profile is active
 
 volumes:
   postgres_data:

@@ -50,19 +50,23 @@ async def setup_test_db():
         expire_on_commit=False
     )
 
-    # Use a temporary connection for schema creation/deletion
-    async with _test_engine.connect() as conn:
+    # Explicitly open and close connection for schema creation/deletion
+    conn = await _test_engine.connect()
+    try:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
-        # No need to commit/rollback here, just ensure the connection is closed
-        # when the 'async with' block exits.
+    finally:
+        await conn.close() # Ensure the connection is closed
     
-    # The engine and sessionmaker are now ready for tests to use.
+    await asyncio.sleep(0.1) # Small delay to ensure resources are freed
     yield
     
-    # After all tests, drop tables using another temporary connection
-    async with _test_engine.connect() as conn:
+    # Explicitly open and close connection for schema teardown
+    conn = await _test_engine.connect()
+    try:
         await conn.run_sync(Base.metadata.drop_all)
+    finally:
+        await conn.close() # Ensure the connection is closed
     
     await _test_engine.dispose()
     _test_engine = None

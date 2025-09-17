@@ -72,10 +72,10 @@ async def db(test_async_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, Non
 # FASTAPI DEPENDENCY OVERRIDE
 # ------------------------
 @pytest.fixture(autouse=True) # autouse=True makes this fixture run for every test
-async def override_get_db(db: AsyncSession):
-    """Override FastAPI's get_db dependency to use the test session."""
+async def override_get_db_fixture(db: AsyncSession): # Now depends on the 'db' fixture
+    """Override FastAPI's get_db dependency to use the SAME session as the test."""
     async def _get_test_db():
-        yield db
+        yield db  # <-- Reuse the db fixture session
     app.dependency_overrides[get_db] = _get_test_db
     yield
     # Clear overrides after the test is done to prevent interference with other tests
@@ -85,19 +85,19 @@ async def override_get_db(db: AsyncSession):
 # TEST DATA HELPERS
 # ------------------------
 @pytest.fixture(scope="function")
-async def create_test_merchant(db: AsyncSession) -> Merchant:
+async def create_test_merchant(db: AsyncSession) -> Merchant: # Now depends on the 'db' fixture
     """
-    Fixture to create a test merchant for use in tests.
+    Fixture to create a test merchant for use in tests, using the shared test session.
     """
     merchant = Merchant(
-        name="Test Merchant",
-        email="test@merchant.com",
-        phone_number="254712345678",
-        business_location="Nairobi",
-        industry="Retail",
-        # Add any other required fields for Merchant
+        business_name="Test Merchant",
+        owner_name="Test Owner",
+        email="test_merchant@example.com",
+        phone="254700000000",
+        business_type="retail",
+        mpesa_till_number="TESTTILL"
     )
     db.add(merchant)
-    await db.flush()
+    await db.commit() # Commit within the shared session
     await db.refresh(merchant)
     return merchant

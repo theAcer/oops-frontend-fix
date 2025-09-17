@@ -28,8 +28,6 @@ TestAsyncSessionLocal = async_sessionmaker(
     expire_on_commit=False,
 )
 
-# Removed the custom event_loop fixture. pytest-asyncio handles this automatically.
-
 @pytest.fixture(scope="session", autouse=True)
 async def schema_setup():
     """
@@ -38,8 +36,10 @@ async def schema_setup():
     async with test_async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
+    # Ensure the engine is properly disposed after all tests in the session are done
     async with test_async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+    await test_async_engine.dispose() # Explicitly dispose of the engine
 
 @pytest.fixture(scope="function")
 async def db_session() -> AsyncGenerator[AsyncSession, None]:

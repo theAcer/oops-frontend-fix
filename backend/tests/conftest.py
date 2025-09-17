@@ -9,10 +9,12 @@ from httpx import AsyncClient
 from app.models.merchant import Merchant
 from app.models.user import User
 from app.services.auth_service import AuthService
+import os # Import os
 
 # Use a separate test database
 # IMPORTANT: Use 'db' as the hostname to connect to the PostgreSQL service within Docker Compose
-TEST_DATABASE_URL = "postgresql+asyncpg://postgres:password@db:5432/test_db"
+# Read the DATABASE_URL from environment variables, which is set correctly in docker-compose.yml
+TEST_DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql+asyncpg://postgres:password@db-test:5432/test_db")
 
 # These will be initialized in the session-scoped fixture
 _test_engine: AsyncEngine | None = None

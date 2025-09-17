@@ -11,61 +11,52 @@ from app.models.merchant import Merchant # Assuming Merchant model is needed for
 
 # Use a separate test database URL if available, otherwise use the main one
 # Ensure the test database URL is also async
-TEST_DATABASE_URL = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://").replace("zidisha_loyalty_db", "zidisha_loyalty_test_db")
+TEST_DATABASE_URL = settings.DATABASE_URL.replace(
+    "postgresql://", "postgresql+asyncpg://"
+).replace("zidisha_loyalty_db", "zidisha_loyalty_test_db")
 
+# ------------------------
+# ENGINE + SCHEMA SETUP
+# ------------------------
 @pytest.fixture(scope="session")
 async def test_async_engine() -> AsyncGenerator[AsyncEngine, None]:
     """
     Provides a session-scoped asynchronous engine for tests.
+    Creates and drops schema once per test session.
     """
-    engine = create_async_engine(
-        TEST_DATABASE_URL,
-        echo=False,
-        poolclass=NullPool,
-    )
+    engine = create_async_engine(TEST_DATABASE_URL, echo=False, poolclass=NullPool)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     yield engine
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
 
-@pytest.fixture(scope="session")
-async def TestAsyncSessionLocal_fixture(test_async_engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
-    """
-    Provides a session-scoped asynchronous sessionmaker for tests.
-    """
-    return async_sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=test_async_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-    )
-
-@pytest.fixture(scope="session", autouse=True)
-async def schema_setup(test_async_engine: AsyncEngine):
-    """
-    Sets up the database schema once per test session and tears it down afterwards.
-    """
-    async with test_async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-    async with test_async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-    # Engine disposal is now handled by the test_async_engine fixture's teardown
-
 @pytest.fixture(scope="function")
-async def db(TestAsyncSessionLocal_fixture: async_sessionmaker[AsyncSession]) -> AsyncGenerator[AsyncSession, None]:
+async def db(test_async_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
     """
-    Provides a function-scoped asynchronous database session for each test.
-    Each test runs within a transaction that is rolled back afterwards.
+    Per-test session with SAVEPOINT rollback (ensures full isolation).
+    Each test gets its own session and transaction.
     """
-    async with TestAsyncSessionLocal_fixture() as session:
+    async_session_maker = async_sessionmaker(
+        bind=test_async_engine,
+        expire_on_commit=False,
+        class_=AsyncSession,
+    )
+    async with async_session_maker() as session:
+        # Start a transaction for the test
+        trans = await session.begin()
         try:
             yield session
         finally:
-            # Ensure the transaction is rolled back and the session is closed
-            # to release the connection back to the pool.
-            await session.rollback()
+            # Roll back the transaction to ensure database state is clean
+            await trans.rollback()
+            # Close the session to release the connection back to the pool
             await session.close()
 
+# ------------------------
+# TEST DATA HELPERS
+# ------------------------
 @pytest.fixture(scope="function")
 async def create_test_merchant(db: AsyncSession) -> Merchant:
     """

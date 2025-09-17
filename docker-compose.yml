@@ -82,6 +82,24 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    profiles: ["dev", "production"] # Explicitly assign profiles
+
+  db-test: # New service for test database
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=test_db # This database will be created for tests
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5433:5432" # Use a different port to avoid conflict with main db
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data # Separate volume for test data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    profiles: ["test"] # Only active for test profile
 
   redis:
     image: redis:7-alpine
@@ -92,6 +110,7 @@ services:
       interval: 1s
       timeout: 3s
       retries: 5
+    profiles: ["dev", "production", "test"] # Redis is used by all profiles
 
   nginx:
     image: nginx:alpine
@@ -108,7 +127,7 @@ services:
     build: ./backend # Build from the backend Dockerfile
     environment:
       # Override DATABASE_URL for tests to use a separate test database
-      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/test_db
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db-test:5432/test_db # Connect to db-test service
       - REDIS_URL=redis://redis:6379
       - PYTHONPATH=/app # Ensure Python can find app modules
       - DEBUG=True # Enable debug mode for tests
@@ -122,7 +141,7 @@ services:
       - DARAJA_API_URL=https://sandbox.safaricom.co.ke
       - DARAAA_API_KEY=mock_daraja_key
     depends_on:
-      db:
+      db-test: # Depend on the new test database service
         condition: service_healthy # Ensure DB is healthy before running tests
       redis:
         condition: service_healthy # Ensure Redis is healthy before running tests
@@ -133,6 +152,7 @@ services:
 
 volumes:
   postgres_data:
+  postgres_test_data: # New volume for the test database
 
 networks:
   default:

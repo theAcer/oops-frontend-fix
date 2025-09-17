@@ -30,20 +30,18 @@ async def test_async_engine() -> AsyncGenerator[AsyncEngine, None]:
     Provides a session-scoped asynchronous engine for tests.
     Creates and drops schema once per test session, with explicit connection management.
     """
-    print(f"Connecting to test database at: {TEST_DATABASE_URL}") # Added logging here
+    print(f"Connecting to test database at: {TEST_DATABASE_URL}")
     engine = create_async_engine(TEST_DATABASE_URL, echo=False, poolclass=NullPool)
 
-    # Explicitly connect for schema creation to ensure isolation
-    async with engine.connect() as conn:
+    # Use engine.begin() for schema creation to ensure a dedicated connection and transaction context
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    # The connection is automatically closed when exiting the 'async with' block
 
-    yield engine # Now the engine is fully set up and ready for tests
+    yield engine
 
-    # Explicitly connect for schema dropping to ensure isolation
-    async with engine.connect() as conn:
+    # Use engine.begin() for schema dropping to ensure a dedicated connection and transaction context
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-    # The connection is automatically closed when exiting the 'async with' block
 
     await engine.dispose()
 
@@ -99,6 +97,6 @@ async def create_test_merchant(db: AsyncSession) -> Merchant: # Now depends on t
         mpesa_till_number="TESTTILL"
     )
     db.add(merchant)
-    await db.flush() # Changed from commit to flush
+    await db.flush()
     await db.refresh(merchant)
     return merchant

@@ -1,92 +1,98 @@
 import asyncio
-import pytest
 import logging
+import os
+import pytest
+import pytest_asyncio
 from typing import AsyncGenerator
 
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker, AsyncEngine
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    AsyncSession,
+    async_sessionmaker,
+    AsyncEngine,
+)
 from sqlalchemy.pool import NullPool
 
-from app.core.config import settings
-from app.core.database import Base, get_db # Import get_db to override it
-from app.models.merchant import Merchant # Assuming Merchant model is needed for create_test_merchant
-from app.main import app # Import your FastAPI app
+from app.core.database import Base, get_db
+from app.main import app
+from app.models.merchant import Merchant
 
-# Configure SQLAlchemy logging for visibility
+# Configure SQLAlchemy logging (optional but helpful for debugging)
 logging.basicConfig()
-logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
-# Use a separate test database URL if available, otherwise use the main one
-# Ensure the test database URL is also async
-TEST_DATABASE_URL = settings.DATABASE_URL.replace(
-    "postgresql://", "postgresql+asyncpg://"
-).replace("zidisha_loyalty_db", "zidisha_loyalty_test_db")
+# Use a separate test database URL. Ensure it's configured for asyncpg.
+TEST_DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
+    "postgresql+asyncpg://postgres:password@db-test:5432/test_db"
+)
 
-# ------------------------
-# ENGINE + SCHEMA SETUP
-# ------------------------
-@pytest.fixture(scope="session")
-async def test_async_engine() -> AsyncGenerator[AsyncEngine, None]:
+# --- ENGINE + SESSION FACTORY (Session-scoped) ---
+_test_engine: AsyncEngine | None = None
+_TestSessionLocal: async_sessionmaker[AsyncSession] | None = None
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def setup_test_db():
     """
-    Provides a session-scoped asynchronous engine for tests.
-    Creates and drops schema once per test session, with explicit connection management.
+    Session-scoped fixture to create the engine, create schema, and drop on teardown.
+    Ensures a clean database state for the entire test session.
     """
-    print(f"Connecting to test database at: {TEST_DATABASE_URL}")
-    engine = create_async_engine(TEST_DATABASE_URL, echo=False, poolclass=NullPool)
+    global _test_engine, _TestSessionLocal
+    _test_engine = create_async_engine(TEST_DATABASE_URL, echo=False, poolclass=NullPool)
+    _TestSessionLocal = async_sessionmaker(
+        bind=_test_engine, expire_on_commit=False, class_=AsyncSession
+    )
 
-    # Use engine.begin() for schema creation to ensure a dedicated connection and transaction context
-    async with engine.begin() as conn:
+    # Use engine.begin() for DDL operations to ensure dedicated connection and transaction context
+    async with _test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    yield engine
+    yield # Tests run here
 
-    # Use engine.begin() for schema dropping to ensure a dedicated connection and transaction context
-    async with engine.begin() as conn:
+    async with _test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+    await _test_engine.dispose()
 
-    await engine.dispose()
-
-@pytest.fixture(scope="function")
-async def db(test_async_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
+# --- TEST-ONLY DB SESSION (Function-scoped, Transactional) ---
+@pytest_asyncio.fixture(scope="function")
+async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """
-    Per-test session with SAVEPOINT rollback (ensures full isolation).
-    Each test gets its own session and transaction.
+    Provides a function-scoped AsyncSession with a transaction that is rolled back
+    at the end of each test. This session is used for both direct test data setup
+    and for overriding FastAPI's get_db dependency.
     """
-    async_session_maker = async_sessionmaker(
-        bind=test_async_engine,
-        expire_on_commit=False,
-        class_=AsyncSession,
-    )
-    async with async_session_maker() as session:
-        # Start a transaction for the test
+    if _TestSessionLocal is None:
+        raise RuntimeError("Test DB not initialized")
+    async with _TestSessionLocal() as session:
+        # Begin a transaction for the entire test function
         trans = await session.begin()
         try:
             yield session
         finally:
-            # Roll back the transaction to ensure database state is clean
+            # Roll back the transaction to ensure a clean state for the next test
             await trans.rollback()
-            # Close the session to release the connection back to the pool
-            await session.close()
+            await session.close() # Ensure session is closed
 
-# ------------------------
-# FASTAPI DEPENDENCY OVERRIDE
-# ------------------------
-@pytest.fixture(autouse=True) # autouse=True makes this fixture run for every test
-async def override_get_db_fixture(db: AsyncSession): # Now depends on the 'db' fixture
-    """Override FastAPI's get_db dependency to use the SAME session as the test."""
+# --- FASTAPI DEPENDENCY OVERRIDE (Autouse) ---
+@pytest_asyncio.fixture(autouse=True)
+async def override_get_db(db_session: AsyncSession):
+    """
+    Overrides FastAPI's get_db dependency to use the SAME session and transaction
+    provided by the db_session fixture for each test.
+    """
     async def _get_test_db():
-        yield db  # <-- Reuse the db fixture session
+        yield db_session # Yield the session from db_session fixture
     app.dependency_overrides[get_db] = _get_test_db
     yield
-    # Clear overrides after the test is done to prevent interference with other tests
     app.dependency_overrides.clear()
 
-# ------------------------
-# TEST DATA HELPERS
-# ------------------------
-@pytest.fixture(scope="function")
-async def create_test_merchant(db: AsyncSession) -> Merchant: # Now depends on the 'db' fixture
+# --- TEST DATA HELPERS ---
+@pytest_asyncio.fixture
+async def create_test_merchant(db_session: AsyncSession) -> Merchant:
     """
     Fixture to create a test merchant for use in tests, using the shared test session.
+    Uses db_session.flush() to make data available without committing the transaction.
     """
     merchant = Merchant(
         business_name="Test Merchant",
@@ -96,7 +102,7 @@ async def create_test_merchant(db: AsyncSession) -> Merchant: # Now depends on t
         business_type="retail",
         mpesa_till_number="TESTTILL"
     )
-    db.add(merchant)
-    await db.flush()
-    await db.refresh(merchant)
+    db_session.add(merchant)
+    await db_session.flush() # Changed from commit to flush
+    await db_session.refresh(merchant)
     return merchant

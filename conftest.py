@@ -22,14 +22,22 @@ TEST_DATABASE_URL = settings.DATABASE_URL.replace(
 async def test_async_engine() -> AsyncGenerator[AsyncEngine, None]:
     """
     Provides a session-scoped asynchronous engine for tests.
-    Creates and drops schema once per test session.
+    Creates and drops schema once per test session, with explicit connection management.
     """
     engine = create_async_engine(TEST_DATABASE_URL, echo=False, poolclass=NullPool)
-    async with engine.begin() as conn:
+
+    # Explicitly connect for schema creation to ensure isolation
+    async with engine.connect() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    yield engine
-    async with engine.begin() as conn:
+    # The connection is automatically closed when exiting the 'async with' block
+
+    yield engine # Now the engine is fully set up and ready for tests
+
+    # Explicitly connect for schema dropping to ensure isolation
+    async with engine.connect() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+    # The connection is automatically closed when exiting the 'async with' block
+
     await engine.dispose()
 
 @pytest.fixture(scope="function")

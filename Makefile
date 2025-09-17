@@ -1,6 +1,6 @@
 # Makefile for Zidisha Loyalty Platform
 
-.PHONY: dev prod up down build clean logs logs-api logs-frontend db-shell test-backend
+.PHONY: dev prod up down build clean logs logs-api logs-frontend db-shell test-backend test-file
 
 # Start development environment
 dev:
@@ -45,3 +45,11 @@ db-shell:
 # Run backend tests in a dedicated container
 test-backend:
 	docker-compose --profile test -f docker-compose.yml up --build --remove-orphans --exit-code-from test test
+
+# Run a specific backend test file in a dedicated container
+test-file:
+	@if [ -z "$(FILE)" ]; then \
+		echo "Usage: make test-file FILE=tests/path/to/your_test.py"; \
+		exit 1; \
+	fi
+	docker-compose --profile test -f docker-compose.yml run --rm test pytest $(FILE)

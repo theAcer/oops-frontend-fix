@@ -11,7 +11,8 @@ from app.models.user import User
 from app.services.auth_service import AuthService
 
 # Use a separate test database
-TEST_DATABASE_URL = "postgresql+asyncpg://postgres:password@localhost:5432/test_db"
+# IMPORTANT: Use 'db' as the hostname to connect to the PostgreSQL service within Docker Compose
+TEST_DATABASE_URL = "postgresql+asyncpg://postgres:password@db:5432/test_db"
 
 # These will be initialized in the session-scoped fixture
 _test_engine: AsyncEngine | None = None
@@ -37,7 +38,7 @@ async def setup_test_db():
     global _test_engine, _TestSessionLocal
     
     _test_engine = create_async_engine(
-        TEST_DATABASE_URL,
+        TEST_DATABASE_URL, # Use the updated TEST_DATABASE_URL
         echo=False,
         future=True
     )

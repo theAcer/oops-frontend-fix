@@ -10,7 +10,13 @@ class MerchantService:
         self.db = db
 
     async def create_merchant(self, merchant_data: MerchantCreate) -> Merchant:
-        """Create a new merchant"""
+        """Create a new merchant (idempotent by email)."""
+        # Check existing by email
+        if merchant_data.email:
+            existing = await self.db.execute(select(Merchant).where(Merchant.email == merchant_data.email))
+            existing_merchant = existing.scalar_one_or_none()
+            if existing_merchant:
+                return existing_merchant
         merchant = Merchant(**merchant_data.model_dump())
         self.db.add(merchant)
         await self.db.commit()

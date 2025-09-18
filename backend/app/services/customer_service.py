@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.models.customer import Customer
 from app.models.transaction import Transaction
 from app.schemas.customer import CustomerUpdate
@@ -143,7 +143,12 @@ class CustomerService:
         if not customer.last_purchase_date:
             return "new"
         
-        days_since_last_purchase = (datetime.utcnow() - customer.last_purchase_date).days
+        last = customer.last_purchase_date
+        if last.tzinfo is None:
+            last_utc = last.replace(tzinfo=timezone.utc)
+        else:
+            last_utc = last.astimezone(timezone.utc)
+        days_since_last_purchase = (datetime.now(timezone.utc) - last_utc).days
         
         # Churned customers (no purchase in 90+ days)
         if days_since_last_purchase > 90:
@@ -158,7 +163,7 @@ class CustomerService:
             return "vip"
         
         # Regular customers (multiple purchases)
-        if customer.total_transactions > 5:
+        if customer.total_transactions >= 3:
             return "regular"
         
         return "new"

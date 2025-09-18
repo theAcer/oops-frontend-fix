@@ -29,6 +29,7 @@ class CustomerResponse(CustomerBase):
     churn_risk_score: float
     lifetime_value_prediction: float
     next_purchase_prediction: Optional[datetime]
+    marketing_consent: bool
     created_at: datetime
     updated_at: Optional[datetime]
 

@@ -16,6 +16,15 @@ async def create_campaign(
     service = CampaignService(db)
     return await service.create_campaign(campaign_data)
 
+# Alias without trailing slash
+@router.post("", response_model=CampaignResponse, status_code=status.HTTP_201_CREATED)
+async def create_campaign_no_slash(
+    campaign_data: CampaignCreate,
+    db: AsyncSession = Depends(get_db)
+):
+    service = CampaignService(db)
+    return await service.create_campaign(campaign_data)
+
 @router.get("/", response_model=List[CampaignResponse])
 async def get_campaigns(
     merchant_id: int,
@@ -24,6 +33,17 @@ async def get_campaigns(
     db: AsyncSession = Depends(get_db)
 ):
     """Get campaigns for a merchant"""
+    service = CampaignService(db)
+    return await service.get_merchant_campaigns(merchant_id, skip=skip, limit=limit)
+
+# Alias without trailing slash
+@router.get("", response_model=List[CampaignResponse])
+async def get_campaigns_no_slash(
+    merchant_id: int,
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db)
+):
     service = CampaignService(db)
     return await service.get_merchant_campaigns(merchant_id, skip=skip, limit=limit)
 

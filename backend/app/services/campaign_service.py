@@ -155,24 +155,21 @@ class CampaignService:
         
         # Get conversion metrics (customers who made purchases after campaign)
         if campaign.launched_at:
-            # Count transactions after campaign launch
-            from app.models.transaction import Transaction
-            result = await self.db.execute(
-                select(func.count(Transaction.id)).where(
-                    and_(
-                        Transaction.merchant_id == campaign.merchant_id,
-                        Transaction.transaction_date >= campaign.launched_at
+            # Only estimate if conversions not already recorded
+            if not campaign.conversion_count or campaign.conversion_count < 0:
+                from app.models.transaction import Transaction
+                result = await self.db.execute(
+                    select(func.count(Transaction.id)).where(
+                        and_(
+                            Transaction.merchant_id == campaign.merchant_id,
+                            Transaction.transaction_date >= campaign.launched_at
+                        )
                     )
                 )
-            )
-            post_campaign_transactions = result.scalar() or 0
-            
-            # This is a simplified conversion tracking
-            # In a real system, you'd want more sophisticated attribution
-            estimated_conversions = min(post_campaign_transactions, campaign.target_customers_count)
-            campaign.conversion_count = estimated_conversions
-            
-            await self.db.commit()
+                post_campaign_transactions = result.scalar() or 0
+                estimated_conversions = min(post_campaign_transactions, campaign.target_customers_count or 0)
+                campaign.conversion_count = estimated_conversions
+                await self.db.commit()
         
         return {
             "campaign_id": campaign.id,
@@ -180,8 +177,8 @@ class CampaignService:
             "status": campaign.status,
             "target_customers": campaign.target_customers_count,
             "reached_customers": campaign.reached_customers_count,
-            "conversions": campaign.conversion_count,
-            "conversion_rate": (campaign.conversion_count / max(1, campaign.reached_customers_count)) * 100,
+            "conversions": campaign.conversion_count or 0,
+            "conversion_rate": ((campaign.conversion_count or 0) / max(1, campaign.reached_customers_count or 0)) * 100,
             "sms_sent": campaign.sms_sent_count,
             "revenue_generated": campaign.total_revenue_generated,
             "launched_at": campaign.launched_at

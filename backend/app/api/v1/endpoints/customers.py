@@ -18,6 +18,17 @@ async def get_customers(
     service = CustomerService(db)
     return await service.get_customers_by_merchant(merchant_id, skip=skip, limit=limit)
 
+# Alias to support no trailing slash when redirect_slashes=False
+@router.get("", response_model=List[CustomerResponse])
+async def get_customers_no_slash(
+    merchant_id: int,
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db)
+):
+    service = CustomerService(db)
+    return await service.get_customers_by_merchant(merchant_id, skip=skip, limit=limit)
+
 @router.get("/{customer_id}", response_model=CustomerResponse)
 async def get_customer(
     customer_id: int,

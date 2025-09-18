@@ -6,6 +6,7 @@ from app.models.customer import Customer
 from app.models.transaction import Transaction
 from app.schemas.customer import CustomerUpdate
 from app.models.merchant import Merchant # Import Merchant
+import uuid
 
 @pytest.mark.asyncio
 async def test_get_customers_by_merchant(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
@@ -131,14 +132,15 @@ async def test_customer_service_update_customer_metrics(db: AsyncSession, create
     await db.refresh(customer)
 
     # Add transactions
+    suffix = uuid.uuid4().hex[:6]
     transaction1 = Transaction(
-        merchant_id=merchant_id, customer_id=customer.id, mpesa_receipt_number="MTRX1", till_number="TESTTILL", amount=100.0, transaction_date=datetime.utcnow() - timedelta(days=30), customer_phone="254703000000"
+        merchant_id=merchant_id, customer_id=customer.id, mpesa_receipt_number=f"MTRX1-{suffix}", till_number="TESTTILL", amount=100.0, transaction_date=datetime.utcnow() - timedelta(days=30), customer_phone="254703000000"
     )
     transaction2 = Transaction(
-        merchant_id=merchant_id, customer_id=customer.id, mpesa_receipt_number="MTRX2", till_number="TESTTILL", amount=200.0, transaction_date=datetime.utcnow() - timedelta(days=15), customer_phone="254703000000"
+        merchant_id=merchant_id, customer_id=customer.id, mpesa_receipt_number=f"MTRX2-{suffix}", till_number="TESTTILL", amount=200.0, transaction_date=datetime.utcnow() - timedelta(days=15), customer_phone="254703000000"
     )
     transaction3 = Transaction(
-        merchant_id=merchant_id, customer_id=customer.id, mpesa_receipt_number="MTRX3", till_number="TESTTILL", amount=300.0, transaction_date=datetime.utcnow() - timedelta(days=5), customer_phone="254703000000"
+        merchant_id=merchant_id, customer_id=customer.id, mpesa_receipt_number=f"MTRX3-{suffix}", till_number="TESTTILL", amount=300.0, transaction_date=datetime.utcnow() - timedelta(days=5), customer_phone="254703000000"
     )
     db.add_all([transaction1, transaction2, transaction3])
     await db.commit()

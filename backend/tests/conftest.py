@@ -18,7 +18,7 @@ import uuid
 # Read the DATABASE_URL from environment variables, which is set correctly in docker-compose.yml
 TEST_DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql+asyncpg://postgres:password@db-test:5432/test_db")
 
-# These will be initialized in the session-scoped fixture
+# These will be initialized in the function-scoped fixture
 _test_engine: AsyncEngine | None = None
 _TestSessionLocal: async_sessionmaker[AsyncSession] | None = None
 
@@ -30,22 +30,21 @@ async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
         try:
             yield session
         finally:
-            # Rollback any changes after each test to ensure isolation
-            await session.rollback() 
+            await session.rollback()
             await session.close()
 
 app.dependency_overrides[get_db] = override_get_db
 
-@pytest_asyncio.fixture(scope="session", autouse=True)
+@pytest_asyncio.fixture(scope="function", autouse=True)
 async def setup_test_db():
-    """Set up and tear down the test database."""
+    """Set up and tear down the test database per test function."""
     global _test_engine, _TestSessionLocal
     
     _test_engine = create_async_engine(
-        TEST_DATABASE_URL, # Use the updated TEST_DATABASE_URL
+        TEST_DATABASE_URL,
         echo=False,
         future=True,
-        poolclass=NullPool,  # Avoid reusing connections across event loops
+        poolclass=NullPool,
     )
     _TestSessionLocal = async_sessionmaker(
         _test_engine,
@@ -53,33 +52,6 @@ async def setup_test_db():
         expire_on_commit=False
     )
 
-    # Explicitly open and close connection for schema creation/deletion
-    conn = await _test_engine.connect()
-    try:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
-    finally:
-        await conn.close() # Ensure the connection is closed
-    
-    await asyncio.sleep(0.1) # Small delay to ensure resources are freed
-    yield
-    
-    # Explicitly open and close connection for schema teardown
-    conn = await _test_engine.connect()
-    try:
-        await conn.run_sync(Base.metadata.drop_all)
-    finally:
-        await conn.close() # Ensure the connection is closed
-    
-    await _test_engine.dispose()
-    _test_engine = None
-    _TestSessionLocal = None
-
-@pytest_asyncio.fixture(autouse=True)
-async def reset_schema_per_test():
-    """Recreate schema before each test to ensure clean state and avoid unique collisions."""
-    if _test_engine is None:
-        raise RuntimeError("Test engine not initialized.")
     conn = await _test_engine.connect()
     try:
         await conn.run_sync(Base.metadata.drop_all)
@@ -87,29 +59,36 @@ async def reset_schema_per_test():
     finally:
         await conn.close()
 
+    yield
+
+    conn = await _test_engine.connect()
+    try:
+        await conn.run_sync(Base.metadata.drop_all)
+    finally:
+        await conn.close()
+
+    await _test_engine.dispose()
+    _test_engine = None
+    _TestSessionLocal = None
+
 @pytest_asyncio.fixture(scope="function")
 async def client() -> AsyncGenerator[AsyncClient, None]:
-    """Create an asynchronous test client."""
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
 
 @pytest_asyncio.fixture
 async def db() -> AsyncGenerator[AsyncSession, None]:
-    """Provide a database session for tests."""
-    # This fixture now relies on _TestSessionLocal being set up by setup_test_db
     if _TestSessionLocal is None:
         raise RuntimeError("TestSessionLocal not initialized. Ensure setup_test_db fixture runs.")
     async with _TestSessionLocal() as session:
         try:
             yield session
         finally:
-            # Rollback any changes after each test to ensure isolation
-            await session.rollback() 
+            await session.rollback()
             await session.close()
 
 @pytest_asyncio.fixture
 async def create_test_merchant() -> Merchant:
-    """Helper fixture to create a merchant directly in the database using its own session."""
     if _TestSessionLocal is None:
         raise RuntimeError("TestSessionLocal not initialized. Ensure setup_test_db fixture runs.")
     async with _TestSessionLocal() as session:
@@ -125,16 +104,14 @@ async def create_test_merchant() -> Merchant:
         session.add(merchant)
         await session.commit()
         await session.refresh(merchant)
-        # The session is closed automatically by the 'async with' block
         return merchant
 
 @pytest_asyncio.fixture
 async def create_test_user(create_test_merchant: Merchant) -> User:
-    """Helper fixture to create a user directly in the database using its own session."""
     if _TestSessionLocal is None:
         raise RuntimeError("TestSessionLocal not initialized. Ensure setup_test_db fixture runs.")
     async with _TestSessionLocal() as session:
-        auth_service = AuthService(session) # Instantiate AuthService with the current session
+        auth_service = AuthService(session)
         hashed_password = auth_service.get_password_hash("password123")
         user = User(
             email=f"test_user_{uuid.uuid4().hex[:8]}@example.com",
@@ -145,15 +122,13 @@ async def create_test_user(create_test_merchant: Merchant) -> User:
         session.add(user)
         await session.commit()
         await session.refresh(user)
-        # The session is closed automatically by the 'async with' block
         return user
 
 @pytest_asyncio.fixture
 async def get_auth_token(client: AsyncClient, create_test_user: User) -> str:
-    """Helper fixture to get an auth token for a test user."""
     login_data = {
         "email": create_test_user.email,
-        "password": "password123" # The password used when creating the user
+        "password": "password123"
     }
     response = await client.post("/api/v1/auth/login", json=login_data)
     assert response.status_code == 200
@@ -161,6 +136,5 @@ async def get_auth_token(client: AsyncClient, create_test_user: User) -> str:
 
 @pytest_asyncio.fixture
 async def authenticated_client(client: AsyncClient, get_auth_token: str) -> AsyncClient:
-    """Fixture for an authenticated client."""
     client.headers["Authorization"] = f"Bearer {get_auth_token}"
     return client

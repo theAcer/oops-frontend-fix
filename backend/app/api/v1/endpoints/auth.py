@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import timedelta
+from sqlalchemy.exc import IntegrityError
 
 from app.core.database import get_db
 from app.core.config import settings
@@ -18,20 +19,20 @@ async def register_user(
 ):
     """Register a new user account"""
     auth_service = AuthService(db)
-    existing_user = await auth_service.get_user_by_email(user_data.email)
-    if existing_user:
+    try:
+        user = await auth_service.create_user(
+            email=user_data.email,
+            password=user_data.password,
+            name=user_data.name,
+            merchant_id=user_data.merchant_id
+        )
+        return user
+    except IntegrityError:
+        # Likely duplicate email unique constraint
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
         )
-    
-    user = await auth_service.create_user(
-        email=user_data.email,
-        password=user_data.password,
-        name=user_data.name,
-        merchant_id=user_data.merchant_id
-    )
-    return user
 
 @router.post("/login", response_model=Token)
 async def login_for_access_token(

@@ -1,12 +1,13 @@
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.models.customer import Customer
 from app.models.transaction import Transaction
 from app.models.merchant import Merchant
 import respx
 from httpx import Response
+import uuid
 
 @pytest.mark.asyncio
 async def test_get_customer_recommendation_summary(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
@@ -17,21 +18,22 @@ async def test_get_customer_recommendation_summary(authenticated_client: AsyncCl
         name="AI Customer",
         churn_risk_score=0.6,
         lifetime_value_prediction=1500.0,
-        last_purchase_date=datetime.utcnow() - timedelta(days=10)
+        last_purchase_date=datetime.now(timezone.utc) - timedelta(days=10)
     )
     db.add(customer)
     await db.commit()
     await db.refresh(customer)
 
     # Add some transactions for behavior analysis
+    unique = uuid.uuid4().hex[:6]
     for i in range(3):
         transaction = Transaction(
             merchant_id=merchant_id,
             customer_id=customer.id,
-            mpesa_receipt_number=f"AI{i}",
-            till_number="TESTTILL",
+            mpesa_receipt_number=f"AI{i}-{unique}",
+            till_number=f"TESTTILL-{unique}",
             amount=100.0 + i*10,
-            transaction_date=datetime.utcnow() - timedelta(days=i*5),
+            transaction_date=datetime.now(timezone.utc) - timedelta(days=i*5),
             customer_phone="254712345678"
         )
         db.add(transaction)

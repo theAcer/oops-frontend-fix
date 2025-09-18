@@ -3,13 +3,15 @@ import pytest_asyncio
 import asyncio
 from typing import AsyncGenerator, Dict, Any
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker, AsyncEngine
+from sqlalchemy.pool import NullPool
 from app.core.database import Base, get_db
 from main import app
 from httpx import AsyncClient
-from app.models.merchant import Merchant
+from app.models.merchant import Merchant, BusinessType
 from app.models.user import User
 from app.services.auth_service import AuthService
 import os # Import os
+import uuid
 
 # Use a separate test database
 # IMPORTANT: Use 'db' as the hostname to connect to the PostgreSQL service within Docker Compose
@@ -42,7 +44,8 @@ async def setup_test_db():
     _test_engine = create_async_engine(
         TEST_DATABASE_URL, # Use the updated TEST_DATABASE_URL
         echo=False,
-        future=True
+        future=True,
+        poolclass=NullPool,  # Avoid reusing connections across event loops
     )
     _TestSessionLocal = async_sessionmaker(
         _test_engine,
@@ -72,6 +75,18 @@ async def setup_test_db():
     _test_engine = None
     _TestSessionLocal = None
 
+@pytest_asyncio.fixture(autouse=True)
+async def reset_schema_per_test():
+    """Recreate schema before each test to ensure clean state and avoid unique collisions."""
+    if _test_engine is None:
+        raise RuntimeError("Test engine not initialized.")
+    conn = await _test_engine.connect()
+    try:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+    finally:
+        await conn.close()
+
 @pytest_asyncio.fixture(scope="function")
 async def client() -> AsyncGenerator[AsyncClient, None]:
     """Create an asynchronous test client."""
@@ -98,13 +113,14 @@ async def create_test_merchant() -> Merchant:
     if _TestSessionLocal is None:
         raise RuntimeError("TestSessionLocal not initialized. Ensure setup_test_db fixture runs.")
     async with _TestSessionLocal() as session:
+        unique = uuid.uuid4().hex[:8]
         merchant = Merchant(
-            business_name="Test Merchant",
+            business_name=f"Test Merchant {unique}",
             owner_name="Test Owner",
-            email="test_merchant@example.com",
+            email=f"test_merchant_{unique}@example.com",
             phone="254700000000",
-            business_type="retail",
-            mpesa_till_number="TESTTILL"
+            business_type=BusinessType.RETAIL,
+            mpesa_till_number=f"TESTTILL{unique}"
         )
         session.add(merchant)
         await session.commit()
@@ -121,7 +137,7 @@ async def create_test_user(create_test_merchant: Merchant) -> User:
         auth_service = AuthService(session) # Instantiate AuthService with the current session
         hashed_password = auth_service.get_password_hash("password123")
         user = User(
-            email="test_user@example.com",
+            email=f"test_user_{uuid.uuid4().hex[:8]}@example.com",
             hashed_password=hashed_password,
             name="Test User",
             merchant_id=create_test_merchant.id

@@ -7,7 +7,7 @@ from sklearn.metrics import accuracy_score, mean_squared_error
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from typing import List, Dict, Any, Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.models.customer import Customer
 from app.models.transaction import Transaction
 from app.models.merchant import Merchant
@@ -19,6 +19,9 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
 logger = logging.getLogger(__name__)
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 class AIRecommendationService:
     def __init__(self, db: AsyncSession):
@@ -58,7 +61,7 @@ class AIRecommendationService:
             "churn_risk": churn_risk,
             "next_purchase_prediction": next_purchase,
             "personalized_offers": recommendations,
-            "analysis_date": datetime.utcnow().isoformat()
+            "analysis_date": _utcnow().isoformat()
         }
 
     async def _get_customer_with_transactions(self, customer_id: int) -> Optional[Customer]:
@@ -81,10 +84,16 @@ class AIRecommendationService:
         df = pd.DataFrame([{
             'amount': t.amount,
             'date': t.transaction_date,
-            'day_of_week': t.transaction_date.weekday(),
-            'hour': t.transaction_date.hour,
-            'month': t.transaction_date.month
+            'day_of_week': t.transaction_date.astimezone(timezone.utc).weekday(),
+            'hour': t.transaction_date.astimezone(timezone.utc).hour,
+            'month': t.transaction_date.astimezone(timezone.utc).month
         } for t in transactions])
+        
+        # Ensure datetime column is timezone-aware UTC
+        if df['date'].dt.tz is None:
+            df['date'] = df['date'].dt.tz_localize(timezone.utc)
+        else:
+            df['date'] = df['date'].dt.tz_convert(timezone.utc)
         
         # Time-based patterns
         purchase_intervals = df['date'].diff().dt.days.dropna()
@@ -187,7 +196,7 @@ class AIRecommendationService:
             consistency_score = 0.0
         
         # Recency score
-        days_since_last = (datetime.utcnow() - df['date'].max()).days
+        days_since_last = (_utcnow() - df['date'].max()).days
         recency_score = max(0, 1.0 - days_since_last / 90)  # Decay over 90 days
         
         return float((frequency_score + consistency_score + recency_score) / 3)
@@ -197,7 +206,7 @@ class AIRecommendationService:
         try:
             # Get customer features
             features = await self._extract_customer_features(customer_id)
-            if not features:
+            if features is None:
                 return {"error": "Insufficient data for prediction"}
             
             # Load or train churn model
@@ -223,12 +232,20 @@ class AIRecommendationService:
 
     def _predict_churn_score(self, model, features: np.ndarray) -> float:
         """Predict churn score using trained model"""
-        if hasattr(model, 'predict_proba'):
+        # Unpack model bundle
+        estimator = model.get("model", model) if isinstance(model, dict) else model
+        scaler = model.get("scaler") if isinstance(model, dict) else None
+
+        X = features.reshape(1, -1)
+        if scaler is not None:
+            X = scaler.transform(X)
+
+        if hasattr(estimator, 'predict_proba'):
             # For classification models, return probability of churn
-            return float(model.predict_proba(features.reshape(1, -1))[0][1])
+            return float(estimator.predict_proba(X)[0][1])
         else:
-            # For regression models, return direct prediction
-            return float(max(0, min(1, model.predict(features.reshape(1, -1))[0])))
+            # For regression models, return direct prediction (clamped to [0,1])
+            return float(max(0.0, min(1.0, float(estimator.predict(X)[0]))))
 
     async def _extract_customer_features(self, customer_id: int) -> Optional[np.ndarray]:
         """Extract features for ML models"""
@@ -257,8 +274,11 @@ class AIRecommendationService:
             return None
         
         # Calculate features
-        days_since_last = (datetime.utcnow() - stats.last_transaction).days if stats.last_transaction else 999
-        customer_lifetime_days = (stats.last_transaction - stats.first_transaction).days if stats.first_transaction and stats.last_transaction else 1
+        base_last = stats.last_transaction.astimezone(timezone.utc) if stats.last_transaction and stats.last_transaction.tzinfo else stats.last_transaction
+        days_since_last = (_utcnow() - base_last).days if base_last else 999
+        first = stats.first_transaction.astimezone(timezone.utc) if stats.first_transaction and stats.first_transaction.tzinfo else stats.first_transaction
+        last = stats.last_transaction.astimezone(timezone.utc) if stats.last_transaction and stats.last_transaction.tzinfo else stats.last_transaction
+        customer_lifetime_days = (last - first).days if first and last else 1
         
         features = np.array([
             stats.transaction_count or 0,
@@ -358,7 +378,8 @@ class AIRecommendationService:
                 features_list.append(features)
                 
                 # Label as churned if no purchase in 60+ days
-                days_since_last = (datetime.utcnow() - customer.last_purchase_date).days if customer.last_purchase_date else 999
+                base_last = customer.last_purchase_date.astimezone(timezone.utc) if customer.last_purchase_date and customer.last_purchase_date.tzinfo else customer.last_purchase_date
+                days_since_last = (_utcnow() - base_last).days if base_last else 999
                 is_churned = 1 if days_since_last > 60 else 0
                 labels_list.append(is_churned)
         
@@ -437,7 +458,7 @@ class AIRecommendationService:
             weighted_avg = np.average(intervals, weights=weights)
             
             # Predict next purchase date
-            last_purchase = transactions[0].transaction_date
+            last_purchase = transactions[0].transaction_date.astimezone(timezone.utc) if transactions[0].transaction_date.tzinfo else transactions[0].transaction_date.replace(tzinfo=timezone.utc)
             predicted_date = last_purchase + timedelta(days=int(weighted_avg))
             
             # Calculate confidence based on consistency
@@ -456,7 +477,8 @@ class AIRecommendationService:
 
     def _get_timing_recommendation(self, predicted_date: datetime, confidence: float) -> str:
         """Get recommendation for campaign timing"""
-        days_until = (predicted_date - datetime.utcnow()).days
+        base_pred = predicted_date.astimezone(timezone.utc) if predicted_date.tzinfo else predicted_date.replace(tzinfo=timezone.utc)
+        days_until = (base_pred - _utcnow()).days
         
         if confidence > 0.7:
             if days_until <= 2:
@@ -506,8 +528,8 @@ class AIRecommendationService:
                 })
             
             # Offer 3: Time-based offer
-            last_purchase = max(t.transaction_date for t in transactions)
-            days_since_last = (datetime.utcnow() - last_purchase).days
+            last_purchase = max((t.transaction_date.astimezone(timezone.utc) if t.transaction_date.tzinfo else t.transaction_date.replace(tzinfo=timezone.utc)) for t in transactions)
+            days_since_last = (_utcnow() - last_purchase).days
             
             if days_since_last > 14:  # Haven't purchased in 2+ weeks
                 offers.append({
@@ -527,6 +549,15 @@ class AIRecommendationService:
                     "description": "Exclusive early access to new products + 10% off",
                     "discount_percentage": 10,
                     "reasoning": f"Exclusive offer for {customer.loyalty_tier} tier member"
+                })
+            
+            if not offers:
+                offers.append({
+                    "type": "general_engagement",
+                    "title": "Thanks for shopping!",
+                    "description": "Enjoy 10% off your next purchase",
+                    "discount_percentage": 10,
+                    "reasoning": "Baseline engagement offer"
                 })
             
             return offers[:3]  # Return top 3 offers
@@ -602,8 +633,8 @@ class AIRecommendationService:
             avg_order_value = total_spent / len(transactions)
             
             # Calculate purchase frequency (purchases per month)
-            first_purchase = min(t.transaction_date for t in transactions)
-            last_purchase = max(t.transaction_date for t in transactions)
+            first_purchase = min((t.transaction_date.astimezone(timezone.utc) if t.transaction_date.tzinfo else t.transaction_date.replace(tzinfo=timezone.utc)) for t in transactions)
+            last_purchase = max((t.transaction_date.astimezone(timezone.utc) if t.transaction_date.tzinfo else t.transaction_date.replace(tzinfo=timezone.utc)) for t in transactions)
             months_active = max(1, (last_purchase - first_purchase).days / 30.44)
             purchase_frequency = len(transactions) / months_active
             

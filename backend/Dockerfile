@@ -16,6 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+RUN chmod +x /app/wait-for-it.sh # Make wait-for-it.sh executable
+
 # Expose port (this is metadata, but good to keep consistent with default)
 EXPOSE 8000
 

@@ -148,13 +148,7 @@ services:
         condition: service_healthy # Ensure Redis is healthy before running tests
     volumes:
       - ./backend:/app
-    command: |
-      echo "DATABASE_URL: $DATABASE_URL"
-      echo "Checking db-test resolution..."
-      getent hosts db-test
-      echo "Checking redis resolution..."
-      getent hosts redis
-      pytest tests/
+    command: /bin/bash -c "chmod +x /app/wait-for-it.sh && /app/wait-for-it.sh db-test 5432 pytest tests/" # Use wait-for-it.sh
     profiles: ["test"] # Only run this service when 'test' profile is active
 
 volumes:

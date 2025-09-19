@@ -13,98 +13,39 @@ on:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
-    services:
-      db:
-        image: postgres:15
-        env:
-          POSTGRES_DB: test_db
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    # Removed GitHub Actions services, as Docker Compose will manage them
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python (for docker-compose)
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install backend dependencies
-        working-directory: ./backend
+      - name: Install Docker Compose
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip list # Verify installed packages
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
 
-      - name: Install Redis tools
-        run: sudo apt-get update && sudo apt-get install -y redis-tools
+      # Removed 'Install backend dependencies' step - dependencies are handled by Dockerfile
+      # Removed 'Install Redis tools' step - not needed with Docker Compose
+      # Removed 'Debug Python Path (before tests)' step - will be debugged within Docker Compose service if needed
+      # Removed 'Wait for database and Redis to be ready' step - handled by wait-for-it.sh in Docker Compose
 
-      - name: Debug Python Path (before tests)
-        run: |
-          echo "Current working directory: $(pwd)"
-          echo "PYTHONPATH env var: $PYTHONPATH"
-          python -c "import sys; print('sys.path:', sys.path)"
-
-      - name: Wait for database and Redis to be ready
-        run: |
-          echo "Waiting for PostgreSQL to be ready..."
-          for i in $(seq 1 10); do
-            if pg_isready -h localhost -p 5432 -U postgres; then
-              echo "PostgreSQL is ready."
-              break
-            fi
-            echo "Waiting for PostgreSQL... ($i/10)"
-            sleep 5
-          done
-          echo "Waiting for Redis to be ready..."
-          for i in $(seq 1 10); do
-            if redis-cli -h localhost -p 6379 ping; then
-              echo "Redis is ready."
-              break
-            fi
-            echo "Waiting for Redis... ($i/10)"
-            sleep 5
-          done
-
-      - name: Run backend tests
-        working-directory: ./backend # Set working directory for pytest
+      - name: Run backend tests via Docker Compose
+        # No working-directory needed as docker-compose command is run from root
         env:
-          DATABASE_URL: postgresql+asyncpg://postgres:password@db:5432/test_db # Changed localhost to db
-          REDIS_URL: redis://redis:6379
+          # Environment variables are now defined in docker-compose.yml for the 'test' service
+          # Pass secrets directly if needed, or ensure they are configured in docker-compose.yml
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          ALGORITHM: HS256
-          ACCESS_TOKEN_EXPIRE_MINUTES: 30
-          CORS_ORIGINS: http://localhost:3000,http://frontend:3000
-          DEBUG: True
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           AFRICAS_TALKING_API_KEY: ${{ secrets.AFRICAS_TALKING_API_KEY }}
           AFRICAS_TALKING_USERNAME: ${{ secrets.AFRICAS_TALKING_USERNAME }}
-          SMS_SENDER_ID: LOYALTY
-          DARAAA_API_URL: http://localhost:8001
           DARAAA_API_KEY: ${{ secrets.DARAAA_API_KEY }}
-          PYTHONPATH: ${{ github.workspace }}/backend # Explicitly set PYTHONPATH for this step
         run: |
-          echo "Current working directory for pytest: $(pwd)"
-          python -c "import sys; print('sys.path for pytest:', sys.path)" # Debug sys.path right before pytest
-          python -m pip install pytest # Ensure pytest is installed right before running tests
-          python -m pytest tests/ # Run pytest as a Python module
+          docker-compose --profile test up --build --abort-on-container-exit --exit-code-from test test
           
   frontend-build:
     runs-on: ubuntu-latest

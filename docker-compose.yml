@@ -129,6 +129,7 @@ services:
       # Override DATABASE_URL for tests to use a separate test database
       - DATABASE_URL=postgresql+asyncpg://postgres:password@db-test:5432/test_db # Connect to db-test service
       - REDIS_URL=redis://redis:6379
+      - ENV_FILE= # Prevent pydantic-settings from loading .env file
       - PYTHONPATH=/app # Ensure Python can find app modules
       - DEBUG=True # Enable debug mode for tests
       - SECRET_KEY=test-secret-key # Required for auth tests

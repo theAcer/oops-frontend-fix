@@ -14,6 +14,7 @@ from app.services.auth_service import AuthService
 import os
 import uuid
 import sqlalchemy as sa # Re-add sqlalchemy import for raw SQL
+import sys # Import sys for stderr
 # from alembic.config import Config # Removed alembic imports
 # from alembic import command # Removed alembic imports
 
@@ -29,6 +30,7 @@ _TestSessionLocal: async_sessionmaker[AsyncSession] | None = None
 async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
     """Override the get_db dependency for tests."""
     if _TestSessionLocal is None:
+        sys.stderr.write("ERROR: TestSessionLocal not initialized. Ensure setup_test_db fixture runs.\n") # Use sys.stderr.write
         raise RuntimeError("TestSessionLocal not initialized. Ensure setup_test_db fixture runs.")
     async with _TestSessionLocal() as session:
         try:
@@ -44,6 +46,8 @@ async def setup_test_db():
     """Set up and tear down the test database per test function."""
     global _test_engine, _TestSessionLocal
     
+    sys.stderr.write(f"DEBUG: Initializing test DB with URL: {TEST_DATABASE_URL}\n") # Debug print
+
     _test_engine = create_async_engine(
         TEST_DATABASE_URL,
         echo=False,
@@ -58,6 +62,7 @@ async def setup_test_db():
 
     conn = await _test_engine.connect()
     try:
+        sys.stderr.write("DEBUG: Dropping all tables and enum types...\n") # Debug print
         # Drop all tables first
         await conn.run_sync(Base.metadata.drop_all)
         
@@ -67,17 +72,21 @@ async def setup_test_db():
         await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("CREATE TYPE businesstype AS ENUM ('retail', 'service', 'hospitality', 'other')")))
         await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("CREATE TYPE subscriptiontier AS ENUM ('basic', 'premium', 'enterprise')")))
         
+        sys.stderr.write("DEBUG: Enum types processed.\n") # Debug print
+
         # Close and re-open connection to ensure DDL is committed and visible
         await conn.close()
         conn = await _test_engine.connect()
 
-        print("DEBUG: Creating all tables...") # Debug print
+        sys.stderr.write(f"DEBUG: Models loaded for Base.metadata: {list(Base.metadata.tables.keys())}\n") # Debug print
+        sys.stderr.write("DEBUG: Creating all tables...\n") # Debug print
         # Create all tables
         await conn.run_sync(Base.metadata.create_all)
-        print("DEBUG: All tables created.") # Debug print
+        sys.stderr.write("DEBUG: All tables created.\n") # Debug print
 
         # Explicitly set customer_id to nullable for notifications table in test DB
         await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("ALTER TABLE notifications ALTER COLUMN customer_id DROP NOT NULL")))
+        sys.stderr.write("DEBUG: customer_id column made nullable.\n") # Debug print
 
     finally:
         # Ensure connection is closed
@@ -86,11 +95,13 @@ async def setup_test_db():
     yield
 
     # Teardown: Drop all tables and enum types again
+    sys.stderr.write("DEBUG: Starting test teardown...\n") # Debug print
     conn = await _test_engine.connect()
     try:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS businesstype CASCADE")))
         await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS subscriptiontier CASCADE")))
+        sys.stderr.write("DEBUG: All tables and enum types dropped during teardown.\n") # Debug print
     finally:
         await conn.close()
 

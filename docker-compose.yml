@@ -147,7 +147,7 @@ services:
         condition: service_healthy # Ensure Redis is healthy before running tests
     volumes:
       - ./backend:/app
-    command: /bin/bash -c "chmod +x /app/wait-for-it.sh && /app/wait-for-it.sh db-test 5432 pytest tests/" # Use wait-for-it.sh
+    command: /bin/bash -c "ping -c 3 db-test && ping -c 3 redis && pytest tests/" # Add network diagnostics
     profiles: ["test"] # Only run this service when 'test' profile is active
 
 volumes:

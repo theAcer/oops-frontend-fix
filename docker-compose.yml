@@ -147,7 +147,13 @@ services:
         condition: service_healthy # Ensure Redis is healthy before running tests
     volumes:
       - ./backend:/app
-    command: /bin/bash -c "echo \"Checking db-test resolution...\" && getent hosts db-test; echo \"Checking redis resolution...\" && getent hosts redis; pytest tests/" # Add network diagnostics using getent hosts
+    command: |
+      echo "DATABASE_URL: $DATABASE_URL"
+      echo "Checking db-test resolution..."
+      getent hosts db-test
+      echo "Checking redis resolution..."
+      getent hosts redis
+      pytest tests/
     profiles: ["test"] # Only run this service when 'test' profile is active
 
 volumes:

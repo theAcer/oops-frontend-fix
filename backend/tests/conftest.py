@@ -71,8 +71,10 @@ async def setup_test_db():
         await conn.close()
         conn = await _test_engine.connect()
 
+        print("DEBUG: Creating all tables...") # Debug print
         # Create all tables
         await conn.run_sync(Base.metadata.create_all)
+        print("DEBUG: All tables created.") # Debug print
 
         # Explicitly set customer_id to nullable for notifications table in test DB
         await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("ALTER TABLE notifications ALTER COLUMN customer_id DROP NOT NULL")))

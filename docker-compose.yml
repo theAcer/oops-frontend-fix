@@ -149,7 +149,7 @@ services:
     volumes:
       - ./backend:/app
     command: |
-      ls -la /app
+      ls -la /app && \
       /app/wait-for-it.sh db-test 5432 /bin/bash -c "python -c \"import app.models.merchant\" && pytest tests/"
     profiles: ["test"] # Only run this service when 'test' profile is active
 

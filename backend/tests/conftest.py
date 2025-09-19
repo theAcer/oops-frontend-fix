@@ -9,12 +9,16 @@ from main import app
 from httpx import AsyncClient
 from app.models.merchant import Merchant, BusinessType
 from app.models.user import User
+from app.models.notification import Notification # Added import for Notification model
 from app.services.auth_service import AuthService
-import os # Import os
+import os
 import uuid
+import sqlalchemy as sa # Re-add sqlalchemy import for raw SQL
+# from alembic.config import Config # Removed alembic imports
+# from alembic import command # Removed alembic imports
 
 # Use a separate test database
-# IMPORTANT: Use 'db' as the hostname to connect to the PostgreSQL service within Docker Compose
+# IMPORTANT: Use 'db-test' as the hostname to connect to the PostgreSQL service within Docker Compose
 # Read the DATABASE_URL from environment variables, which is set correctly in docker-compose.yml
 TEST_DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql+asyncpg://postgres:password@db-test:5432/test_db")
 
@@ -54,16 +58,37 @@ async def setup_test_db():
 
     conn = await _test_engine.connect()
     try:
+        # Drop all tables first
         await conn.run_sync(Base.metadata.drop_all)
+        
+        # Drop and re-create enum types explicitly in a separate transaction
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS businesstype CASCADE")))
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS subscriptiontier CASCADE")))
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("CREATE TYPE businesstype AS ENUM ('retail', 'service', 'hospitality', 'other')")))
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("CREATE TYPE subscriptiontier AS ENUM ('basic', 'premium', 'enterprise')")))
+        
+        # Close and re-open connection to ensure DDL is committed and visible
+        await conn.close()
+        conn = await _test_engine.connect()
+
+        # Create all tables
         await conn.run_sync(Base.metadata.create_all)
+
+        # Explicitly set customer_id to nullable for notifications table in test DB
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("ALTER TABLE notifications ALTER COLUMN customer_id DROP NOT NULL")))
+
     finally:
+        # Ensure connection is closed
         await conn.close()
 
     yield
 
+    # Teardown: Drop all tables and enum types again
     conn = await _test_engine.connect()
     try:
         await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS businesstype CASCADE")))
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS subscriptiontier CASCADE")))
     finally:
         await conn.close()
 
@@ -99,7 +124,8 @@ async def create_test_merchant() -> Merchant:
             email=f"test_merchant_{unique}@example.com",
             phone="254700000000",
             business_type=BusinessType.RETAIL,
-            mpesa_till_number=f"TESTTILL{unique}"
+            mpesa_till_number=f"TESTTILL{unique}",
+            subscription_tier="basic"
         )
         session.add(merchant)
         await session.commit()

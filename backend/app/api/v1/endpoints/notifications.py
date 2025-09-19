@@ -12,6 +12,7 @@ class SMSRequest(BaseModel):
     phone_number: str
     message: str
     notification_type: Optional[str] = "promotional"
+    customer_id: Optional[int] = None # Added customer_id
 
 class BulkSMSRequest(BaseModel):
     recipients: List[Dict[str, Any]]  # [{"phone": "...", "customer_id": ..., "name": "..."}]
@@ -49,7 +50,8 @@ async def send_single_sms(
         phone_number=request.phone_number,
         message=request.message,
         merchant_id=merchant_id,
-        notification_type=notification_type
+        notification_type=notification_type,
+        customer_id=request.customer_id # Pass customer_id from request
     )
     
     if not result["success"]:

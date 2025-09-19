@@ -25,7 +25,7 @@ class Notification(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     merchant_id = Column(Integer, ForeignKey("merchants.id"), nullable=False) # Added merchant_id
-    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True) # Changed to nullable=True
     campaign_id = Column(Integer, ForeignKey("campaigns.id"), nullable=True)
     
     # Notification Details
@@ -43,7 +43,7 @@ class Notification(Base):
     # Provider Details
     provider = Column(String(50), nullable=True)  # africastalking, twilio, etc.
     provider_message_id = Column(String(255), nullable=True)
-    provider_response = Column(Text, nullable=True)
+    provider_response = Column(Text, nullable=True) # Added provider_response
     
     # Cost Tracking
     cost = Column(Float, default=0.0)

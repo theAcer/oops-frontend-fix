@@ -3,7 +3,7 @@ import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func, and_ # Import func and and_
 from app.core.config import settings
 from app.models.notification import Notification, NotificationType, NotificationStatus
 from app.models.customer import Customer
@@ -70,7 +70,7 @@ class SMSService:
                     provider="africastalking", # Explicitly set provider
                     provider_message_id=response_data.get("SMSMessageData", {}).get("Recipients", [{}])[0].get("messageId"),
                     sent_at=datetime.utcnow() if response.status_code == 201 else None,
-                    error_message=response_data.get("SMSMessageData", {}).get("Message") if response.status_code != 201 else None,
+                    provider_response=response_data, # Store the full response data
                     cost=float(response_data.get("SMSMessageData", {}).get("Recipients", [{}])[0].get("cost", "0").split(" ")[1]) # Extract cost as float
                 )
                 
@@ -98,7 +98,7 @@ class SMSService:
                 message=message, # Changed from message_content to message
                 status=NotificationStatus.FAILED,
                 provider="africastalking",
-                error_message=str(e)
+                provider_response=str(e) # Store the error message
             )
             
             self.db.add(notification)
@@ -328,7 +328,7 @@ class SMSService:
                 "status": notification.status.value,
                 "sent_at": notification.sent_at.isoformat() if notification.sent_at else None,
                 "created_at": notification.created_at.isoformat(),
-                "error": notification.error_message,
+                "error": notification.provider_response, # Changed from error_message to provider_response
                 "cost": float(notification.cost)
             })
         

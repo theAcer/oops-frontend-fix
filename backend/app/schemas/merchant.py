@@ -9,7 +9,7 @@ class MerchantBase(BaseModel):
     email: EmailStr
     phone: str = Field(..., min_length=10, max_length=20)
     business_type: BusinessType
-    mpesa_till_number: str = Field(..., min_length=5, max_length=20)
+    mpesa_till_number: Optional[str] = Field(None, min_length=5, max_length=20) # Made optional
     mpesa_store_number: Optional[str] = None
     address: Optional[str] = None
     city: Optional[str] = None

@@ -17,7 +17,10 @@ async def create_merchant(
 ):
     """Register a new merchant"""
     service = MerchantService(db)
-    return await service.create_merchant(merchant_data)
+    merchant, is_created = await service.create_merchant(merchant_data)
+    if not is_created:
+        return MerchantResponse.model_validate(merchant)
+    return merchant
 
 @router.post("/link-user-merchant", response_model=MerchantResponse, status_code=status.HTTP_201_CREATED)
 async def link_user_to_merchant(
@@ -32,19 +35,29 @@ async def link_user_to_merchant(
     if not current_user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     
-    if current_user.merchant_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already linked to a merchant")
-
+    # Attempt to create the merchant
     merchant_service = MerchantService(db)
-    new_merchant = await merchant_service.create_merchant(merchant_data)
+    new_merchant, is_created = await merchant_service.create_merchant(merchant_data)
 
-    # Link the newly created merchant to the current user
-    await merchant_service.link_merchant_to_user(new_merchant.id, current_user.id)
+    # If the merchant already existed by email, ensure the current user isn't already linked to it
+    if not is_created and new_merchant.id == current_user.merchant_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already linked to this merchant")
+
+    # Link the (potentially newly created or existing) merchant to the current user
+    # The service layer will handle the check if the user is already linked to *any* merchant
+    linked_user = await merchant_service.link_merchant_to_user(new_merchant.id, current_user.id)
     
-    # Refresh the user object to reflect the new merchant_id
-    await db.refresh(current_user)
+    if not linked_user: # Should not happen if current_user exists, but for type safety
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to link merchant to user")
 
-    return new_merchant
+    # If a new merchant was created, return 201. If an existing one was linked, return 200.
+    if is_created:
+        return new_merchant
+    else:
+        # Although new_merchant was already an existing one, if the user was just linked,
+        # the response should still indicate success, but perhaps a 200 status.
+        # FastAPI's response_model will handle the serialization.
+        return MerchantResponse.model_validate(new_merchant)
 
 @router.get("/", response_model=List[MerchantResponse])
 async def get_merchants(

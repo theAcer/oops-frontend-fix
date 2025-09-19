@@ -1,13 +1,15 @@
 import pytest
-from httpx import AsyncClient
+import pytest_asyncio
+from httpx import AsyncClient, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.customer import Customer
 from app.models.merchant import Merchant
 from app.models.notification import Notification, NotificationType, NotificationStatus
-import respx
-from httpx import Response
+import respx # Re-add import respx
+from datetime import datetime, timedelta # Import datetime and timedelta
 
 @pytest.mark.asyncio
+@respx.mock # Add respx.mock decorator
 async def test_send_single_sms(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
     merchant_id = create_test_merchant.id
     customer = Customer(merchant_id=merchant_id, phone="254711223344", name="SMS Customer")
@@ -56,6 +58,7 @@ async def test_send_single_sms(authenticated_client: AsyncClient, db: AsyncSessi
     assert notification.message == "Hello from Zidisha!"
 
 @pytest.mark.asyncio
+@respx.mock # Add respx.mock decorator
 async def test_send_bulk_sms(authenticated_client: AsyncClient, db: AsyncSession, create_test_merchant: Merchant):
     merchant_id = create_test_merchant.id
     customer1 = Customer(merchant_id=merchant_id, phone="254711111111", name="Customer One")
@@ -140,7 +143,7 @@ async def test_get_notification_history(authenticated_client: AsyncClient, db: A
     assert response.status_code == 200
     data = response.json()
     assert data["count"] == 2
-    assert data["notifications"][0]["message"] == "Loyalty update" # Ordered by created_at desc
+    assert data["notifications"][0]["message"] == "Loyalty update"
     assert data["notifications"][1]["message"] == "Promo 1"
 
 @pytest.mark.asyncio
@@ -154,7 +157,7 @@ async def test_get_sms_analytics(authenticated_client: AsyncClient, db: AsyncSes
     # Create some notifications
     db.add(Notification(merchant_id=merchant_id, customer_id=customer.id, notification_type=NotificationType.PROMOTIONAL, recipient="+254799999999", message="Promo SMS", status=NotificationStatus.SENT, sent_at=datetime.utcnow(), cost=1.0))
     db.add(Notification(merchant_id=merchant_id, customer_id=customer.id, notification_type=NotificationType.LOYALTY, recipient="+254799999999", message="Loyalty SMS", status=NotificationStatus.SENT, sent_at=datetime.utcnow(), cost=1.0))
-    db.add(Notification(merchant_id=merchant_id, customer_id=customer.id, notification_type=NotificationType.PROMOTIONAL, recipient="+254799999999", message="Failed SMS", status=NotificationStatus.FAILED, cost=0.0, error_message="Network error"))
+    db.add(Notification(merchant_id=merchant_id, customer_id=customer.id, notification_type=NotificationType.PROMOTIONAL, recipient="+254799999999", message="Failed SMS", status=NotificationStatus.FAILED, cost=0.0, provider_response="Network error")) # Changed error_message to provider_response
     await db.commit()
 
     response = await authenticated_client.get(f"/api/v1/notifications/analytics/{merchant_id}")
@@ -162,7 +165,7 @@ async def test_get_sms_analytics(authenticated_client: AsyncClient, db: AsyncSes
     data = response.json()
     assert data["total_sent"] == 2
     assert data["total_failed"] == 1
-    assert data["success_rate"] == (2 / 3) * 100
+    assert data["success_rate"] == pytest.approx(round((2 / 3) * 100, 2))
     assert "breakdown" in data
     assert data["breakdown"]["sent"]["promotional"] == 1
     assert data["breakdown"]["sent"]["loyalty"] == 1

@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.auth_service import AuthService
 from app.models.user import User
 from app.models.merchant import Merchant
+import uuid # Import uuid
 
 # The authenticated_client fixture is now defined in conftest.py and will be used globally.
 # No need to redefine it here.
@@ -12,55 +13,69 @@ from app.models.merchant import Merchant
 @pytest.mark.asyncio
 async def test_create_merchant(client: AsyncClient, setup_test_db: None):
     """Test successful merchant creation."""
+    unique_email = f"test_merchant_{uuid.uuid4().hex}@example.com"
+    unique_till = f"TILL{uuid.uuid4().hex[:8].upper()}"
+    unique_phone = f"2547{uuid.uuid4().hex[:8]}"
     merchant_data = {
         "business_name": "Test Business",
         "owner_name": "John Doe",
-        "email": "john.doe@example.com",
-        "phone": "254712345678",
+        "email": unique_email,
+        "phone": unique_phone,
         "business_type": "retail",
-        "mpesa_till_number": "12345"
+        "mpesa_till_number": unique_till
     }
     response = await client.post("/api/v1/merchants/", json=merchant_data)
     assert response.status_code == 201
     data = response.json()
     assert data["business_name"] == "Test Business"
-    assert data["email"] == "john.doe@example.com"
+    assert data["email"] == unique_email
+    assert data["mpesa_till_number"] == unique_till
     assert "id" in data
 
 @pytest.mark.asyncio
 async def test_create_merchant_duplicate_till_number(client: AsyncClient, setup_test_db: None):
     """Test creating a merchant with a duplicate M-Pesa till number."""
+    common_till = f"DUPLICATE_TILL_{uuid.uuid4().hex[:8].upper()}"
+    unique_email_1 = f"dup_till_1_{uuid.uuid4().hex}@example.com"
+    unique_phone_1 = f"2547{uuid.uuid4().hex[:8]}"
+    unique_email_2 = f"dup_till_2_{uuid.uuid4().hex}@example.com"
+    unique_phone_2 = f"2547{uuid.uuid4().hex[:8]}"
+
     merchant_data = {
         "business_name": "First Business",
         "owner_name": "Jane Doe",
-        "email": "jane.doe@example.com",
-        "phone": "254712345679",
+        "email": unique_email_1,
+        "phone": unique_phone_1,
         "business_type": "restaurant",
-        "mpesa_till_number": "DUPLICATE1"
+        "mpesa_till_number": common_till
     }
     await client.post("/api/v1/merchants/", json=merchant_data)
 
     duplicate_merchant_data = {
         "business_name": "Second Business",
         "owner_name": "Jim Beam",
-        "email": "jim.beam@example.com",
-        "phone": "254712345680",
+        "email": unique_email_2,
+        "phone": unique_phone_2,
         "business_type": "service",
-        "mpesa_till_number": "DUPLICATE1"
+        "mpesa_till_number": common_till
     }
     response = await client.post("/api/v1/merchants/", json=duplicate_merchant_data)
-    assert response.status_code == 422 # FastAPI validation error for unique constraint
+    assert response.status_code == 422  # Conflict because till number is unique
+    #assert "Duplicate till number" in response.json()["detail"]
 
 @pytest.mark.asyncio
 async def test_get_merchant(client: AsyncClient, setup_test_db: None):
     """Test retrieving a merchant by ID."""
+    unique_email = f"get_merchant_{uuid.uuid4().hex}@example.com"
+    unique_till = f"GETTILL{uuid.uuid4().hex[:8].upper()}"
+    unique_phone = f"2547{uuid.uuid4().hex[:8]}"
     merchant_data = {
         "business_name": "Get Test Business",
         "owner_name": "Get Owner",
-        "email": "get@example.com",
-        "phone": "254712345681",
+        "email": unique_email,
+        "phone": unique_phone,
         "business_type": "retail",
-        "mpesa_till_number": "GET123"
+        "mpesa_till_number": unique_till
     }
     create_response = await client.post("/api/v1/merchants/", json=merchant_data)
     merchant_id = create_response.json()["id"]
@@ -81,13 +96,16 @@ async def test_get_merchant_not_found(client: AsyncClient, setup_test_db: None):
 @pytest.mark.asyncio
 async def test_update_merchant(client: AsyncClient, setup_test_db: None):
     """Test updating an existing merchant."""
+    unique_email = f"update_merchant_{uuid.uuid4().hex}@example.com"
+    unique_till = f"UPDATETILL{uuid.uuid4().hex[:8].upper()}"
+    unique_phone = f"2547{uuid.uuid4().hex[:8]}"
     merchant_data = {
         "business_name": "Update Test Business",
         "owner_name": "Update Owner",
-        "email": "update@example.com",
-        "phone": "254712345682",
+        "email": unique_email,
+        "phone": unique_phone,
         "business_type": "retail",
-        "mpesa_till_number": "UPDATE123"
+        "mpesa_till_number": unique_till
     }
     create_response = await client.post("/api/v1/merchants/", json=merchant_data)
     merchant_id = create_response.json()["id"]
@@ -110,13 +128,16 @@ async def test_update_merchant_not_found(client: AsyncClient, setup_test_db: Non
 @pytest.mark.asyncio
 async def test_delete_merchant(client: AsyncClient, setup_test_db: None):
     """Test deleting a merchant."""
+    unique_email = f"delete_merchant_{uuid.uuid4().hex}@example.com"
+    unique_till = f"DELTILL{uuid.uuid4().hex[:8].upper()}"
+    unique_phone = f"2547{uuid.uuid4().hex[:8]}"
     merchant_data = {
         "business_name": "Delete Test Business",
         "owner_name": "Delete Owner",
-        "email": "delete@example.com",
-        "phone": "254712345683",
+        "email": unique_email,
+        "phone": unique_phone,
         "business_type": "retail",
-        "mpesa_till_number": "DELETE123"
+        "mpesa_till_number": unique_till
     }
     create_response = await client.post("/api/v1/merchants/", json=merchant_data)
     merchant_id = create_response.json()["id"]
@@ -143,7 +164,7 @@ async def test_link_user_to_merchant(authenticated_client: AsyncClient, db: Asyn
     # Then, we'll use that user's token to call link-user-merchant.
 
     # Create a new user without a merchant_id
-    new_user_email = "unlinked_user@example.com"
+    new_user_email = f"unlinked_user_{uuid.uuid4().hex}@example.com"
     new_user_password = "password123"
     await authenticated_client.post(
         "/api/v1/auth/register",
@@ -156,13 +177,16 @@ async def test_link_user_to_merchant(authenticated_client: AsyncClient, db: Asyn
     unlinked_user_token = login_response.json()["access_token"]
 
     # Create new merchant data
+    new_merchant_email = f"new_linked_{uuid.uuid4().hex}@example.com"
+    new_merchant_till = f"NEWLINKED{uuid.uuid4().hex[:8].upper()}"
+    new_merchant_phone = f"2547{uuid.uuid4().hex[:8]}"
     new_merchant_data = {
         "business_name": "New Linked Business",
         "owner_name": "New Owner",
-        "email": "new_linked@example.com",
-        "phone": "254722222222",
+        "email": new_merchant_email,
+        "phone": new_merchant_phone,
         "business_type": "retail",
-        "mpesa_till_number": "NEWLINKED"
+        "mpesa_till_number": new_merchant_till
     }
 
     # Call link-user-merchant with the unlinked user's token
@@ -189,13 +213,16 @@ async def test_link_user_to_merchant_already_linked(authenticated_client: AsyncC
     # We'll use its token to try and link to another merchant.
     
     # Create new merchant data
+    new_merchant_email = f"another_{uuid.uuid4().hex}@example.com"
+    new_merchant_till = f"ANOTHER{uuid.uuid4().hex[:8].upper()}"
+    new_merchant_phone = f"2547{uuid.uuid4().hex[:8]}"
     new_merchant_data = {
         "business_name": "Another Business",
         "owner_name": "Another Owner",
-        "email": "another@example.com",
-        "phone": "254733333333",
+        "email": new_merchant_email,
+        "phone": new_merchant_phone,
         "business_type": "service",
-        "mpesa_till_number": "ANOTHER123"
+        "mpesa_till_number": new_merchant_till
     }
 
     response = await authenticated_client.post(
@@ -208,13 +235,16 @@ async def test_link_user_to_merchant_already_linked(authenticated_client: AsyncC
 @pytest.mark.asyncio
 async def test_link_user_to_merchant_unauthenticated(client: AsyncClient, setup_test_db: None):
     """Test linking a user to a merchant without authentication."""
+    unique_email = f"unauth_{uuid.uuid4().hex}@example.com"
+    unique_till = f"UNAUTH{uuid.uuid4().hex[:8].upper()}"
+    unique_phone = f"2547{uuid.uuid4().hex[:8]}"
     merchant_data = {
         "business_name": "Unauth Business",
         "owner_name": "Unauth Owner",
-        "email": "unauth@example.com",
-        "phone": "254744444444",
+        "email": unique_email,
+        "phone": unique_phone,
         "business_type": "retail",
-        "mpesa_till_number": "UNAUTH123"
+        "mpesa_till_number": unique_till
     }
     response = await client.post(
         "/api/v1/merchants/link-user-merchant",

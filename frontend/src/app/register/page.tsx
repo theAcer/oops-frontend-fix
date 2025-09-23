@@ -43,7 +43,8 @@ export default function RegisterPage() {
         formData.email,
         formData.password,
       )
-    } catch (_error: any) {
+    } catch (error: any) {
+      console.error(error)
       setError("Registration failed. Please try again.")
     } finally {
       setLoading(false)

@@ -1,35 +1,25 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Dict, Any, Optional
-from pydantic import BaseModel
 from app.core.database import get_db
 from app.services.sms_service import SMSService
 from app.models.notification import NotificationType
+from app.schemas.notification import (
+    SMSRequest,
+    BulkSMSRequest,
+    CampaignSMSRequest,
+    ChurnPreventionRequest,
+    SMSResult,
+    BulkSMSResult,
+    CampaignStartResponse,
+    NotificationHistoryResponse,
+    SMSAnalyticsResponse,
+    TemplatesResponse,
+)
 
 router = APIRouter()
 
-class SMSRequest(BaseModel):
-    phone_number: str
-    message: str
-    notification_type: Optional[str] = "promotional"
-    customer_id: Optional[int] = None # Added customer_id
-
-class BulkSMSRequest(BaseModel):
-    recipients: List[Dict[str, Any]]  # [{"phone": "...", "customer_id": ..., "name": "..."}]
-    message: str
-    notification_type: Optional[str] = "promotional"
-
-class CampaignSMSRequest(BaseModel):
-    campaign_id: int
-    target_customers: List[int]
-    message_template: str
-
-class ChurnPreventionRequest(BaseModel):
-    customer_id: int
-    discount_percentage: int
-    expiry_date: str
-
-@router.post("/sms/send/{merchant_id}")
+@router.post("/sms/send/{merchant_id}", response_model=SMSResult)
 async def send_single_sms(
     merchant_id: int,
     request: SMSRequest,
@@ -57,9 +47,9 @@ async def send_single_sms(
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result.get("error", "SMS sending failed"))
     
-    return result
+    return SMSResult.model_validate(result)
 
-@router.post("/sms/bulk/{merchant_id}")
+@router.post("/sms/bulk/{merchant_id}", response_model=BulkSMSResult)
 async def send_bulk_sms(
     merchant_id: int,
     request: BulkSMSRequest,
@@ -86,10 +76,7 @@ async def send_bulk_sms(
             merchant_id,
             notification_type
         )
-        return {
-            "message": "Bulk SMS processing started in background",
-            "recipient_count": len(request.recipients)
-        }
+        return BulkSMSResult(success=True, processed=0, failed=0)
     else:
         result = await sms_service.send_bulk_sms(
             recipients=request.recipients,
@@ -97,9 +84,9 @@ async def send_bulk_sms(
             merchant_id=merchant_id,
             notification_type=notification_type
         )
-        return result
+        return BulkSMSResult.model_validate(result)
 
-@router.post("/sms/campaign")
+@router.post("/sms/campaign", response_model=CampaignStartResponse)
 async def send_campaign_sms(
     request: CampaignSMSRequest,
     background_tasks: BackgroundTasks,
@@ -116,13 +103,13 @@ async def send_campaign_sms(
         request.message_template
     )
     
-    return {
-        "message": "Campaign SMS processing started",
-        "campaign_id": request.campaign_id,
-        "target_count": len(request.target_customers)
-    }
+    return CampaignStartResponse(
+        message="Campaign SMS processing started",
+        campaign_id=request.campaign_id,
+        target_count=len(request.target_customers)
+    )
 
-@router.post("/sms/loyalty/{customer_id}")
+@router.post("/sms/loyalty/{customer_id}", response_model=SMSResult)
 async def send_loyalty_notification(
     customer_id: int,
     notification_type: str,
@@ -151,9 +138,9 @@ async def send_loyalty_notification(
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result.get("error", "Loyalty SMS failed"))
     
-    return result
+    return SMSResult.model_validate(result)
 
-@router.post("/sms/churn-prevention")
+@router.post("/sms/churn-prevention", response_model=SMSResult)
 async def send_churn_prevention_sms(
     request: ChurnPreventionRequest,
     db: AsyncSession = Depends(get_db)
@@ -174,9 +161,9 @@ async def send_churn_prevention_sms(
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result.get("error", "Churn prevention SMS failed"))
     
-    return result
+    return SMSResult.model_validate(result)
 
-@router.get("/history/{merchant_id}")
+@router.get("/history/{merchant_id}", response_model=NotificationHistoryResponse)
 async def get_notification_history(
     merchant_id: int,
     limit: int = 50,
@@ -185,9 +172,9 @@ async def get_notification_history(
     """Get SMS notification history"""
     sms_service = SMSService(db)
     history = await sms_service.get_notification_history(merchant_id, limit)
-    return {"notifications": history, "count": len(history)}
+    return NotificationHistoryResponse(notifications=history, count=len(history))
 
-@router.get("/analytics/{merchant_id}")
+@router.get("/analytics/{merchant_id}", response_model=SMSAnalyticsResponse)
 async def get_sms_analytics(
     merchant_id: int,
     days: int = 30,
@@ -196,9 +183,9 @@ async def get_sms_analytics(
     """Get SMS analytics and performance metrics"""
     sms_service = SMSService(db)
     analytics = await sms_service.get_sms_analytics(merchant_id, days)
-    return analytics
+    return SMSAnalyticsResponse(analytics=analytics)
 
-@router.get("/templates")
+@router.get("/templates", response_model=TemplatesResponse)
 async def get_message_templates():
     """Get predefined SMS message templates"""
     templates = {
@@ -211,4 +198,4 @@ async def get_message_templates():
         "birthday": "Happy Birthday {name}! Enjoy a special {gift} on us. Valid this month!",
         "anniversary": "Thank you for being with us for {years} year(s), {name}! Here's a special reward: {reward}."
     }
-    return {"templates": templates}
+    return TemplatesResponse(templates=templates)

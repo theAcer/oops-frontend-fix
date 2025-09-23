@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from app.core.database import get_db
-from app.schemas.customer import CustomerResponse, CustomerUpdate
+from app.schemas.customer import CustomerResponse, CustomerUpdate, CustomerLoyaltyStatus
 from app.services.customer_service import CustomerService
 
 router = APIRouter()
@@ -54,7 +54,7 @@ async def update_customer(
         raise HTTPException(status_code=404, detail="Customer not found")
     return customer
 
-@router.get("/{customer_id}/loyalty")
+@router.get("/{customer_id}/loyalty", response_model=CustomerLoyaltyStatus)
 async def get_customer_loyalty(
     customer_id: int,
     db: AsyncSession = Depends(get_db)

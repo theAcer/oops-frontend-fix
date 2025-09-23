@@ -50,7 +50,7 @@ async def update_loyalty_program(
         raise HTTPException(status_code=404, detail="Loyalty program not found")
     return program
 
-@router.post("/programs/{program_id}/activate")
+@router.post("/programs/{program_id}/activate", response_model=dict)
 async def activate_loyalty_program(
     program_id: int,
     db: AsyncSession = Depends(get_db)
@@ -62,7 +62,7 @@ async def activate_loyalty_program(
         raise HTTPException(status_code=404, detail="Loyalty program not found")
     return {"message": "Loyalty program activated"}
 
-@router.post("/calculate-rewards")
+@router.post("/calculate-rewards", response_model=dict)
 async def calculate_rewards(
     transaction_id: int,
     db: AsyncSession = Depends(get_db)
@@ -72,7 +72,7 @@ async def calculate_rewards(
     result = await service.calculate_and_apply_rewards(transaction_id)
     return result
 
-@router.post("/rewards/{reward_id}/redeem")
+@router.post("/rewards/{reward_id}/redeem", response_model=dict)
 async def redeem_reward(
     reward_id: int,
     customer_id: int,
@@ -85,7 +85,7 @@ async def redeem_reward(
         raise HTTPException(status_code=400, detail="Reward not found or already redeemed")
     return {"message": "Reward redeemed successfully"}
 
-@router.get("/customers/{customer_id}/rewards")
+@router.get("/customers/{customer_id}/rewards", response_model=list)
 async def get_customer_rewards(
     customer_id: int,
     include_redeemed: bool = False,
@@ -96,7 +96,7 @@ async def get_customer_rewards(
     rewards = await service.get_customer_rewards(customer_id, include_redeemed)
     return rewards
 
-@router.get("/analytics/{merchant_id}")
+@router.get("/analytics/{merchant_id}", response_model=dict)
 async def get_loyalty_analytics(
     merchant_id: int,
     db: AsyncSession = Depends(get_db)

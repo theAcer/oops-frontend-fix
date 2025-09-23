@@ -72,7 +72,7 @@ async def update_campaign(
         raise HTTPException(status_code=404, detail="Campaign not found")
     return campaign
 
-@router.post("/{campaign_id}/launch")
+@router.post("/{campaign_id}/launch", response_model=dict)
 async def launch_campaign(
     campaign_id: int,
     db: AsyncSession = Depends(get_db)
@@ -84,7 +84,7 @@ async def launch_campaign(
         raise HTTPException(status_code=400, detail="Campaign cannot be launched")
     return {"message": "Campaign launched successfully"}
 
-@router.get("/{campaign_id}/performance")
+@router.get("/{campaign_id}/performance", response_model=dict)
 async def get_campaign_performance(
     campaign_id: int,
     db: AsyncSession = Depends(get_db)

@@ -7,7 +7,7 @@ from app.services.analytics_service import AnalyticsService
 
 router = APIRouter()
 
-@router.get("/dashboard/{merchant_id}")
+@router.get("/dashboard/{merchant_id}", response_model=dict)
 async def get_merchant_dashboard(
     merchant_id: int,
     days: int = Query(30, description="Number of days to analyze"),
@@ -23,7 +23,7 @@ async def get_merchant_dashboard(
     )
     return dashboard_data
 
-@router.get("/overview/{merchant_id}")
+@router.get("/overview/{merchant_id}", response_model=dict)
 async def get_overview_metrics(
     merchant_id: int,
     days: int = Query(30, description="Number of days to analyze"),
@@ -37,7 +37,7 @@ async def get_overview_metrics(
     overview = await service.get_overview_metrics(merchant_id, start_date, end_date)
     return overview
 
-@router.get("/revenue/{merchant_id}")
+@router.get("/revenue/{merchant_id}", response_model=dict)
 async def get_revenue_analytics(
     merchant_id: int,
     days: int = Query(30, description="Number of days to analyze"),
@@ -51,7 +51,7 @@ async def get_revenue_analytics(
     revenue_data = await service.get_revenue_analytics(merchant_id, start_date, end_date)
     return revenue_data
 
-@router.get("/customers/{merchant_id}")
+@router.get("/customers/{merchant_id}", response_model=dict)
 async def get_customer_analytics(
     merchant_id: int,
     days: int = Query(30, description="Number of days to analyze"),
@@ -65,7 +65,7 @@ async def get_customer_analytics(
     customer_data = await service.get_customer_analytics(merchant_id, start_date, end_date)
     return customer_data
 
-@router.get("/loyalty/{merchant_id}")
+@router.get("/loyalty/{merchant_id}", response_model=dict)
 async def get_loyalty_analytics(
     merchant_id: int,
     days: int = Query(30, description="Number of days to analyze"),
@@ -79,7 +79,7 @@ async def get_loyalty_analytics(
     loyalty_data = await service.get_loyalty_analytics(merchant_id, start_date, end_date)
     return loyalty_data
 
-@router.get("/campaigns/{merchant_id}")
+@router.get("/campaigns/{merchant_id}", response_model=dict)
 async def get_campaign_analytics(
     merchant_id: int,
     days: int = Query(30, description="Number of days to analyze"),
@@ -93,7 +93,7 @@ async def get_campaign_analytics(
     campaign_data = await service.get_campaign_analytics(merchant_id, start_date, end_date)
     return campaign_data
 
-@router.get("/customer-insights/{merchant_id}")
+@router.get("/customer-insights/{merchant_id}", response_model=dict)
 async def get_customer_insights(
     merchant_id: int,
     db: AsyncSession = Depends(get_db)
@@ -103,7 +103,7 @@ async def get_customer_insights(
     insights = await service.get_customer_insights(merchant_id)
     return insights
 
-@router.get("/churn-risk/{merchant_id}")
+@router.get("/churn-risk/{merchant_id}", response_model=dict)
 async def get_churn_risk_customers(
     merchant_id: int,
     risk_threshold: float = Query(0.7, description="Minimum churn risk score"),
@@ -114,7 +114,7 @@ async def get_churn_risk_customers(
     at_risk_customers = await service.get_churn_risk_customers(merchant_id, risk_threshold)
     return {"customers": at_risk_customers, "count": len(at_risk_customers)}
 
-@router.get("/revenue-trends/{merchant_id}")
+@router.get("/revenue-trends/{merchant_id}", response_model=dict)
 async def get_revenue_trends(
     merchant_id: int,
     days: int = Query(90, description="Number of days to analyze"),
@@ -128,7 +128,7 @@ async def get_revenue_trends(
     trends = await service.get_revenue_trends(merchant_id, start_date, end_date)
     return trends
 
-@router.get("/export/{merchant_id}")
+@router.get("/export/{merchant_id}", response_model=dict)
 async def export_analytics_data(
     merchant_id: int,
     data_type: str = Query(..., description="Type of data to export: transactions, customers, loyalty, campaigns"),
@@ -143,7 +143,7 @@ async def export_analytics_data(
     export_data = await service.export_analytics_data(merchant_id, data_type, start_date, end_date)
     return export_data
 
-@router.get("/kpis/{merchant_id}")
+@router.get("/kpis/{merchant_id}", response_model=dict)
 async def get_key_performance_indicators(
     merchant_id: int,
     days: int = Query(30, description="Number of days to analyze"),
@@ -171,7 +171,7 @@ async def get_key_performance_indicators(
     
     return kpis
 
-@router.get("/real-time/{merchant_id}")
+@router.get("/real-time/{merchant_id}", response_model=dict)
 async def get_real_time_metrics(
     merchant_id: int,
     db: AsyncSession = Depends(get_db)

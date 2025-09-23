@@ -29,7 +29,7 @@ async def get_transactions(
         limit=limit
     )
 
-@router.post("/sync-daraja") # Renamed endpoint
+@router.post("/sync-daraja", response_model=dict) # Renamed endpoint
 async def sync_transactions(
     merchant_id: int,
     db: AsyncSession = Depends(get_db)

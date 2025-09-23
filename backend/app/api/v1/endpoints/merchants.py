@@ -94,7 +94,7 @@ async def update_merchant(
         raise HTTPException(status_code=404, detail="Merchant not found")
     return merchant
 
-@router.delete("/{merchant_id}")
+@router.delete("/{merchant_id}", response_model=dict)
 async def delete_merchant(
     merchant_id: int,
     db: AsyncSession = Depends(get_db)

@@ -63,27 +63,24 @@ async def setup_test_db():
 
     conn = await _test_engine.connect()
     try:
-        # Drop all tables first
-        await conn.run_sync(Base.metadata.drop_all)
+        async with conn.begin():
+            # Drop all tables first
+            await conn.run_sync(Base.metadata.drop_all)
 
-        # Drop and re-create enum types explicitly in a separate transaction
-        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS businesstype CASCADE")))
-        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS subscriptiontier CASCADE")))
+            # Drop and re-create enum types explicitly
+            await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS businesstype CASCADE")))
+            await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS subscriptiontier CASCADE")))
 
-        # Build BusinessType enum values from the model to keep in sync
-        businesstype_values = ", ".join([f"'{e.value}'" for e in BusinessType])
-        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text(f"CREATE TYPE businesstype AS ENUM ({businesstype_values})")))
-        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("CREATE TYPE subscriptiontier AS ENUM ('basic', 'premium', 'enterprise')")))
+            # Build BusinessType enum values from the model to keep in sync
+            businesstype_values = ", ".join([f"'{e.value}'" for e in BusinessType])
+            await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text(f"CREATE TYPE businesstype AS ENUM ({businesstype_values})")))
+            await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("CREATE TYPE subscriptiontier AS ENUM ('basic', 'premium', 'enterprise')")))
 
-        # Close and re-open connection to ensure DDL is committed and visible
-        await conn.close()
-        conn = await _test_engine.connect()
+            # Create all tables
+            await conn.run_sync(Base.metadata.create_all)
 
-        # Create all tables
-        await conn.run_sync(Base.metadata.create_all)
-
-        # Explicitly set customer_id to nullable for notifications table in test DB
-        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("ALTER TABLE notifications ALTER COLUMN customer_id DROP NOT NULL")))
+            # Explicitly set customer_id to nullable for notifications table in test DB
+            await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("ALTER TABLE notifications ALTER COLUMN customer_id DROP NOT NULL")))
 
     finally:
         await conn.close()

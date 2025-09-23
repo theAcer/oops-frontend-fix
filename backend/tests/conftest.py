@@ -42,7 +42,7 @@ async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
 # The app.dependency_overrides[get_db] is now handled within the client fixture
 # app.dependency_overrides[get_db] = override_get_db
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function", autouse=True)
 async def setup_test_db():
     """Set up and tear down the test database per test function."""
     global _test_engine, _TestSessionLocal

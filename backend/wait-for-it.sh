@@ -6,7 +6,8 @@ set -ex # Added -x for shell debugging
 host="$1"
 port="$2"
 shift 2
-cmd="$@"
+# Capture the remaining arguments as a single command string to preserve operators like '&&'
+cmd="$*"
 
 until PGPASSWORD=$POSTGRES_PASSWORD pg_isready -h "$host" -p "$port" -U postgres
 do
@@ -25,4 +26,5 @@ done
 
 >&2 echo "Redis is up - executing command"
 
-exec $cmd 
+# Execute the command string via a login shell to interpret operators properly
+exec /bin/bash -lc "$cmd" 

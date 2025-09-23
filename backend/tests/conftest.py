@@ -15,6 +15,8 @@ import sqlalchemy as sa # Re-add sqlalchemy import for raw SQL
 # from alembic import command # Removed alembic imports
 from fastapi import FastAPI # Added this line
 from app.api.v1.api import api_router # Ensure API router is available for test app
+# Import all models so SQLAlchemy registers them on Base.metadata
+from app.models import *  # noqa: F401,F403
 
 # Use a separate test database
 # IMPORTANT: Use 'db-test' as the hostname to connect to the PostgreSQL service within Docker Compose
@@ -63,13 +65,16 @@ async def setup_test_db():
     try:
         # Drop all tables first
         await conn.run_sync(Base.metadata.drop_all)
-        
+
         # Drop and re-create enum types explicitly in a separate transaction
         await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS businesstype CASCADE")))
         await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS subscriptiontier CASCADE")))
-        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("CREATE TYPE businesstype AS ENUM ('retail', 'service', 'hospitality', 'other')")))
+
+        # Build BusinessType enum values from the model to keep in sync
+        businesstype_values = ", ".join([f"'{e.value}'" for e in BusinessType])
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text(f"CREATE TYPE businesstype AS ENUM ({businesstype_values})")))
         await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("CREATE TYPE subscriptiontier AS ENUM ('basic', 'premium', 'enterprise')")))
-        
+
         # Close and re-open connection to ensure DDL is committed and visible
         await conn.close()
         conn = await _test_engine.connect()

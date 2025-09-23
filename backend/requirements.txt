@@ -20,3 +20,4 @@ email-validator==2.1.0
 africastalking
 respx
 pytest-asyncio
+pytest==7.4.4

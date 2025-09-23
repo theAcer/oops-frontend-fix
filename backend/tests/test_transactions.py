@@ -103,9 +103,11 @@ async def test_sync_transactions_from_daraja(authenticated_client: AsyncClient, 
     merchant = create_test_merchant
     merchant_id = merchant.id
     merchant.daraja_consumer_key = "test_key"
+    
     merchant.daraja_consumer_secret = "test_secret"
     merchant.daraja_shortcode = "174379"
     merchant.daraja_passkey = "test_passkey"
+    db.add(merchant) # Re-associate merchant with the session before committing
     await db.commit()
     await db.refresh(merchant)
 

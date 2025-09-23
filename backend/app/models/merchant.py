@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Enum
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
 import enum
+from sqlalchemy.dialects import postgresql
 
 class BusinessType(str, enum.Enum):
     RESTAURANT = "restaurant"
@@ -19,7 +20,7 @@ class Merchant(Base):
     owner_name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, index=True, nullable=False)
     phone = Column(String(20), nullable=False)
-    business_type = Column(Enum(BusinessType), nullable=False)
+    business_type = Column(postgresql.ENUM(*[e.value for e in BusinessType], name="businesstype"), nullable=False)
     
     # M-Pesa Integration
     mpesa_till_number = Column(String(20), unique=True, index=True, nullable=False)

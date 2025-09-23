@@ -2,6 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List, Optional
 from app.models.merchant import Merchant
+from app.models.mpesa_channel import MpesaChannel
+from app.schemas.mpesa_channel import MpesaChannelCreate, MpesaChannelUpdate
 from app.models.user import User # Import User model
 from app.schemas.merchant import MerchantCreate, MerchantUpdate
 
@@ -112,3 +114,30 @@ class MerchantService:
         await self.db.commit()
         await self.db.refresh(user)
         return user
+
+    # ---- Mpesa Channels (Phase 1) ----
+    async def create_mpesa_channel(self, merchant_id: int, data: MpesaChannelCreate) -> MpesaChannel:
+        channel = MpesaChannel(merchant_id=merchant_id, **data.model_dump())
+        self.db.add(channel)
+        await self.db.commit()
+        await self.db.refresh(channel)
+        return channel
+
+    async def list_mpesa_channels(self, merchant_id: int) -> list[MpesaChannel]:
+        res = await self.db.execute(select(MpesaChannel).where(MpesaChannel.merchant_id == merchant_id))
+        return res.scalars().all()
+
+    async def update_mpesa_channel(self, channel_id: int, data: MpesaChannelUpdate) -> Optional[MpesaChannel]:
+        res = await self.db.execute(select(MpesaChannel).where(MpesaChannel.id == channel_id))
+        channel = res.scalar_one_or_none()
+        if not channel:
+            return None
+        for k, v in data.model_dump(exclude_unset=True).items():
+            setattr(channel, k, v)
+        await self.db.commit()
+        await self.db.refresh(channel)
+        return channel
+
+    async def get_mpesa_channel(self, channel_id: int) -> Optional[MpesaChannel]:
+        res = await self.db.execute(select(MpesaChannel).where(MpesaChannel.id == channel_id))
+        return res.scalar_one_or_none()

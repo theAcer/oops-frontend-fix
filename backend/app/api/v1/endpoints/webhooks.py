@@ -10,6 +10,7 @@ from datetime import datetime
 import json
 import logging
 import uuid # For generating unique receipt numbers
+from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -142,3 +143,53 @@ async def simulate_daraja_transaction(
 async def webhook_health_check():
     """Health check endpoint for webhook service"""
     return {"status": "healthy", "service": "daraja_webhook"}
+
+
+# --- C2B URL registration and callbacks ---
+
+class RegisterURLsRequest(BaseModel):
+    ShortCode: str
+    ResponseType: str = Field(default="Completed")
+    ConfirmationURL: str
+    ValidationURL: str
+
+
+@router.post("/payments/c2b/register-urls", status_code=status.HTTP_200_OK)
+async def register_c2b_urls(
+    data: RegisterURLsRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """Forward URL registration to Daraja."""
+    # Find any merchant context by ShortCode if needed; for now, use a generic service with merchant 0
+    service = DarajaService(db, merchant_id=0)
+    result = await service.register_c2b_urls(
+        shortcode=data.ShortCode,
+        confirmation_url=data.ConfirmationURL,
+        validation_url=data.ValidationURL,
+        response_type=data.ResponseType,
+    )
+    return result
+
+
+@router.post("/payments/c2b/validation")
+async def c2b_validation(
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    payload = await request.json()
+    # Merchant context is not required to validate basic shape; accept all by default
+    service = DarajaService(db, merchant_id=0)
+    return await service.handle_c2b_validation(payload)
+
+
+@router.post("/payments/c2b/confirmation")
+async def c2b_confirmation(
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    payload = await request.json()
+    # We’ll try to resolve merchant by BusinessShortCode inside the service
+    service = DarajaService(db, merchant_id=0)
+    tx = await service.handle_c2b_confirmation(payload)
+    # Acknowledge receipt per docs
+    return {"ResultCode": 0, "ResultDesc": "Success"}

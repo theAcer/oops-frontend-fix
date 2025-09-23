@@ -4,6 +4,7 @@ from typing import List
 from app.core.database import get_db
 from app.schemas.merchant import MerchantCreate, MerchantResponse, MerchantUpdate
 from app.services.merchant_service import MerchantService
+from app.schemas.mpesa_channel import MpesaChannelCreate, MpesaChannelUpdate, MpesaChannelResponse
 from app.services.auth_service import AuthService
 from app.api.v1.endpoints.auth import oauth2_scheme # Import oauth2_scheme
 from app.models.user import User # Import User model
@@ -105,3 +106,50 @@ async def delete_merchant(
     if not success:
         raise HTTPException(status_code=404, detail="Merchant not found")
     return {"message": "Merchant deleted successfully"}
+
+
+# ---- Mpesa Channels (Phase 1) ----
+
+@router.post("/{merchant_id}/mpesa/channels", response_model=MpesaChannelResponse, status_code=status.HTTP_201_CREATED)
+async def create_mpesa_channel(
+    merchant_id: int,
+    data: MpesaChannelCreate,
+    db: AsyncSession = Depends(get_db)
+):
+    service = MerchantService(db)
+    channel = await service.create_mpesa_channel(merchant_id, data)
+    return channel
+
+
+@router.get("/{merchant_id}/mpesa/channels", response_model=List[MpesaChannelResponse])
+async def list_mpesa_channels(
+    merchant_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    service = MerchantService(db)
+    return await service.list_mpesa_channels(merchant_id)
+
+
+@router.put("/mpesa/channels/{channel_id}", response_model=MpesaChannelResponse)
+async def update_mpesa_channel(
+    channel_id: int,
+    data: MpesaChannelUpdate,
+    db: AsyncSession = Depends(get_db)
+):
+    service = MerchantService(db)
+    channel = await service.update_mpesa_channel(channel_id, data)
+    if not channel:
+        raise HTTPException(status_code=404, detail="Channel not found")
+    return channel
+
+
+@router.get("/mpesa/channels/{channel_id}", response_model=MpesaChannelResponse)
+async def get_mpesa_channel(
+    channel_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    service = MerchantService(db)
+    channel = await service.get_mpesa_channel(channel_id)
+    if not channel:
+        raise HTTPException(status_code=404, detail="Channel not found")
+    return channel

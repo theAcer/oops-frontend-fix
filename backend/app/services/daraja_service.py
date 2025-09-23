@@ -12,6 +12,7 @@ from app.services.customer_service import CustomerService
 import json
 import logging
 import base64
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -173,6 +174,116 @@ class DarajaService:
             "daraaa_transaction_id": transaction_data.get("id"), # Renamed from daraaa_transaction_id to daraja_transaction_id in model? No, keep for now.
             "raw_daraaa_data": json.dumps(transaction_data)
         }
+
+    # --- C2B (Register URLs, Validation, Confirmation) ---
+
+    async def register_c2b_urls(
+        self,
+        shortcode: str,
+        confirmation_url: str,
+        validation_url: str,
+        response_type: str = "Completed",
+    ) -> Dict[str, Any]:
+        """Register C2B Confirmation and Validation URLs for a shortcode."""
+        payload = {
+            "ShortCode": shortcode,
+            "ResponseType": response_type,
+            "ConfirmationURL": confirmation_url,
+            "ValidationURL": validation_url,
+        }
+        return await self._make_request("POST", "/mpesa/c2b/v1/registerurl", json=payload)
+
+    def _parse_c2b_payload(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Map C2B confirmation/validation payload to our transaction shape."""
+        trans_time = payload.get("TransTime")
+        # TransTime is YYYYMMDDHHMMSS
+        paid_at = None
+        try:
+            if trans_time:
+                paid_at = datetime.strptime(trans_time, "%Y%m%d%H%M%S")
+        except Exception:
+            paid_at = None
+
+        customer_name = " ".join(
+            [
+                n for n in [payload.get("FirstName"), payload.get("MiddleName"), payload.get("LastName")] if n
+            ]
+        ) or None
+
+        return {
+            "mpesa_receipt_number": payload.get("TransID"),
+            "mpesa_transaction_id": payload.get("TransID"),
+            "till_number": payload.get("BusinessShortCode"),
+            "amount": float(payload.get("TransAmount", 0) or 0),
+            "customer_phone": self._normalize_phone_number(payload.get("MSISDN", "")),
+            "customer_name": customer_name,
+            "transaction_date": paid_at or datetime.utcnow(),
+            "reference": payload.get("BillRefNumber"),
+            "description": payload.get("TransactionType"),
+            "raw_daraaa_data": json.dumps(payload),
+        }
+
+    async def handle_c2b_confirmation(self, payload: Dict[str, Any]) -> Optional[Transaction]:
+        """Persist a C2B confirmation into our transactions table (idempotent by TransID)."""
+        try:
+            parsed = self._parse_c2b_payload(payload)
+
+            # Find merchant by shortcode
+            merchant_result = await self.db.execute(
+                select(Merchant).where(Merchant.mpesa_till_number == parsed["till_number"])
+            )
+            merchant = merchant_result.scalar_one_or_none()
+            if not merchant:
+                logger.warning(f"C2B confirmation for unknown shortcode: {parsed['till_number']}")
+                return None
+
+            # Idempotency on receipt number
+            existing_q = await self.db.execute(
+                select(Transaction).where(Transaction.mpesa_receipt_number == parsed["mpesa_receipt_number"]) 
+            )
+            existing = existing_q.scalar_one_or_none()
+            if existing:
+                # Update minimal fields if needed
+                for k, v in parsed.items():
+                    if k != "mpesa_receipt_number":
+                        setattr(existing, k, v)
+                await self.db.commit()
+                await self.db.refresh(existing)
+                return existing
+
+            # Create customer
+            customer = await self.customer_service.find_or_create_customer(
+                merchant_id=merchant.id,
+                phone=parsed["customer_phone"],
+                name=parsed.get("customer_name"),
+            )
+
+            # Create transaction
+            tx = Transaction(
+                merchant_id=merchant.id,
+                customer_id=customer.id,
+                **parsed,
+            )
+            self.db.add(tx)
+            await self.db.commit()
+            await self.db.refresh(tx)
+
+            # Update metrics
+            await self.customer_service.update_customer_metrics(customer.id)
+
+            return tx
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"C2B confirmation handling failed: {str(e)}")
+            raise
+
+    async def handle_c2b_validation(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate a pending C2B transaction. Accept all by default."""
+        # Example: enforce BillRefNumber existence for PayBill shortcodes
+        bill_ref = payload.get("BillRefNumber")
+        if bill_ref is None:
+            return {"ResultCode": "C2B00012", "ResultDesc": "Rejected"}
+        return {"ResultCode": "0", "ResultDesc": "Accepted", "ThirdPartyTransID": payload.get("TransID")}
 
     async def sync_merchant_transactions(
         self, 

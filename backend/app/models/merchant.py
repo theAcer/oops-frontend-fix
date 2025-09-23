@@ -55,3 +55,4 @@ class Merchant(Base):
     loyalty_programs = relationship("LoyaltyProgram", back_populates="merchant")
     campaigns = relationship("Campaign", back_populates="merchant")
     users = relationship("User", back_populates="merchant") # Added this line
+    mpesa_channels = relationship("MpesaChannel", back_populates="merchant", cascade="all, delete-orphan")

@@ -50,6 +50,8 @@ jobs:
           docker-compose --profile test up --build --abort-on-container-exit --exit-code-from test test # Use docker-compose (old syntax, but for standalone binary)
 
       - name: Post-test database inspection
+        env:
+          PORT: "8000"
         run: |
           # Run psql in a one-off container attached to the same network, since 'test' has exited
           docker-compose --profile test run --rm db-test psql -h db-test -U postgres -d test_db -c "\\dt"

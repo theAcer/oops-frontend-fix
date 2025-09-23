@@ -1,23 +1,20 @@
-import pytest
 import pytest_asyncio
-import asyncio
-from typing import AsyncGenerator, Dict, Any
+from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker, AsyncEngine
 from sqlalchemy.pool import NullPool
 from app.core.database import Base, get_db
-from main import app, root, health_check # Import root and health_check
+from main import root, health_check # Import root and health_check
 from httpx import AsyncClient
 from app.models.merchant import Merchant, BusinessType
 from app.models.user import User
-from app.models.notification import Notification # Added import for Notification model
 from app.services.auth_service import AuthService
 import os
 import uuid
 import sqlalchemy as sa # Re-add sqlalchemy import for raw SQL
-from app.api.v1.api import api_router # Added this line
 # from alembic.config import Config # Removed alembic imports
 # from alembic import command # Removed alembic imports
 from fastapi import FastAPI # Added this line
+from app.api.v1.api import api_router # Ensure API router is available for test app
 
 # Use a separate test database
 # IMPORTANT: Use 'db-test' as the hostname to connect to the PostgreSQL service within Docker Compose
@@ -31,6 +28,7 @@ _TestSessionLocal: async_sessionmaker[AsyncSession] | None = None
 async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
     """Override the get_db dependency for tests."""
     if _TestSessionLocal is None:
+        print("ERROR: TestSessionLocal not initialized. Ensure setup_test_db fixture runs.") # Changed to print
         raise RuntimeError("TestSessionLocal not initialized. Ensure setup_test_db fixture runs.")
     async with _TestSessionLocal() as session:
         try:
@@ -47,6 +45,8 @@ async def setup_test_db():
     """Set up and tear down the test database per test function."""
     global _test_engine, _TestSessionLocal
     
+    print(f"DEBUG: Initializing test DB with URL: {TEST_DATABASE_URL}") # Changed to print
+
     _test_engine = create_async_engine(
         TEST_DATABASE_URL,
         echo=False,
@@ -61,41 +61,37 @@ async def setup_test_db():
 
     conn = await _test_engine.connect()
     try:
-        async with conn.begin(): # Use async with for transaction management
-            # Drop all tables first
-            await conn.run_sync(Base.metadata.drop_all)
+        # Drop all tables first
+        await conn.run_sync(Base.metadata.drop_all)
+        
+        # Drop and re-create enum types explicitly in a separate transaction
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS businesstype CASCADE")))
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS subscriptiontier CASCADE")))
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("CREATE TYPE businesstype AS ENUM ('retail', 'service', 'hospitality', 'other')")))
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("CREATE TYPE subscriptiontier AS ENUM ('basic', 'premium', 'enterprise')")))
+        
+        # Close and re-open connection to ensure DDL is committed and visible
+        await conn.close()
+        conn = await _test_engine.connect()
 
-            # Drop and re-create enum types explicitly. This might be necessary if SQLAlchemy's
-            # metadata.drop_all doesn't handle enums perfectly across different DB states.
-            # Using CASCADE to ensure dependent objects are also dropped.
-            await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS businesstype CASCADE")))
-            await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS subscriptiontier CASCADE")))
-            await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("CREATE TYPE businesstype AS ENUM ('restaurant', 'salon', 'retail', 'service', 'other')")))
-            await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("CREATE TYPE subscriptiontier AS ENUM ('basic', 'premium', 'enterprise')")))
+        # Create all tables
+        await conn.run_sync(Base.metadata.create_all)
 
-            # Create all tables
-            await conn.run_sync(Base.metadata.create_all)
+        # Explicitly set customer_id to nullable for notifications table in test DB
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("ALTER TABLE notifications ALTER COLUMN customer_id DROP NOT NULL")))
 
-            # Clear all data from all tables to ensure a clean state for each test
-            for table in reversed(Base.metadata.sorted_tables):
-                await conn.run_sync(lambda sync_conn: sync_conn.execute(table.delete()))
-            # No explicit commit needed here for DDL, as conn.begin() will handle it
-
-            # Explicitly set customer_id to nullable for notifications table in test DB.
-            # This is done here to ensure it's applied after table creation.
-            await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("ALTER TABLE notifications ALTER COLUMN customer_id DROP NOT NULL")))
     finally:
         await conn.close()
 
     yield
 
     # Teardown: Drop all tables and enum types again
+    print("DEBUG: Starting test teardown...") # Changed to print
     conn = await _test_engine.connect()
     try:
-        async with conn.begin(): # Use async with for transaction management
-            await conn.run_sync(Base.metadata.drop_all)
-            await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS businesstype CASCADE")))
-            await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS subscriptiontier CASCADE")))
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS businesstype CASCADE")))
+        await conn.run_sync(lambda sync_conn: sync_conn.execute(sa.text("DROP TYPE IF EXISTS subscriptiontier CASCADE")))
     finally:
         await conn.close()
 

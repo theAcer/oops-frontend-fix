@@ -1,7 +1,7 @@
 #!/bin/bash
 # wait-for-it.sh
 
-set -e
+set -ex # Added -x for shell debugging
 
 host="$1"
 port="$2"

@@ -45,13 +45,15 @@ jobs:
           AFRICAS_TALKING_API_KEY: ${{ secrets.AFRICAS_TALKING_API_KEY }}
           AFRICAS_TALKING_USERNAME: ${{ secrets.AFRICAS_TALKING_USERNAME }}
           DARAAA_API_KEY: ${{ secrets.DARAAA_API_KEY }}
+          PORT: "8000" # Default to avoid compose warning
         run: |
           docker-compose --profile test up --build --abort-on-container-exit --exit-code-from test test # Use docker-compose (old syntax, but for standalone binary)
 
       - name: Post-test database inspection
         run: |
-          docker-compose --profile test exec test psql -h db-test -U postgres -d test_db -c "\dt"
-          docker-compose --profile test down # Bring down services after inspection
+          # Run psql in a one-off container attached to the same network, since 'test' has exited
+          docker-compose --profile test run --rm db-test psql -h db-test -U postgres -d test_db -c "\\dt"
+          docker-compose --profile test down --volumes # Bring down services after inspection
           
   frontend-build:
     runs-on: ubuntu-latest

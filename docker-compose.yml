@@ -149,7 +149,7 @@ services:
     volumes:
       - ./backend:/app
     command: |
-      /bin/bash -lc "chmod +x /app/wait-for-it.sh && /app/wait-for-it.sh db-test 5432 'pytest --version && pytest -q tests/test_auth.py tests/test_merchants.py'"
+      /bin/bash -lc "chmod +x /app/wait-for-it.sh && /app/wait-for-it.sh db-test 5432 'pytest --version && pytest -q tests/test_auth.py tests/test_merchants.py tests/test_customers.py'"
     profiles: ["test"] # Only run this service when 'test' profile is active
 
 volumes:

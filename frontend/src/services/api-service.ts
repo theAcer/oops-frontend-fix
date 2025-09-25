@@ -36,7 +36,6 @@ export const apiService = {
     } as UserCreateRequest) // Cast to UserCreateRequest
     return response.data
   },
-
   async getMe(): Promise<UserResponse> {
     const response = await api.get("/api/v1/auth/me")
     return response.data
@@ -48,14 +47,13 @@ export const apiService = {
     return response.data
   },
 
-  // Customer Management
-  async getCustomers(merchantId: number, page = 1, limit = 10): Promise<{ customers: CustomerResponse[]; total: number }> {
-    const response = await api.get(`/api/v1/customers?merchant_id=${merchantId}&skip=${(page - 1) * limit}&limit=${limit}`)
+  async getCustomer(customerId: number): Promise<CustomerResponse> {
+    const response = await api.get(`/api/v1/customers/${customerId}`)
     return response.data
   },
 
-  async getCustomer(customerId: number): Promise<CustomerResponse> {
-    const response = await api.get(`/api/v1/customers/${customerId}`)
+  async getCustomers(merchantId: number, page: number = 1, limit: number = 10): Promise<{ customers: CustomerResponse[]; total: number }> {
+    const response = await api.get(`/api/v1/customers?merchant_id=${merchantId}&page=${page}&limit=${limit}`)
     return response.data
   },
 
@@ -313,6 +311,46 @@ export const apiService = {
 
   async getMessageTemplates(): Promise<any> {
     const response = await api.get("/api/v1/notifications/templates")
+    return response.data
+  },
+
+  // M-Pesa Channels
+  async testChannelsEndpoint(): Promise<any> {
+    const response = await api.get("/api/v1/mpesa-channels/test")
+    return response.data
+  },
+
+  async getChannels(merchantId: number): Promise<{ channels: any[]; total: number }> {
+    const response = await api.get(`/api/v1/mpesa-channels?merchant_id=${merchantId}`)
+    return response.data
+  },
+
+  async createChannel(channelData: any): Promise<any> {
+    const response = await api.post("/api/v1/mpesa-channels", channelData)
+    return response.data
+  },
+
+  async updateChannel(channelId: number, channelData: any): Promise<any> {
+    const response = await api.put(`/api/v1/mpesa-channels/${channelId}`, channelData)
+    return response.data
+  },
+
+  async deleteChannel(channelId: number): Promise<void> {
+    await api.delete(`/api/v1/mpesa-channels/${channelId}`)
+  },
+
+  async verifyChannel(channelId: number): Promise<any> {
+    const response = await api.post(`/api/v1/mpesa-channels/${channelId}/verify`)
+    return response.data
+  },
+
+  async registerChannelUrls(channelId: number, urlData: any): Promise<any> {
+    const response = await api.post(`/api/v1/mpesa-channels/${channelId}/register-urls`, urlData)
+    return response.data
+  },
+
+  async simulateChannelTransaction(channelId: number, simulationData: any): Promise<any> {
+    const response = await api.post(`/api/v1/mpesa-channels/${channelId}/simulate`, simulationData)
     return response.data
   },
 }

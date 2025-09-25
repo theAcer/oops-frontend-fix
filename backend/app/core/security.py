@@ -10,10 +10,19 @@ import secrets
 import string
 import bcrypt
 import logging
+from jose import jwt
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from typing import Optional
+from fastapi import HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from app.models.user import User
+from app.models.merchant import Merchant
+from app.core.config import settings
+from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -123,3 +132,54 @@ def generate_api_key(length: int = 32) -> str:
 def generate_webhook_secret() -> str:
     """Generate a webhook secret for M-Pesa callbacks"""
     return generate_api_key(64)
+
+
+# JWT Authentication utilities
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> User:
+    """Get current user from JWT token"""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        user_id: int = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except jwt.JWTError:
+        raise credentials_exception
+
+    # Get user from database
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+async def get_current_merchant(current_user: User = Depends(get_current_user)) -> Merchant:
+    """Get current merchant from authenticated user"""
+    if current_user.merchant_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User is not associated with a merchant"
+        )
+
+    # In a real implementation, you would fetch the merchant from the database
+    # For now, we'll create a mock merchant object
+    # TODO: Implement proper merchant fetching from database
+
+    class MockMerchant:
+        def __init__(self, id: int):
+            self.id = id
+            self.business_name = "Mock Merchant"
+            self.email = current_user.email
+
+    return MockMerchant(current_user.merchant_id)

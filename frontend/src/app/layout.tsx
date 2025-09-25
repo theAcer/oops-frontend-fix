@@ -4,7 +4,9 @@ import { Inter } from "next/font/google"
 import { AuthProvider } from "@/contexts/auth-context"
 import { ThemeProvider } from "@/contexts/theme-context"
 import { ThemeWrapper } from "@/components/theme-wrapper"
+import { Toaster } from "react-hot-toast"
 import "./globals.css"
+import "./radix-select.css"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -23,7 +25,30 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning={true}>
         <ThemeProvider>
           <ThemeWrapper>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              {children}
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: 'hsl(var(--background))',
+                    color: 'hsl(var(--foreground))',
+                    border: '1px solid hsl(var(--border))',
+                  },
+                  success: {
+                    style: {
+                      border: '1px solid hsl(var(--primary))',
+                    },
+                  },
+                  error: {
+                    style: {
+                      border: '1px solid hsl(var(--destructive))',
+                    },
+                  },
+                }}
+              />
+            </AuthProvider>
           </ThemeWrapper>
         </ThemeProvider>
       </body>

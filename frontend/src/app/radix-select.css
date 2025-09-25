@@ -1,0 +1,46 @@
+/* Radix UI Select specific styles */
+[data-radix-select-viewport] {
+  background-color: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border-radius: 0.375rem;
+  border: 1px solid hsl(var(--border));
+  z-index: 50;
+}
+
+[data-radix-select-content] {
+  z-index: 50;
+}
+
+[data-radix-select-item] {
+  cursor: default;
+  user-select: none;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  outline: none;
+  position: relative;
+}
+
+[data-radix-select-item]:focus {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+[data-radix-select-item-indicator] {
+  position: absolute;
+  left: 0.5rem;
+  display: flex;
+  height: 0.875rem;
+  width: 0.875rem;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure SelectValue displays properly */
+[data-radix-select-trigger] span[data-radix-select-value] {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

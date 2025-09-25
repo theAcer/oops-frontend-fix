@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import merchants, customers, transactions, loyalty, campaigns, analytics, webhooks, ai_recommendations, notifications, auth, health_checks # Added health_checks
+from app.api.v1.endpoints import merchants, customers, transactions, loyalty, campaigns, analytics, webhooks, ai_recommendations, notifications, auth, health_checks, mpesa_channels
 
 api_router = APIRouter()
 
@@ -13,4 +13,5 @@ api_router.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"]
 api_router.include_router(ai_recommendations.router, prefix="/ai", tags=["ai-recommendations"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
-api_router.include_router(health_checks.router, prefix="/health", tags=["health-checks"]) # Added health_checks router
+api_router.include_router(health_checks.router, prefix="/health", tags=["health-checks"])
+api_router.include_router(mpesa_channels.router, prefix="/mpesa-channels", tags=["mpesa-channels"])

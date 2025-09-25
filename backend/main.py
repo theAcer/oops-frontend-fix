@@ -45,15 +45,26 @@ async def validation_exception_handler(request, exc: RequestValidationError):
             )
     
     # If not a unique constraint violation, return a standard 422
+    errors = []
+    for error in exc.errors():
+        # Convert error objects to JSON-serializable format
+        error_dict = {
+            "loc": error.get("loc", []),
+            "msg": str(error.get("msg", "")),
+            "type": error.get("type", ""),
+        }
+        if "input" in error:
+            error_dict["input"] = str(error["input"])
+        errors.append(error_dict)
+    
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": exc.errors()}
+        content={"detail": errors}
     )
 
 # Custom exception handler for IntegrityError (e.g., unique constraint violations)
 @app.exception_handler(IntegrityError)
 async def integrity_error_handler(request, exc: IntegrityError):
-    # Log the exception for debugging
     print(f"DEBUG: Caught IntegrityError: {str(exc)}")
 
     # Check for specific unique constraint violation messages

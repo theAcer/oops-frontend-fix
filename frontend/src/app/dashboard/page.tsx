@@ -52,15 +52,15 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-foreground">
-                  {analytics ? formatCurrency(analytics.total_revenue) : formatCurrency(0)}
+                  {analytics?.overview?.total_revenue ? formatCurrency(analytics.overview.total_revenue) : formatCurrency(0)}
                 </div>
                 <p className="text-xs text-muted-foreground flex items-center mt-1">
-                  {analytics && analytics.growth_metrics.revenue_growth > 0 ? (
+                  {analytics?.overview?.growth_metrics?.revenue_growth && analytics.overview.growth_metrics.revenue_growth > 0 ? (
                     <ArrowUpRight className="h-3 w-3 text-success mr-1" />
                   ) : (
                     <ArrowDownRight className="h-3 w-3 text-destructive mr-1" />
                   )}
-                  {analytics ? `${analytics.growth_metrics.revenue_growth.toFixed(1)}%` : "0%"} from last month
+                  {analytics?.overview?.growth_metrics?.revenue_growth ? `${analytics.overview.growth_metrics.revenue_growth.toFixed(1)}%` : "0%"} from last month
                 </p>
               </CardContent>
             </BlurredCard>
@@ -71,14 +71,14 @@ export default function DashboardPage() {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">{analytics?.total_customers || 0}</div>
+                <div className="text-2xl font-bold text-foreground">{analytics?.overview?.total_customers || 0}</div>
                 <p className="text-xs text-muted-foreground flex items-center mt-1">
-                  {analytics && analytics.growth_metrics.customer_growth > 0 ? (
+                  {analytics?.overview?.growth_metrics?.customer_growth && analytics.overview.growth_metrics.customer_growth > 0 ? (
                     <ArrowUpRight className="h-3 w-3 text-success mr-1" />
                   ) : (
                     <ArrowDownRight className="h-3 w-3 text-destructive mr-1" />
                   )}
-                  {analytics ? `${analytics.growth_metrics.customer_growth.toFixed(1)}%` : "0%"} from last month
+                  {analytics?.overview?.growth_metrics?.customer_growth ? `${analytics.overview.growth_metrics.customer_growth.toFixed(1)}%` : "0%"} from last month
                 </p>
               </CardContent>
             </BlurredCard>
@@ -89,7 +89,7 @@ export default function DashboardPage() {
                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">{analytics?.total_transactions || 0}</div>
+                <div className="text-2xl font-bold text-foreground">{analytics?.overview?.total_transactions || 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">Processed this month</p>
               </CardContent>
             </BlurredCard>
@@ -101,7 +101,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-foreground">
-                  {analytics ? formatCurrency(analytics.average_transaction_value) : formatCurrency(0)}
+                  {analytics?.overview?.average_transaction_value ? formatCurrency(analytics.overview.average_transaction_value) : formatCurrency(0)}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Per transaction</p>
               </CardContent>

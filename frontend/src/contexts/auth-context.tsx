@@ -5,11 +5,13 @@ import { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { apiService } from "@/services/api-service" // Import apiService
 import { UserResponse, MerchantCreateRequest } from "@/types/api" // Import UserResponse and MerchantCreateRequest
+import { BusinessType } from "@/types/enums" // Import BusinessType
 
 interface User extends UserResponse {} // Extend UserResponse for consistency
 
 interface AuthContextType {
   user: User | null
+  isMerchant: boolean // Add merchant status helper
   login: (email: string, password: string) => Promise<void>
   register: (
     name: string, // Simplified to just user's name
@@ -21,12 +23,13 @@ interface AuthContextType {
     ownerName: string,
     email: string,
     phone: string,
-    businessType: string,
+    businessType: BusinessType, // Fix type
     mpesaTillNumber: string,
     password: string,
   ) => Promise<void>
   logout: () => void
   loading: boolean
+  refreshUser: () => Promise<void> // Add method to refresh user data
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -108,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     ownerName: string,
     email: string,
     phone: string,
-    businessType: string,
+    businessType: BusinessType, // Fix type
     mpesaTillNumber: string,
     password: string,
   ) => {
@@ -147,6 +150,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const refreshUser = async () => {
+    try {
+      const userData = await apiService.getMe()
+      setUser(userData)
+    } catch (error) {
+      console.error("[AuthContext] Failed to refresh user data:", error)
+      // If refresh fails, user might need to login again
+      localStorage.removeItem("accessToken")
+      setUser(null)
+    }
+  }
+
   const logout = () => {
     console.log("[AuthContext] Logging out user."); // Added log
     localStorage.removeItem("accessToken") // Changed from "auth_token" to "accessToken"
@@ -154,7 +169,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push("/login")
   }
 
-  return <AuthContext.Provider value={{ user, login, register, registerMerchant, logout, loading }}>{children}</AuthContext.Provider>
+  // Computed property to check if user is a merchant
+  const isMerchant = Boolean(user?.merchant_id)
+
+  return <AuthContext.Provider value={{ 
+    user, 
+    isMerchant, 
+    login, 
+    register, 
+    registerMerchant, 
+    logout, 
+    loading, 
+    refreshUser 
+  }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

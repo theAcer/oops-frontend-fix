@@ -4,6 +4,13 @@ WORKDIR /app
 COPY package.json ./
 RUN rm -f package-lock.json && npm install
 
+# Development stage
+FROM deps AS dev
+WORKDIR /app
+COPY . .
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
+
 # Builder stage
 FROM node:20-alpine AS builder
 WORKDIR /app

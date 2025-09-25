@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,9 +10,33 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import Link from "next/link"
 import { BlurredCard } from "@/components/blurred-card"
 import { apiService } from "@/services/api-service"
+import { toast } from "react-hot-toast"
+import { useAuth } from "@/contexts/auth-context" // Add useAuth import
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Radio,
+  ArrowLeft,
+  Plus,
+  MoreHorizontal
+} from "lucide-react"
+
+// Types for M-Pesa channels
+interface MpesaChannel {
+  id: number
+  name: string
+  type: string
+  shortcode: string
+  environment: string
+  status: string
+  urls_registered: boolean
+  receiving: boolean
+  created_at: string
+}
 
 // Mock data - will be replaced with real API calls
-const mockChannels = [
+const mockChannels: MpesaChannel[] = [
   {
     id: 1,
     name: "Main PayBill",
@@ -58,7 +83,48 @@ const getEnvironmentBadge = (environment: string) => {
 }
 
 export default function ChannelsPage() {
-  const [channels, setChannels] = useState(mockChannels)
+  const { user, isMerchant } = useAuth() // Get merchant status
+  const [channels, setChannels] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  // Fetch channels on component mount
+  useEffect(() => {
+    if (!isMerchant) {
+      setLoading(false)
+      return
+    }
+    fetchChannels()
+  }, [isMerchant])
+
+  const fetchChannels = async () => {
+    try {
+      setLoading(true)
+      setError("")
+      
+      // First test if the endpoint is reachable
+      console.log("Testing channels endpoint...")
+      try {
+        const testResult = await apiService.testChannelsEndpoint()
+        console.log("Test endpoint result:", testResult)
+      } catch (testErr) {
+        console.error("Test endpoint failed:", testErr)
+      }
+      
+      // TODO: Get merchant ID from auth context - for now using 1
+      const merchantId = 1
+      const response = await apiService.getChannels(merchantId)
+      setChannels(response.channels || [])
+    } catch (err: any) {
+      console.error("Failed to fetch channels:", err)
+      setError("Failed to load channels")
+      toast.error("Failed to load channels")
+      // Fallback to mock data if API fails
+      setChannels(mockChannels)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleVerify = async (channelId: number) => {
     try {
@@ -97,6 +163,56 @@ export default function ChannelsPage() {
       toast.error("Failed to simulate payment")
     }
   }
+  
+  // Show merchant guard if user is not a merchant
+  if (!loading && !isMerchant) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:bg-accent hover:text-foreground">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">M-Pesa Channels</h1>
+                <p className="text-muted-foreground mt-1">Manage your M-Pesa integration channels</p>
+              </div>
+            </div>
+          </div>
+
+          <BlurredCard>
+            <CardContent className="p-8 text-center">
+              <div className="mx-auto w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                <XCircle className="w-8 h-8 text-orange-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Merchant Registration Required</h3>
+              <p className="text-muted-foreground mb-6">
+                You need to register as a merchant before you can manage M-Pesa channels. 
+                This allows you to integrate with M-Pesa and start accepting payments.
+              </p>
+              <div className="space-x-4">
+                <Link href="/dashboard/become-merchant">
+                  <Button>
+                    Register as Merchant
+                  </Button>
+                </Link>
+                <Link href="/dashboard">
+                  <Button variant="outline">
+                    Back to Dashboard
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </BlurredCard>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -129,7 +245,18 @@ export default function ChannelsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {mockChannels.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Loading channels...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-destructive mb-4">{error}</p>
+                <Button onClick={fetchChannels} variant="outline">
+                  Retry
+                </Button>
+              </div>
+            ) : channels.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">No M-Pesa channels configured yet</p>
                 <Link href="/dashboard/channels/add">
@@ -150,7 +277,7 @@ export default function ChannelsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockChannels.map((channel) => (
+                  {channels.map((channel) => (
                     <TableRow key={channel.id}>
                       <TableCell className="font-medium">{channel.name}</TableCell>
                       <TableCell>{channel.type}</TableCell>

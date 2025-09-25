@@ -12,6 +12,8 @@ import { ArrowLeft, Save, TestTube } from "lucide-react"
 import Link from "next/link"
 import { AnimatedButton } from "@/components/animated-button"
 import { BlurredCard } from "@/components/blurred-card"
+import { apiService } from "@/services/api-service"
+import { toast } from "react-hot-toast"
 
 export default function AddChannelPage() {
   const router = useRouter()
@@ -29,13 +31,50 @@ export default function AddChannelPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+
+    // Basic validation
+    if (!formData.name.trim()) {
+      setError("Channel name is required")
+      return
+    }
+    if (!formData.type) {
+      setError("Channel type is required")
+      return
+    }
+    if (!formData.shortcode.trim()) {
+      setError("Shortcode is required")
+      return
+    }
+    if (!formData.consumerKey.trim()) {
+      setError("Consumer key is required")
+      return
+    }
+    if (!formData.consumerSecret.trim()) {
+      setError("Consumer secret is required")
+      return
+    }
+
     setLoading(true)
 
     try {
-      // TODO: Implement API call to create channel
+      // Create channel using API
       console.log("Creating channel:", formData)
+      
+      const channelData = {
+        name: formData.name,
+        channel_type: formData.type.toLowerCase(),
+        shortcode: formData.shortcode,
+        environment: formData.environment,
+        consumer_key: formData.consumerKey,
+        consumer_secret: formData.consumerSecret,
+        merchant_id: 1, // Temporary: hardcode merchant_id for testing
+      }
 
-      // For now, just redirect to channels list
+      await apiService.createChannel(channelData)
+      
+      toast.success("Channel created successfully!")
+      
+      // Redirect to channels list
       router.push("/dashboard/channels")
     } catch (err: any) {
       console.error("Failed to create channel:", err)
@@ -45,19 +84,22 @@ export default function AddChannelPage() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSelectChange = (name: string, value: string) => {
+    console.log(`Updating ${name} to:`, value)
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+    setError("") // Clear error when user makes changes
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }))
-  }
-
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+    setError("") // Clear error when user makes changes
   }
 
   return (
@@ -93,14 +135,14 @@ export default function AddChannelPage() {
 
               <div className="space-y-2">
                 <label htmlFor="name" className="text-sm font-medium text-foreground">
-                  Channel Name
+                  Channel Name <span className="text-destructive">*</span>
                 </label>
                 <Input
                   id="name"
                   name="name"
                   type="text"
                   value={formData.name}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                   placeholder="e.g., Main PayBill Channel"
                   className="bg-background/50 border-border focus:border-primary"
@@ -109,30 +151,39 @@ export default function AddChannelPage() {
 
               <div className="space-y-2">
                 <label htmlFor="type" className="text-sm font-medium text-foreground">
-                  Channel Type
+                  Channel Type <span className="text-destructive">*</span>
                 </label>
-                <Select onValueChange={(value) => handleSelectChange("type", value)} value={formData.type} required>
-                  <SelectTrigger className="w-full bg-background/50 border-border focus:border-primary">
-                    <SelectValue placeholder="Select channel type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PayBill">PayBill</SelectItem>
-                    <SelectItem value="BuyGoods">Buy Goods (Till Number)</SelectItem>
-                    <SelectItem value="STKPush">STK Push</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select
+                  id="type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  required
+                  className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Select channel type</option>
+                  <option value="PayBill">PayBill</option>
+                  <option value="Till">Till Number</option>
+                  <option value="BuyGoods">Buy Goods (Till Number)</option>
+                  <option value="STKPush">STK Push</option>
+                </select>
+                {formData.type && (
+                  <p className="text-xs text-muted-foreground">
+                    Selected: <span className="font-medium">{formData.type}</span>
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="shortcode" className="text-sm font-medium text-foreground">
-                  Shortcode
+                  Shortcode <span className="text-destructive">*</span>
                 </label>
                 <Input
                   id="shortcode"
                   name="shortcode"
                   type="text"
                   value={formData.shortcode}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                   placeholder="e.g., 174379"
                   className="bg-background/50 border-border focus:border-primary"
@@ -141,29 +192,37 @@ export default function AddChannelPage() {
 
               <div className="space-y-2">
                 <label htmlFor="environment" className="text-sm font-medium text-foreground">
-                  Environment
+                  Environment <span className="text-destructive">*</span>
                 </label>
-                <Select onValueChange={(value) => handleSelectChange("environment", value)} value={formData.environment} required>
-                  <SelectTrigger className="w-full bg-background/50 border-border focus:border-primary">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sandbox">Sandbox (Testing)</SelectItem>
-                    <SelectItem value="production">Production (Live)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select
+                  id="environment"
+                  name="environment"
+                  value={formData.environment}
+                  onChange={handleInputChange}
+                  required
+                  className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Select environment</option>
+                  <option value="sandbox">Sandbox (Testing)</option>
+                  <option value="production">Production (Live)</option>
+                </select>
+                {formData.environment && (
+                  <p className="text-xs text-muted-foreground">
+                    Environment: <span className="font-medium">{formData.environment}</span>
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="consumerKey" className="text-sm font-medium text-foreground">
-                  Consumer Key
+                  Consumer Key <span className="text-destructive">*</span>
                 </label>
                 <Input
                   id="consumerKey"
                   name="consumerKey"
                   type="text"
                   value={formData.consumerKey}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                   placeholder="Your Daraja Consumer Key"
                   className="bg-background/50 border-border focus:border-primary"
@@ -172,14 +231,14 @@ export default function AddChannelPage() {
 
               <div className="space-y-2">
                 <label htmlFor="consumerSecret" className="text-sm font-medium text-foreground">
-                  Consumer Secret
+                  Consumer Secret <span className="text-destructive">*</span>
                 </label>
                 <Input
                   id="consumerSecret"
                   name="consumerSecret"
                   type="password"
                   value={formData.consumerSecret}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                   placeholder="Your Daraja Consumer Secret"
                   className="bg-background/50 border-border focus:border-primary"
@@ -200,11 +259,20 @@ export default function AddChannelPage() {
               </div>
 
               <div className="flex space-x-4">
-                <AnimatedButton type="submit" className="flex-1" disabled={loading}>
+                <AnimatedButton
+                  type="submit"
+                  className="flex-1"
+                  disabled={loading || !formData.name || !formData.type || !formData.shortcode || !formData.consumerKey || !formData.consumerSecret}
+                >
                   <Save className="h-4 w-4 mr-2" />
                   {loading ? "Creating Channel..." : "Create Channel"}
                 </AnimatedButton>
-                <Button type="button" variant="outline" onClick={() => router.push("/dashboard/channels")}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/dashboard/channels")}
+                  disabled={loading}
+                >
                   Cancel
                 </Button>
               </div>

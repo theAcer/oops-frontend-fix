@@ -25,7 +25,6 @@ export default function BecomeMerchantPage() {
     email: user?.email || "",
     phone: "",
     businessType: "",
-    mpesaTillNumber: "",
   })
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
@@ -47,13 +46,14 @@ export default function BecomeMerchantPage() {
 
     setLoading(true)
     try {
-      await apiService.linkUserToMerchant({
+      // Create merchant via API
+      await apiService.createMerchant({
         business_name: formData.businessName,
         owner_name: formData.ownerName,
         email: formData.email,
         phone: formData.phone,
         business_type: formData.businessType as any, // Cast to BusinessType enum
-        mpesa_till_number: formData.mpesaTillNumber,
+        mpesa_till_number: "000000", // Temporary placeholder - will be set via channels
       })
       
       router.push("/dashboard/channels")
@@ -176,36 +176,23 @@ export default function BecomeMerchantPage() {
 
               <div className="space-y-2">
                 <label htmlFor="businessType" className="text-sm font-medium text-foreground">
-                  Business Type
+                  Business Type <span className="text-destructive">*</span>
                 </label>
-                <Select onValueChange={(value) => handleSelectChange("businessType", value)} value={formData.businessType} required>
-                  <SelectTrigger className="w-full bg-background/50 border-border focus:border-primary">
-                    <SelectValue placeholder="Select business type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="retail">Retail</SelectItem>
-                    <SelectItem value="restaurant">Restaurant</SelectItem>
-                    <SelectItem value="service">Service</SelectItem>
-                    <SelectItem value="salon">Salon</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="mpesaTillNumber" className="text-sm font-medium text-foreground">
-                  M-Pesa Till Number
-                </label>
-                <Input
-                  id="mpesaTillNumber"
-                  name="mpesaTillNumber"
-                  type="text"
-                  value={formData.mpesaTillNumber}
+                <select
+                  id="businessType"
+                  name="businessType"
+                  value={formData.businessType}
                   onChange={handleChange}
                   required
-                  placeholder="Enter your M-Pesa Till Number"
-                  className="bg-background/50 border-border focus:border-primary"
-                />
+                  className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Select business type</option>
+                  <option value="retail">Retail</option>
+                  <option value="restaurant">Restaurant</option>
+                  <option value="service">Service</option>
+                  <option value="salon">Salon</option>
+                  <option value="other">Other</option>
+                </select>
               </div>
 
               <AnimatedButton type="submit" className="w-full py-2.5 text-lg" disabled={loading}>

@@ -3,13 +3,13 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { User, Store, KeyRound } from "lucide-react" // Added KeyRound
+import { User, Store, KeyRound } from "lucide-react"
 import Link from "next/link"
 import { BlurredCard } from "@/components/blurred-card"
 import { useAuth } from "@/contexts/auth-context"
 
 export default function SettingsPage() {
-  const { user } = useAuth()
+  const { user, isMerchant } = useAuth()
 
   return (
     <DashboardLayout>
@@ -29,16 +29,20 @@ export default function SettingsPage() {
               <CardDescription className="text-muted-foreground">Manage your personal profile and preferences.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full justify-start bg-background/50 border-border text-foreground hover:bg-accent">
-                Edit Profile
-              </Button>
-              <Button variant="outline" className="w-full justify-start mt-2 bg-background/50 border-border text-foreground hover:bg-accent">
-                Change Password
-              </Button>
+              <Link href="/dashboard/settings/profile">
+                <Button variant="outline" className="w-full justify-start bg-background/50 border-border text-foreground hover:bg-accent">
+                  Edit Profile
+                </Button>
+              </Link>
+              <Link href="/dashboard/settings/password">
+                <Button variant="outline" className="w-full justify-start mt-2 bg-background/50 border-border text-foreground hover:bg-accent">
+                  Change Password
+                </Button>
+              </Link>
             </CardContent>
           </BlurredCard>
 
-          {user?.merchant_id ? (
+          {isMerchant ? (
             <>
               <BlurredCard>
                 <CardHeader>
@@ -49,12 +53,16 @@ export default function SettingsPage() {
                   <CardDescription className="text-muted-foreground">Update your merchant information.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button variant="outline" className="w-full justify-start bg-background/50 border-border text-foreground hover:bg-accent">
-                    Edit Business Details
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start mt-2 bg-background/50 border-border text-foreground hover:bg-accent">
-                    Manage Subscription
-                  </Button>
+                  <Link href="/dashboard/settings/business">
+                    <Button variant="outline" className="w-full justify-start bg-background/50 border-border text-foreground hover:bg-accent">
+                      Edit Business Details
+                    </Button>
+                  </Link>
+                  <Link href="/dashboard/settings/subscription">
+                    <Button variant="outline" className="w-full justify-start mt-2 bg-background/50 border-border text-foreground hover:bg-accent">
+                      Manage Subscription
+                    </Button>
+                  </Link>
                 </CardContent>
               </BlurredCard>
 
@@ -72,7 +80,11 @@ export default function SettingsPage() {
                       Daraja API Integration
                     </Button>
                   </Link>
-                  {/* Add other integrations here */}
+                  <Link href="/dashboard/channels">
+                    <Button variant="outline" className="w-full justify-start mt-2 bg-background/50 border-border text-foreground hover:bg-accent">
+                      M-Pesa Channels
+                    </Button>
+                  </Link>
                 </CardContent>
               </BlurredCard>
             </>

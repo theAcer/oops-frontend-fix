@@ -338,7 +338,7 @@ MPESA_CONSUMER_KEY=single_key_for_all
 MPESA_CONSUMER_SECRET=single_secret_for_all
 
 # NEW (add this)
-ENCRYPTION_KEY=your_secure_encryption_key_here
+ENCRYPTION_KEY=XoX9omKWv1dfP6s2FVpz4P-12bL7_7ysy1Gf1YtjZjk=
 ```
 
 ### **Step 2: Database Migration**

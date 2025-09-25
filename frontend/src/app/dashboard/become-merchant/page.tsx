@@ -52,11 +52,11 @@ export default function BecomeMerchantPage() {
         owner_name: formData.ownerName,
         email: formData.email,
         phone: formData.phone,
-        business_type: formData.businessType,
+        business_type: formData.businessType as any, // Cast to BusinessType enum
         mpesa_till_number: formData.mpesaTillNumber,
       })
       
-      router.push("/dashboard")
+      router.push("/dashboard/channels")
     } catch (err: any) {
       console.error("Failed to register merchant:", err)
       setError(err.response?.data?.detail || "Failed to register merchant. Please try again.")
@@ -186,7 +186,7 @@ export default function BecomeMerchantPage() {
                     <SelectItem value="retail">Retail</SelectItem>
                     <SelectItem value="restaurant">Restaurant</SelectItem>
                     <SelectItem value="service">Service</SelectItem>
-                    <SelectItem value="ecommerce">E-commerce</SelectItem>
+                    <SelectItem value="salon">Salon</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>

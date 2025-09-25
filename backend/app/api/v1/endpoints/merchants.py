@@ -130,17 +130,48 @@ async def list_mpesa_channels(
     return await service.list_mpesa_channels(merchant_id)
 
 
-@router.put("/mpesa/channels/{channel_id}", response_model=MpesaChannelResponse)
-async def update_mpesa_channel(
+@router.post("/{merchant_id}/mpesa/channels/{channel_id}/verify", response_model=MpesaChannelResponse)
+async def verify_mpesa_channel(
+    merchant_id: int,
     channel_id: int,
-    data: MpesaChannelUpdate,
     db: AsyncSession = Depends(get_db)
 ):
+    """Verify M-Pesa channel credentials"""
     service = MerchantService(db)
-    channel = await service.update_mpesa_channel(channel_id, data)
+    channel = await service.verify_mpesa_channel(channel_id)
     if not channel:
-        raise HTTPException(status_code=404, detail="Channel not found")
+        raise HTTPException(status_code=404, detail="Channel not found or verification failed")
     return channel
+
+@router.post("/{merchant_id}/mpesa/channels/{channel_id}/register-urls", response_model=MpesaChannelResponse)
+async def register_mpesa_urls(
+    merchant_id: int,
+    channel_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Register validation and confirmation URLs for M-Pesa channel"""
+    service = MerchantService(db)
+    channel = await service.register_mpesa_urls(channel_id)
+    if not channel:
+        raise HTTPException(status_code=400, detail="Channel not found or not ready for URL registration")
+    return channel
+
+@router.post("/{merchant_id}/mpesa/channels/{channel_id}/simulate", response_model=dict)
+async def simulate_mpesa_transaction(
+    merchant_id: int,
+    channel_id: int,
+    simulation_data: dict,  # Should include amount, customer_phone, bill_ref
+    db: AsyncSession = Depends(get_db)
+):
+    """Simulate an M-Pesa transaction for testing"""
+    service = MerchantService(db)
+    result = await service.simulate_mpesa_transaction(
+        channel_id=channel_id,
+        amount=simulation_data["amount"],
+        customer_phone=simulation_data["customer_phone"],
+        bill_ref=simulation_data.get("bill_ref")
+    )
+    return result
 
 
 @router.get("/mpesa/channels/{channel_id}", response_model=MpesaChannelResponse)

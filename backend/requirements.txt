@@ -21,3 +21,4 @@ africastalking
 respx
 pytest-asyncio
 pytest==7.4.4
+bcrypt==4.3.0

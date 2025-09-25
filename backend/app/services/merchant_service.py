@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.sql import func
 from typing import List, Optional
 from app.models.merchant import Merchant
 from app.models.mpesa_channel import MpesaChannel
@@ -123,9 +124,9 @@ class MerchantService:
         await self.db.refresh(channel)
         return channel
 
-    async def list_mpesa_channels(self, merchant_id: int) -> list[MpesaChannel]:
-        res = await self.db.execute(select(MpesaChannel).where(MpesaChannel.merchant_id == merchant_id))
-        return res.scalars().all()
+    async def get_mpesa_channel(self, channel_id: int) -> Optional[MpesaChannel]:
+        res = await self.db.execute(select(MpesaChannel).where(MpesaChannel.id == channel_id))
+        return res.scalar_one_or_none()
 
     async def update_mpesa_channel(self, channel_id: int, data: MpesaChannelUpdate) -> Optional[MpesaChannel]:
         res = await self.db.execute(select(MpesaChannel).where(MpesaChannel.id == channel_id))
@@ -138,6 +139,120 @@ class MerchantService:
         await self.db.refresh(channel)
         return channel
 
-    async def get_mpesa_channel(self, channel_id: int) -> Optional[MpesaChannel]:
-        res = await self.db.execute(select(MpesaChannel).where(MpesaChannel.id == channel_id))
-        return res.scalar_one_or_none()
+    async def list_mpesa_channels(self, merchant_id: int) -> list[MpesaChannel]:
+        res = await self.db.execute(select(MpesaChannel).where(MpesaChannel.merchant_id == merchant_id))
+        return res.scalars().all()
+
+    # ---- Mpesa Channels (Phase 2) ----
+    async def verify_mpesa_channel(self, channel_id: int) -> Optional[MpesaChannel]:
+        """Verify M-Pesa channel by testing OAuth token generation"""
+        from app.services.mpesa_service_refactored import MpesaServiceFactory
+
+        channel = await self.get_mpesa_channel(channel_id)
+        if not channel:
+            return None
+
+        if not channel.consumer_key or not channel.consumer_secret:
+            return None
+
+        try:
+            # Use refactored service
+            mpesa_service = MpesaServiceFactory.create_channel_service(
+                consumer_key=channel.consumer_key,
+                consumer_secret=channel.consumer_secret,
+                environment=channel.environment
+            )
+
+            # Test OAuth token generation and basic connectivity
+            result = await mpesa_service.verify_channel(channel.shortcode)
+
+            if result.get("status") == "verified":
+                # Update channel status to verified
+                channel.status = "verified"
+                await self.db.commit()
+                await self.db.refresh(channel)
+                return channel
+            else:
+                return None
+
+        except Exception as e:
+            print(f"Error verifying channel {channel_id}: {e}")
+            return None
+        finally:
+            await mpesa_service.close()
+
+    async def register_mpesa_urls(self, channel_id: int) -> Optional[MpesaChannel]:
+        """Register validation and confirmation URLs with M-Pesa"""
+        from app.services.mpesa_service_refactored import MpesaServiceFactory
+
+        channel = await self.get_mpesa_channel(channel_id)
+        if not channel:
+            return None
+
+        if channel.status != "verified":
+            return None
+
+        try:
+            mpesa_service = MpesaServiceFactory.create_channel_service(
+                consumer_key=channel.consumer_key,
+                consumer_secret=channel.consumer_secret,
+                environment=channel.environment
+            )
+
+            # Register URLs
+            result = await mpesa_service.register_urls(
+                shortcode=channel.shortcode,
+                response_type=channel.response_type,
+                confirmation_url=channel.confirmation_url,
+                validation_url=channel.validation_url
+            )
+
+            if result and result.get("ResponseCode") == "0":
+                # Update channel status to urls_registered
+                channel.status = "urls_registered"
+                channel.last_registration_at = func.now()
+                await self.db.commit()
+                await self.db.refresh(channel)
+                return channel
+            else:
+                return None
+
+        except Exception as e:
+            print(f"Error registering URLs for channel {channel_id}: {e}")
+            return None
+        finally:
+            await mpesa_service.close()
+
+    async def simulate_mpesa_transaction(self, channel_id: int, amount: float, customer_phone: str, bill_ref: str = None) -> dict:
+        """Simulate an M-Pesa transaction for testing"""
+        from app.services.mpesa_service_refactored import MpesaServiceFactory
+
+        channel = await self.get_mpesa_channel(channel_id)
+        if not channel:
+            raise ValueError("Channel not found")
+
+        if channel.environment != "sandbox":
+            raise ValueError("Simulation only available in sandbox environment")
+
+        try:
+            mpesa_service = MpesaServiceFactory.create_channel_service(
+                consumer_key=channel.consumer_key,
+                consumer_secret=channel.consumer_secret,
+                environment=channel.environment
+            )
+
+            # Simulate transaction
+            result = await mpesa_service.simulate_transaction(
+                shortcode=channel.shortcode,
+                amount=amount,
+                msisdn=customer_phone,
+                bill_ref_number=bill_ref
+            )
+
+            return result
+
+        except Exception as e:
+            print(f"Error simulating transaction for channel {channel_id}: {e}")
+            raise
+        finally:
+            await mpesa_service.close()

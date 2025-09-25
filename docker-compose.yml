@@ -132,7 +132,8 @@ services:
       - ENV_FILE= # Prevent pydantic-settings from loading .env file
       - PYTHONPATH=/app # Ensure Python can find app modules
       - DEBUG=True # Enable debug mode for tests
-      - SECRET_KEY=test-secret-key # Required for auth tests
+      - SECRET_KEY=test-secret-key
+      - ENCRYPTION_KEY=XoX9omKWv1dfP6s2FVpz4P-12bL7_7ysy1Gf1YtjZjk=
       - ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
       - CORS_ORIGINS=http://localhost:3000

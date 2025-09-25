@@ -3,8 +3,9 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { BarChart3, Users, CreditCard, Gift, Megaphone, Brain, Settings, Home, Store, KeyRound, Radio } from "lucide-react"
+import { BarChart3, Users, CreditCard, Gift, Megaphone, Brain, Bell, Settings, Home, Store, KeyRound } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
+
 interface SidebarProps {
   isCollapsed: boolean;
 }
@@ -14,7 +15,6 @@ const navigation = [
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Customers", href: "/dashboard/customers", icon: Users },
   { name: "Transactions", href: "/dashboard/transactions", icon: CreditCard },
-  { name: "Channels", href: "/dashboard/channels", icon: Radio },
   { name: "Loyalty Programs", href: "/dashboard/loyalty", icon: Gift },
   { name: "Campaigns", href: "/dashboard/campaigns", icon: Megaphone },
   { name: "AI Insights", href: "/dashboard/ai-insights", icon: Brain },
@@ -25,6 +25,7 @@ const navigation = [
 export function Sidebar({ isCollapsed }: SidebarProps) {
   const pathname = usePathname()
   const { user } = useAuth()
+
   return (
     <div className={cn(
       "flex h-full flex-col bg-card/80 backdrop-blur-md border-r border-border/50 transition-all duration-300",

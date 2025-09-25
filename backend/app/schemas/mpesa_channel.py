@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, ConfigDict, field_validator
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 from enum import Enum
@@ -35,7 +35,8 @@ class MpesaChannelBase(BaseModel):
     channel_type: ChannelTypeEnum = Field(..., description="Type of M-Pesa channel")
     environment: ChannelEnvironmentEnum = Field(default=ChannelEnvironmentEnum.SANDBOX, description="M-Pesa environment")
     
-    @validator('shortcode')
+    @field_validator('shortcode')
+    @classmethod
     def validate_shortcode(cls, v):
         if not v.isdigit():
             raise ValueError('Shortcode must contain only digits')
@@ -59,7 +60,7 @@ class MpesaChannelCreate(MpesaChannelBase):
     account_mapping: Optional[Dict[str, str]] = Field(
         None, 
         description="Account mapping for PayBill channels",
-        example={"default": "loyalty", "VIP*": "vip_account", "GOLD001": "gold_account"}
+        json_schema_extra={"example": {"default": "loyalty", "VIP*": "vip_account", "GOLD001": "gold_account"}}
     )
     
     # Additional configuration
@@ -83,7 +84,7 @@ class MpesaChannelUpdate(BaseModel):
     validation_url: Optional[HttpUrl] = None
     confirmation_url: Optional[HttpUrl] = None
     callback_url: Optional[HttpUrl] = None
-    response_type: Optional[str] = Field(None, paattern="^(Completed|Cancelled)$")
+    response_type: Optional[str] = Field(None, pattern="^(Completed|Cancelled)$") # Fixed typo: paattern -> pattern
     
     # PayBill configuration
     account_mapping: Optional[Dict[str, str]] = None
@@ -94,7 +95,8 @@ class MpesaChannelUpdate(BaseModel):
     is_primary: Optional[bool] = None
     config_metadata: Optional[Dict[str, Any]] = None
     
-    @validator('shortcode')
+    @field_validator('shortcode')
+    @classmethod
     def validate_shortcode(cls, v):
         if v is not None and not v.isdigit():
             raise ValueError('Shortcode must contain only digits')
@@ -138,9 +140,7 @@ class MpesaChannelResponse(BaseModel):
     
     # Note: Credentials are never included in responses for security
     
-    class Config:
-        from_attributes = True
-        use_enum_values = True
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class MpesaChannelListResponse(BaseModel):
@@ -201,7 +201,8 @@ class MpesaChannelSimulationRequest(BaseModel):
     customer_phone: str = Field(..., pattern=r"^254[0-9]{9}$", description="Customer phone number (254XXXXXXXXX)")
     bill_ref: Optional[str] = Field(None, max_length=50, description="Bill reference number")
     
-    @validator('amount')
+    @field_validator('amount')
+    @classmethod
     def validate_amount(cls, v):
         if v <= 0:
             raise ValueError('Amount must be positive')

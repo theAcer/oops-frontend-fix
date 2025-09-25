@@ -21,6 +21,7 @@ class Transaction(Base):
     id = Column(Integer, primary_key=True, index=True)
     merchant_id = Column(Integer, ForeignKey("merchants.id"), nullable=False)
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
+    mpesa_channel_id = Column(Integer, ForeignKey("mpesa_channels.id"), nullable=True) # Added foreign key to mpesa_channels
     
     # M-Pesa Transaction Details
     mpesa_receipt_number = Column(String(50), unique=True, index=True, nullable=False)
@@ -58,3 +59,4 @@ class Transaction(Base):
     merchant = relationship("Merchant", back_populates="transactions")
     customer = relationship("Customer", back_populates="transactions")
     rewards = relationship("Reward", back_populates="transaction")
+    mpesa_channel = relationship("MpesaChannel", back_populates="transactions") # Added relationship
